@@ -18,7 +18,7 @@ import { useAuth } from "@/app/providers/AuthProvider";
 
 export default function Page() {
   const { session } = useAuth();
-  console.log(session);
+  console.log(session, "session");
 
   return (
     <SidebarProvider>

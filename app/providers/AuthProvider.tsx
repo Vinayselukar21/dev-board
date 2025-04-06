@@ -6,13 +6,18 @@ import { useRouter } from "next/navigation";
 interface AuthContextType {
   session: any;
   loading: boolean;
+  signUpWithCredentials: (values: {
+    email: string;
+    name: string;
+    password: string;
+  }) => Promise<void>;
   loginWithCredentials: (values: {
     email: string;
     password: string;
   }) => Promise<void>;
   logoutUser: () => Promise<void>;
 }
-interface AuthResponse {
+export interface AuthResponse {
   message: string;
   accessToken: string;
   refreshToken: string;
@@ -46,7 +51,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const res = await axios.get<AuthResponse>("/auth/me");
         if (res.data.authStatus === "authenticated") {
-          console.log(res.data);
           setSession({
             id: res.data.user.id,
             name: res.data.user.name,
@@ -57,6 +61,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (err) {
         setSession(null); // not authenticated
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
       } finally {
         setLoading(false);
       }
@@ -72,6 +79,31 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     try {
       const response = await axios.post<AuthResponse>("/auth/login", values);
+      if (response.data.authStatus === "authenticated") {
+        setSession({
+          id: response.data.user.id,
+          name: response.data.user.name,
+          email: response.data.user.email,
+          avatar: response.data.user?.avatar,
+          authStatus: response.data.authStatus,
+        });
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUpWithCredentials = async (values: {
+    email: string;
+    name: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    try {
+      const response = await axios.post<AuthResponse>("/auth/register", values);
       if (response.data.authStatus === "authenticated") {
         setSession({
           id: response.data.user.id,
@@ -105,7 +137,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ session, loading, loginWithCredentials, logoutUser }}
+      value={{
+        session,
+        loading,
+        signUpWithCredentials,
+        loginWithCredentials,
+        logoutUser,
+      }}
     >
       {children}
     </AuthContext.Provider>

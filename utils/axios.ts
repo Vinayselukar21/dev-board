@@ -14,14 +14,34 @@ const api = axios.create({
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    const originalRequest = error.config;
-
+    let originalRequest = error.config;
+console.log(originalRequest)
     if (error.response?.status === 403 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        await api.post("/auth/refresh");
-        return api(originalRequest); // 🔁 retry original request
+        const refreshRes: {
+          data: {
+            authStatus: string;
+            accessToken: string;
+            message: string;
+          };
+        } = await api.get("/auth/refresh");
+        console.log(refreshRes);
+        if (
+          refreshRes.data.authStatus === "authenticated" &&
+          typeof window !== "undefined"
+        ) {
+          window.location.href = "/dashboard";
+        }
+        if (
+          refreshRes.data.authStatus === "unauthenticated" &&
+          typeof window !== "undefined"
+        ) {
+          window.location.href = "/login";
+        }
+        api(originalRequest); // 🔁 retry original request
+        return;
       } catch (refreshErr) {
         console.error("Refresh token failed:", refreshErr);
         // ✅ Redirect to login page
