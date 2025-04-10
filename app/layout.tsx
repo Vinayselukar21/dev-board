@@ -1,9 +1,11 @@
+import axios from "axios";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import TanstackProvider from "./providers/TanstackProvider";
-import axios from "axios";
 import AuthProvider from "./providers/AuthProvider";
+import TanstackProvider from "./providers/TanstackProvider";
+import ProtectedRoute from "./providers/ProtectedRoute";
+import SidebarLayoutProvider from "./providers/DashboardLayoutProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,15 +27,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  axios.defaults.withCredentials = true;
-
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <TanstackProvider>{children}</TanstackProvider>
+          <ProtectedRoute>
+            <TanstackProvider>
+              <SidebarLayoutProvider>
+                {children}
+                </SidebarLayoutProvider>
+            </TanstackProvider>
+          </ProtectedRoute>
         </AuthProvider>
       </body>
     </html>

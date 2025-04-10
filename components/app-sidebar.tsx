@@ -1,23 +1,26 @@
 "use client";
 
-import * as React from "react";
 import {
-  AudioWaveform,
   BookOpen,
   Bot,
-  Command,
+  CalendarDays,
+  FolderKanban,
   Frame,
-  GalleryVerticalEnd,
+  LayoutDashboard,
   Map,
   PieChart,
+  Settings,
   Settings2,
   SquareTerminal,
+  Users,
 } from "lucide-react";
+import * as React from "react";
 
-import { NavMain } from "@/components/nav-main";
+import { Workspace } from "@/app/types";
+import useGetWorkspaces from "@/hooks/useGetWorkspaces";
+import { useAuth } from "@/app/providers/AuthProvider";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -25,150 +28,177 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { WorkspaceSwitcher } from "./workspace-switcher";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [activeWorkspace, setActiveWorkspace] = React.useState<Workspace>({
+    id: "",
+    name: "",
+    description: "",
+    createdAt: "",
+    updatedAt: "",
+    ownerId: "",
+  });
   const { session } = useAuth();
+  const { workspaceData, workspacesLoading, errorLoadingWorkspaces } =
+    useGetWorkspaces();
+
   // This is sample data.
-  const data = {
+  const sidebarData = {
     user: {
       name: session?.name,
       email: session?.email,
       avatar: session?.avatar,
     },
-    teams: [
+    // navMain: [
+    //   {
+    //     title: "Playground",
+    //     url: "#",
+    //     icon: SquareTerminal,
+    //     isActive: true,
+    //     items: [
+    //       {
+    //         title: "History",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Starred",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Settings",
+    //         url: "#",
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     title: "Models",
+    //     url: "#",
+    //     icon: Bot,
+    //     items: [
+    //       {
+    //         title: "Genesis",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Explorer",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Quantum",
+    //         url: "#",
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     title: "Documentation",
+    //     url: "#",
+    //     icon: BookOpen,
+    //     items: [
+    //       {
+    //         title: "Introduction",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Get Started",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Tutorials",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Changelog",
+    //         url: "#",
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     title: "Settings",
+    //     url: "#",
+    //     icon: Settings2,
+    //     items: [
+    //       {
+    //         title: "General",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Team",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Billing",
+    //         url: "#",
+    //       },
+    //       {
+    //         title: "Limits",
+    //         url: "#",
+    //       },
+    //     ],
+    //   },
+    // ],
+    menu: [
       {
-        name: "Acme Inc",
-        logo: GalleryVerticalEnd,
-        plan: "Enterprise",
+        name: "Dashboard",
+        url: "#",
+        icon: LayoutDashboard,
+        routeName: "dashboard",
       },
       {
-        name: "Acme Corp.",
-        logo: AudioWaveform,
-        plan: "Startup",
+        name: "Projects",
+        url: "#",
+        icon: FolderKanban,
+        routeName: "projects",
       },
       {
-        name: "Evil Corp.",
-        logo: Command,
-        plan: "Free",
+        name: "Calendar",
+        url: "#",
+        icon: CalendarDays,
+        routeName: "calendar",
+      },
+      {
+        name: "Team",
+        url: "#",
+        icon: Users,
+        routeName: "team",
+      },
+      {
+        name: "Settings",
+        url: "#",
+        icon: Settings,
+        routeName: "settings",
       },
     ],
-    navMain: [
-      {
-        title: "Playground",
-        url: "#",
-        icon: SquareTerminal,
-        isActive: true,
-        items: [
-          {
-            title: "History",
-            url: "#",
-          },
-          {
-            title: "Starred",
-            url: "#",
-          },
-          {
-            title: "Settings",
-            url: "#",
-          },
-        ],
-      },
-      {
-        title: "Models",
-        url: "#",
-        icon: Bot,
-        items: [
-          {
-            title: "Genesis",
-            url: "#",
-          },
-          {
-            title: "Explorer",
-            url: "#",
-          },
-          {
-            title: "Quantum",
-            url: "#",
-          },
-        ],
-      },
-      {
-        title: "Documentation",
-        url: "#",
-        icon: BookOpen,
-        items: [
-          {
-            title: "Introduction",
-            url: "#",
-          },
-          {
-            title: "Get Started",
-            url: "#",
-          },
-          {
-            title: "Tutorials",
-            url: "#",
-          },
-          {
-            title: "Changelog",
-            url: "#",
-          },
-        ],
-      },
-      {
-        title: "Settings",
-        url: "#",
-        icon: Settings2,
-        items: [
-          {
-            title: "General",
-            url: "#",
-          },
-          {
-            title: "Team",
-            url: "#",
-          },
-          {
-            title: "Billing",
-            url: "#",
-          },
-          {
-            title: "Limits",
-            url: "#",
-          },
-        ],
-      },
-    ],
-    projects: [
-      {
-        name: "Design Engineering",
-        url: "#",
-        icon: Frame,
-      },
-      {
-        name: "Sales & Marketing",
-        url: "#",
-        icon: PieChart,
-      },
-      {
-        name: "Travel",
-        url: "#",
-        icon: Map,
-      },
-    ],
+    workspaces: workspaceData,
   };
+
+  React.useEffect(() => {
+    if (workspaceData.length > 0) {
+      setActiveWorkspace(workspaceData[0]);
+    }
+  }, [workspaceData.length]);
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        {workspacesLoading ? (
+          "Loading.."
+        ) : errorLoadingWorkspaces ? (
+          "Error loading workspaces"
+        ) : (
+          <WorkspaceSwitcher
+            workspace={sidebarData.workspaces}
+            activeWorkspace={activeWorkspace}
+            setActiveWorkspace={setActiveWorkspace}
+          />
+        )}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavMain items={sidebarData.navMain} /> */}
+        <NavProjects menu={sidebarData.menu || []} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={sidebarData.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
