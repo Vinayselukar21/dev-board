@@ -32,11 +32,11 @@ api.interceptors.response.use(
           typeof window !== "undefined"
         ) {
           window.location.href = "/dashboard";
-        }
-        if (
+        }if (
           refreshRes.data.authStatus === "unauthenticated" &&
           typeof window !== "undefined"
         ) {
+          localStorage.removeItem("session");
           window.location.href = "/login";
         }
         api(originalRequest); // 🔁 retry original request

@@ -19,7 +19,7 @@ import * as React from "react";
 import { Workspace } from "@/app/types";
 import useGetWorkspaces from "@/hooks/useGetWorkspaces";
 import { useAuth } from "@/app/providers/AuthProvider";
-import { NavProjects } from "@/components/nav-projects";
+import { NavMenu } from "@/components/nav-menu";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -29,6 +29,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { WorkspaceSwitcher } from "./workspace-switcher";
+import workspaceStore from "@/store/workspaceStore";
+import sidebarStore from "@/store/sidebarStore";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeWorkspace, setActiveWorkspace] = React.useState<Workspace>({
@@ -39,9 +41,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     updatedAt: "",
     ownerId: "",
   });
+  const { setActiveWorkspace: setWorkspace } = workspaceStore.getState();
   const { session } = useAuth();
   const { workspaceData, workspacesLoading, errorLoadingWorkspaces } =
     useGetWorkspaces();
+
+  const { sidebar, setSidebar } = sidebarStore.getState();
 
   // This is sample data.
   const sidebarData = {
@@ -175,6 +180,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   React.useEffect(() => {
     if (workspaceData.length > 0) {
       setActiveWorkspace(workspaceData[0]);
+      setWorkspace(workspaceData[0]);
+      setSidebar({
+        ...sidebar,
+        workspaces: workspaceData,
+      });
     }
   }, [workspaceData.length]);
 
@@ -195,7 +205,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         {/* <NavMain items={sidebarData.navMain} /> */}
-        <NavProjects menu={sidebarData.menu || []} />
+        <NavMenu menu={sidebarData.menu || []} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={sidebarData.user} />

@@ -14,16 +14,18 @@ import useGetProjects from "@/hooks/useGetProjects";
 import { FolderKanban, Plus, Search, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { AddProjectDialog } from "./_components/add-project-dialog";
+import workspaceStore from "@/store/workspaceStore";
 
 export default function Page() {
   const { projectData, projectsLoading, errorLoadingProjects } =
     useGetProjects();
+  const { activeWorkspace } = workspaceStore.getState();
 
   return (
     <main className="flex flex-1 flex-col">
       {/* Header */}
       <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
-        <h1 className="text-lg font-semibold">Marketing Team Workspace</h1>
+        <h1 className="text-lg font-semibold">{activeWorkspace.name}</h1>
         <div className="ml-auto flex items-center gap-2">
           <form className="hidden sm:flex">
             <div className="relative">
@@ -55,9 +57,9 @@ export default function Page() {
         <div className="flex flex-col gap-6">
           {/* Workspace Info */}
           <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-bold">Marketing Team Workspace</h2>
+            <h2 className="text-2xl font-bold">{activeWorkspace.name}</h2>
             <p className="text-muted-foreground">
-              Collaborative workspace for all marketing projects and campaigns.
+              {activeWorkspace.description}
             </p>
           </div>
 

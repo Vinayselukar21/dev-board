@@ -32,9 +32,11 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { AddTaskDialog } from "./_components/add-task-dialog";
+import useGetProjectTasks from "@/hooks/useGetProjectTasks";
+import { Priority } from "@/app/types";
 
 // Define types for our Kanban board
-type Priority = "low" | "medium" | "high";
+
 type Status = "todo" | "in-progress" | "done";
 
 interface Task {
@@ -165,6 +167,8 @@ export default function ProjectPage() {
     },
   ]);
 
+  const { taskData, tasksLoading, errorLoadingTasks } = useGetProjectTasks(params.pid as string);
+console.log(taskData)
   // Get project name from URL parameter
   // const projectName = params.id
   //   .split("-")
@@ -297,32 +301,30 @@ export default function ProjectPage() {
 
             {/* Kanban Board */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {columns.map((column) => (
+              {taskData.map((column) => (
                 <div
                   key={column.id}
                   className="flex flex-col rounded-lg border bg-muted/30"
                   onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, column.id)}
+                  onDrop={(e) => handleDrop(e, column.id as Status)}
                 >
                   <div className="flex items-center justify-between border-b bg-muted/50 px-4 py-3">
-                    <h3 className="font-medium">{column.title}</h3>
-                    <Badge variant="outline">{column.tasks.length}</Badge>
+                    <h3 className="font-medium">{column.name}</h3>
+                    <Badge variant="outline">{column.tasks?.length}</Badge>
                   </div>
                   <div className="flex flex-col gap-2 p-2">
-                    {column.tasks.map((task) => (
+                    {column.tasks?.map((task) => (
                       <Card
                         key={task.id}
                         className="cursor-grab bg-background p-0"
                         draggable
-                        onDragStart={(e) =>
-                          handleDragStart(e, task.id, column.id)
-                        }
+                        onDragStart={(e) => handleDragStart(e, task.id, column.id as Status)}
                       >
                         <CardHeader className="p-3 pb-0">
                           <div className="flex items-start justify-between">
                             <CardTitle className="text-sm">
-                              {task.title}
                             </CardTitle>
+                              {task.title}
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
@@ -349,7 +351,7 @@ export default function ProjectPage() {
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant="outline"
-                                className={getPriorityColor(task.priority)}
+                                className={getPriorityColor(task.priority as Priority)}
                               >
                                 {task.priority}
                               </Badge>
@@ -366,13 +368,13 @@ export default function ProjectPage() {
                                 </div>
                               )}
                             </div>
-                            {task.assignee && (
+                            {/* {task.assignee && (
                               <Avatar className="h-6 w-6">
                                 <AvatarFallback className="text-[10px]">
                                   {task.assignee.initials}
                                 </AvatarFallback>
                               </Avatar>
-                            )}
+                            )} */}
                           </div>
                         </CardContent>
                       </Card>

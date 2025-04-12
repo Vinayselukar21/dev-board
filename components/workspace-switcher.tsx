@@ -1,9 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { ChevronsUpDown, Plus } from "lucide-react";
-import Link from "next/link";
 
+import { Workspace } from "@/app/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +18,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Workspace } from "@/app/types";
-import { useRouter } from "next/navigation";
-import workspaceStore from "@/store/workspaceStore";
 import sidebarStore from "@/store/sidebarStore";
+import { useRouter } from "next/navigation";
 
 export function WorkspaceSwitcher({
   workspace,

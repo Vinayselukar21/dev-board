@@ -28,17 +28,29 @@ const useGetWorkspaces = () => {
 
   const workspaceData: Array<Workspace> = Array.isArray(data?.workspaces)
     ? data?.workspaces.map(
-        ({ name, description, id, createdAt, updatedAt, ownerId }) => ({
+        ({
           name,
           description,
           id,
           createdAt,
           updatedAt,
           ownerId,
+          departments,
+          members,
+          projects,
+        }) => ({
+          name,
+          description,
+          id,
+          createdAt,
+          updatedAt,
+          ownerId,
+          departments,
+          members,
+          projects,
         })
       )
     : [];
-
 
   return { workspaceData, workspacesLoading, errorLoadingWorkspaces };
 };
