@@ -1,9 +1,12 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useAuth } from "@/app/providers/AuthProvider";
+import { DatePicker } from "@/components/date-picker-component";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -12,54 +15,109 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { CalendarIcon, Plus, X } from "lucide-react"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-
-// Sample team members data
-const teamMembers = [
-  { id: "1", name: "Alex Kim", initials: "AK", role: "Project Manager" },
-  { id: "2", name: "Sarah Johnson", initials: "SJ", role: "UX Designer" },
-  { id: "3", name: "Michael Chen", initials: "MC", role: "Content Strategist" },
-  { id: "4", name: "Jessica Taylor", initials: "JT", role: "Frontend Developer" },
-  { id: "5", name: "David Wilson", initials: "DW", role: "SEO Specialist" },
-]
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
+import workspaceStore from "@/store/workspaceStore";
+import { Plus, X } from "lucide-react";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import AddNewProject from "@/hooks/Functions/AddNewProject";
+import { toast } from "sonner";
 
 interface AddProjectDialogProps {
-  trigger?: React.ReactNode
+  trigger?: React.ReactNode;
 }
 
 export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([])
-  const [dueDate, setDueDate] = useState<Date>()
+  const queryClient = useQueryClient();
+  const { session } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [dueDate, setDueDate] = useState<Date | undefined>(new Date()); // task
+  const [category, setCategory] = useState<string>("");
+
+  // Active workspace
+  const { activeWorkspace } = workspaceStore.getState();
+
+  // Get workspace members
+  const { memberData, membersLoading, errorLoadingMembers } =
+    useGetWorkspaceMembers();
+
+  // Add new project
+
+  // If memberData is undefined or not properly structured, fallback to empty array
+  const members = Array.isArray(memberData) ? memberData : [];
 
   const toggleMember = (memberId: string) => {
-    if (selectedMembers.includes(memberId)) {
-      setSelectedMembers(selectedMembers.filter((id) => id !== memberId))
-    } else {
-      setSelectedMembers([...selectedMembers, memberId])
-    }
-  }
+    setSelectedMembers((prev) =>
+      prev.includes(memberId)
+        ? prev.filter((id) => id !== memberId)
+        : [...prev, memberId]
+    );
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle project creation logic here
-    setOpen(false)
-    // Reset form
-    setSelectedMembers([])
-    setDueDate(undefined)
-  }
+  // Close popover when date is selected
+  // useEffect(() => {
+  //   if (dueDate && popoverOpen) {
+  //     setPopoverOpen(false);
+  //   }
+  // }, [dueDate]);
+
+  const AddNewProjectMutation = useMutation({
+    mutationFn: AddNewProject,
+    onSuccess: () => {
+      // Invalidate and refetch
+      toast.success("Project has been created");
+      // Reset and close
+      setSelectedMembers([]);
+      setDueDate(undefined);
+      setCategory("");
+      setOpen(false);
+      // Invalidate projects
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    },
+    onError: (error) => {
+      toast.error("Failed to create project");
+      console.error("Error creating project:", error);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const projectName = formData.get("project-name") as string;
+    const projectDescription = formData.get("project-description") as string;
+
+    const payload = {
+      name: projectName,
+      description: projectDescription,
+      status: "active",
+      deadline: dueDate?.toISOString(),
+      workspaceId: activeWorkspace?.id,
+      createdById: session.id,
+      members: selectedMembers,
+    };
+
+    AddNewProjectMutation.mutate(payload);
+  };
+
+  const handleCancel = () => {
+    setSelectedMembers([]);
+    setDueDate(undefined);
+    setCategory("");
+    setOpen(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -75,17 +133,25 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
-            <DialogDescription>Add a new project to your workspace.</DialogDescription>
+            <DialogDescription>
+              Add a new project to your workspace.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="project-name">Project Name</Label>
-              <Input id="project-name" placeholder="Enter project name" required />
+              <Input
+                id="project-name"
+                name="project-name"
+                placeholder="Enter project name"
+                required
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="project-description">Description</Label>
               <Textarea
                 id="project-description"
+                name="project-description"
                 placeholder="Describe the project and its goals"
                 className="min-h-[100px]"
               />
@@ -93,7 +159,7 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="project-category">Category</Label>
-                <Select>
+                <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger id="project-category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
@@ -108,20 +174,7 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
               </div>
               <div className="grid gap-2">
                 <Label>Due Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn("w-full justify-start text-left font-normal", !dueDate && "text-muted-foreground")}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dueDate ? format(dueDate, "PPP") : "Select a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker date={dueDate} setDate={setDueDate} />
               </div>
             </div>
             <div className="grid gap-2">
@@ -129,53 +182,83 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
               <div className="flex flex-wrap gap-2">
                 {selectedMembers.length > 0 ? (
                   selectedMembers.map((memberId) => {
-                    const member = teamMembers.find((m) => m.id === memberId)
-                    if (!member) return null
+                    const member = members.find((m) => m.id === memberId);
+                    if (!member) return null;
+
+                    // Check if member has expected structure
+                    const name = member.user?.name || "Unknown";
+
                     return (
-                      <Badge key={member.id} variant="secondary" className="flex items-center gap-1">
-                        {member.name}
+                      <Badge
+                        key={member.id}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
+                        {name}
                         <button
                           type="button"
                           onClick={() => toggleMember(member.id)}
                           className="ml-1 rounded-full p-0.5 hover:bg-muted"
                         >
                           <X className="h-3 w-3" />
-                          <span className="sr-only">Remove {member.name}</span>
+                          <span className="sr-only">Remove {name}</span>
                         </button>
                       </Badge>
-                    )
+                    );
                   })
                 ) : (
-                  <div className="text-sm text-muted-foreground">No team members selected</div>
+                  <div className="text-sm text-muted-foreground">
+                    No team members selected
+                  </div>
                 )}
               </div>
               <div className="mt-2 max-h-[150px] overflow-y-auto rounded-md border p-2">
-                {teamMembers.map((member) => (
-                  <div key={member.id} className="flex items-center space-x-2 py-2">
-                    <Checkbox
-                      id={`member-${member.id}`}
-                      checked={selectedMembers.includes(member.id)}
-                      onCheckedChange={() => toggleMember(member.id)}
-                    />
-                    <Label
-                      htmlFor={`member-${member.id}`}
-                      className="flex flex-1 cursor-pointer items-center gap-2 text-sm font-normal"
-                    >
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-[10px]">{member.initials}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-1 justify-between">
-                        <span>{member.name}</span>
-                        <span className="text-xs text-muted-foreground">{member.role}</span>
-                      </div>
-                    </Label>
+                {membersLoading ? (
+                  <div className="py-2 text-center text-sm text-muted-foreground">
+                    Loading members...
                   </div>
-                ))}
+                ) : members.length > 0 ? (
+                  members.map((member) => {
+                    // Check if member has expected structure
+                    const name = member.user?.name || "Unknown";
+                    const role = member.role || "Team Member";
+
+                    return (
+                      <div
+                        key={member.id}
+                        className="flex items-center space-x-2 py-2"
+                      >
+                        <Checkbox
+                          id={`member-${member.id}`}
+                          checked={selectedMembers.includes(member.id)}
+                          onCheckedChange={() => toggleMember(member.id)}
+                        />
+                        <Label
+                          htmlFor={`member-${member.id}`}
+                          className="flex flex-1 cursor-pointer items-center gap-2 text-sm font-normal"
+                        >
+                          <div className="flex flex-1 justify-between">
+                            <span>{name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {role}
+                            </span>
+                          </div>
+                        </Label>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="py-2 text-center text-sm text-muted-foreground">
+                    {errorLoadingMembers
+                      ? "Error loading members"
+                      : "No members available"}
+                  </div>
+                )}
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
             <Button type="submit">Create Project</Button>
@@ -183,5 +266,5 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

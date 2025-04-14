@@ -3,11 +3,11 @@
 import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
-import { TaskStage } from "../app/types";
+import { Project, TaskStage } from "../app/types";
 
 interface QueryResponse {
   message: string;
-  tasks: TaskStage[];
+  project: Project;
 }
 
 const useGetProjectTasks = (projectId: string) => {
@@ -16,30 +16,18 @@ const useGetProjectTasks = (projectId: string) => {
     isLoading: tasksLoading,
     error: errorLoadingTasks,
   } = useQuery<QueryResponse, Error>({
-    queryKey: ["tasks", projectId],
+    queryKey: ["projectTasks", projectId],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/projects/${projectId}/tasks`
+        `/projects/getbyid/${projectId}`
       );
       return res.data;
     },
     retry: 1,
     enabled: !!projectId,
   });
-  const taskData: Array<TaskStage> = Array.isArray(data?.tasks)
-    ? data?.tasks.map(
-        ({ id, name, createdAt, updatedAt, projectId, project, tasks }) => ({
-          id,
-          name,
-          createdAt,
-          updatedAt,
-          projectId,
-          project,
-          tasks,
-        })
-      )
-    : [];
 
-  return { taskData, tasksLoading, errorLoadingTasks };
+  const projectTaskData: Project | null = data?.project ? data.project : null;
+  return { projectTaskData, tasksLoading, errorLoadingTasks };
 };
 export default useGetProjectTasks;

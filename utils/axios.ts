@@ -1,6 +1,6 @@
 // utils/axios.ts
 import axios from "axios";
-
+const publicRoutes = ["/login", "/signup"];
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_ENV === "development"
     ? process.env.NEXT_PUBLIC_BACKEND_URL_DEV
@@ -14,39 +14,37 @@ const api = axios.create({
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
+    console.log("axios func");
     let originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
+      console.log("inside retry");
       try {
-        const refreshRes: {
-          data: {
-            authStatus: string;
-            accessToken: string;
-            message: string;
-          };
-        } = await api.get("/auth/refresh");
-        console.log(refreshRes);
-        if (
-          refreshRes.data.authStatus === "authenticated" &&
-          typeof window !== "undefined"
-        ) {
-          window.location.href = "/dashboard";
-        }if (
-          refreshRes.data.authStatus === "unauthenticated" &&
-          typeof window !== "undefined"
-        ) {
-          localStorage.removeItem("session");
-          window.location.href = "/login";
-        }
-        api(originalRequest); // 🔁 retry original request
-        return;
+        console.log("inside try");
+        await api
+          .get("/auth/refresh")
+          .then((res) => {
+            console.log(res.data, "inside try: in axios file");
+            // ✅ Redirect to dashboard
+            if (
+              typeof window !== "undefined" &&
+              publicRoutes.includes(window.location.pathname)
+            ) {
+              api(originalRequest); // 🔁 retry original request
+              window.location.href = "/dashboard";
+            }
+          })
+          .catch((err) => {
+            console.log(err, "catch: in axios file");
+            if (
+              typeof window !== "undefined" &&
+              !publicRoutes.includes(window.location.pathname)
+            ) {
+              window.location.href = "/login";
+            }
+          });
       } catch (refreshErr) {
         console.error("Refresh token failed:", refreshErr);
-        // ✅ Redirect to login page
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
-        }
         return Promise.reject(refreshErr);
       }
     }

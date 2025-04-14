@@ -1,8 +1,9 @@
 "use client";
 
+import { useAuth } from "@/app/providers/AuthProvider";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useAuth } from "@/app/providers/AuthProvider";
+import SidebarLayoutProvider from "./DashboardLayoutProvider";
 
 const publicRoutes = ["/login", "/signup"];
 
@@ -10,7 +11,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useAuth(); // make sure `loading` is handled
   const pathname = usePathname();
   const router = useRouter();
-
   useEffect(() => {
     if (!loading) {
       const isPublic = publicRoutes.includes(pathname);
@@ -20,15 +20,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         router.push("/login");
       } else if (session && isPublic) {
         // Authenticated → redirect to workspace or home
-        router.push("/dashboard"); // or wherever
+        router.push("/dashboard");
       }
     }
   }, [session, loading, pathname]);
 
   // Optionally show nothing or loader while deciding
-  if (loading) return null;
+  if (loading) return "Loading...";
 
-  return <>{children}</>;
+  if (session && !publicRoutes.includes(pathname))
+    return <SidebarLayoutProvider>{children}</SidebarLayoutProvider>;
+
+  if (publicRoutes.includes(pathname)) return <>{children}</>;
+  return null;
 };
 
 export default ProtectedRoute;

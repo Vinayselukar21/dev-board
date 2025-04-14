@@ -25,7 +25,7 @@ export default function Page() {
     <main className="flex flex-1 flex-col">
       {/* Header */}
       <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
-        <h1 className="text-lg font-semibold">{activeWorkspace.name}</h1>
+        <h1 className="text-lg font-semibold">Projects</h1>
         <div className="ml-auto flex items-center gap-2">
           <form className="hidden sm:flex">
             <div className="relative">
@@ -37,10 +37,6 @@ export default function Page() {
               />
             </div>
           </form>
-          {/* <Button size="sm" className="h-8 gap-1">
-            <Plus className="h-4 w-4" />
-            New Project
-          </Button> */}
           <AddProjectDialog
             trigger={
               <Button size="sm" className="h-8 gap-1">
@@ -55,21 +51,13 @@ export default function Page() {
       {/* Content */}
       <div className="flex-1 p-4 lg:p-6">
         <div className="flex flex-col gap-6">
-          {/* Workspace Info */}
-          <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-bold">{activeWorkspace.name}</h2>
-            <p className="text-muted-foreground">
-              {activeWorkspace.description}
-            </p>
-          </div>
-
           {/* Tabs */}
           <Tabs defaultValue="projects">
             <TabsList>
               <TabsTrigger value="projects">Projects</TabsTrigger>
               <TabsTrigger value="activity">Activity</TabsTrigger>
               <TabsTrigger value="members">Members</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
+              {/* <TabsTrigger value="settings">Settings</TabsTrigger> */}
             </TabsList>
             <TabsContent value="projects" className="pt-4">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -167,46 +155,27 @@ export default function Page() {
                   <Button size="sm">Invite Member</Button>
                 </div>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between rounded-lg border p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-muted"></div>
-                      <div>
-                        <p className="font-medium">Alex Kim</p>
-                        <p className="text-xs text-muted-foreground">
-                          alex@example.com
-                        </p>
+                  {activeWorkspace.members &&
+                    activeWorkspace.members.map((member) => (
+                      <div className="flex items-center justify-between rounded-lg border p-3" key={member.id}>
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-muted"></div>
+                          <div>
+                            <p className="font-medium">{member.user.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {member.user.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-sm text-muted-foreground">Admin</div>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg border p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-muted"></div>
-                      <div>
-                        <p className="font-medium">Sarah Johnson</p>
-                        <p className="text-xs text-muted-foreground">
-                          sarah@example.com
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-sm text-muted-foreground">Member</div>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg border p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-muted"></div>
-                      <div>
-                        <p className="font-medium">Michael Chen</p>
-                        <p className="text-xs text-muted-foreground">
-                          michael@example.com
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-sm text-muted-foreground">Member</div>
-                  </div>
+                    ))}
                 </div>
               </div>
             </TabsContent>
-            <TabsContent value="settings" className="pt-4">
+            {/* <TabsContent value="settings" className="pt-4">
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Workspace Settings</h3>
                 <div className="space-y-4">
@@ -237,7 +206,7 @@ export default function Page() {
                   <Button>Save Changes</Button>
                 </div>
               </div>
-            </TabsContent>
+            </TabsContent> */}
           </Tabs>
         </div>
       </div>

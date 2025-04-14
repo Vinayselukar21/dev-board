@@ -65,6 +65,8 @@ export interface Project {
   createdById: string;
   createdBy?: User;
   tasks?: Task[];
+  taskStages?: TaskStage[];
+  members?: ProjectMember[];
 }
 
 export interface TaskStage {

@@ -2,6 +2,7 @@
 
 import type React from "react";
 
+import { Priority, TaskStage } from "@/app/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,20 +21,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import useGetProjectTasks from "@/hooks/useGetProjectTasks";
 import {
   ArrowLeft,
   CalendarDays,
   MoreHorizontal,
-  Plus,
   Search,
   Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AddTaskDialog } from "./_components/add-task-dialog";
-import useGetProjectTasks from "@/hooks/useGetProjectTasks";
-import { Priority } from "@/app/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ChangeTaskStage from "@/hooks/Functions/ChangeTaskStage";
+import { toast } from "sonner";
+import DeleteTask from "@/hooks/Functions/DeleteTask";
 
 // Define types for our Kanban board
 
@@ -52,128 +55,62 @@ interface Task {
   dueDate?: string;
 }
 
-interface Column {
-  id: Status;
-  title: string;
-  tasks: Task[];
-}
-
 export default function ProjectPage() {
+  const queryClient = useQueryClient();
   const params = useParams();
   // Sample data for the Kanban board
-  const [columns, setColumns] = useState<Column[]>([
-    {
-      id: "todo",
-      title: "To Do",
-      tasks: [
-        {
-          id: "task-1",
-          title: "Research competitors",
-          description: "Analyze top 5 competitors' websites and features",
-          priority: "medium",
-          assignee: {
-            name: "Alex Kim",
-            initials: "AK",
-          },
-          dueDate: "2023-06-15",
-        },
-        {
-          id: "task-2",
-          title: "Create wireframes",
-          description:
-            "Design initial wireframes for homepage and product pages",
-          priority: "high",
-          assignee: {
-            name: "Sarah Johnson",
-            initials: "SJ",
-          },
-          dueDate: "2023-06-18",
-        },
-        {
-          id: "task-3",
-          title: "SEO audit",
-          description: "Perform SEO analysis of current website",
-          priority: "low",
-          dueDate: "2023-06-20",
-        },
-      ],
-    },
-    {
-      id: "in-progress",
-      title: "In Progress",
-      tasks: [
-        {
-          id: "task-4",
-          title: "User interviews",
-          description: "Conduct interviews with 5 key users",
-          priority: "high",
-          assignee: {
-            name: "Michael Chen",
-            initials: "MC",
-          },
-          dueDate: "2023-06-14",
-        },
-        {
-          id: "task-5",
-          title: "Content inventory",
-          description: "Catalog all existing website content",
-          priority: "medium",
-          assignee: {
-            name: "Alex Kim",
-            initials: "AK",
-          },
-          dueDate: "2023-06-16",
-        },
-      ],
-    },
-    {
-      id: "done",
-      title: "Done",
-      tasks: [
-        {
-          id: "task-6",
-          title: "Project kickoff",
-          description: "Initial meeting with stakeholders",
-          priority: "high",
-          assignee: {
-            name: "Sarah Johnson",
-            initials: "SJ",
-          },
-          dueDate: "2023-06-10",
-        },
-        {
-          id: "task-7",
-          title: "Requirements gathering",
-          description: "Document all project requirements",
-          priority: "medium",
-          assignee: {
-            name: "Michael Chen",
-            initials: "MC",
-          },
-          dueDate: "2023-06-12",
-        },
-        {
-          id: "task-8",
-          title: "Budget approval",
-          description: "Get final budget sign-off from finance",
-          priority: "high",
-          assignee: {
-            name: "Alex Kim",
-            initials: "AK",
-          },
-          dueDate: "2023-06-08",
-        },
-      ],
-    },
-  ]);
+  const [columns, setColumns] = useState<TaskStage[]>([]);
 
-  const { taskData, tasksLoading, errorLoadingTasks } = useGetProjectTasks(params.pid as string);
-console.log(taskData)
-  // Get project name from URL parameter
-  // const projectName = params.id
-  //   .split("-")
-  //   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-  //   .join(" ")
+  const { projectTaskData, tasksLoading, errorLoadingTasks } =
+    useGetProjectTasks(params.pid as string);
+  console.log(projectTaskData);
+  const taskStages = projectTaskData?.taskStages?.map((stage) => ({
+    id: stage.id,
+    title: stage.name,
+  }));
+
+  const projectMembers = projectTaskData?.members?.map((member) => ({
+    id: member.id,
+    name: member.member.user.name as string,
+  }));
+
+  useEffect(() => {
+    const taskColumns = projectTaskData?.taskStages;
+    if (taskColumns) {
+      setColumns(taskColumns);
+    }
+  }, [projectTaskData?.taskStages]);
+  console.log(columns);
+
+
+   const ChangeTaskStageMutation = useMutation({
+      mutationFn: ChangeTaskStage,
+      onSuccess: () => {
+        // Invalidate and refetch
+        toast.success("Task has been moved");
+       
+        // Invalidate projects
+        queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
+      },
+      onError: (error) => {
+        toast.error("Failed to move project");
+        console.error("Error moving project:", error);
+      },
+    });
+    const DeleteTaskMutation = useMutation({
+      mutationFn: DeleteTask,
+      onSuccess: () => {
+        // Invalidate and refetch
+        toast.success("Task has been deleted");
+       
+        // Invalidate projects
+        queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
+      },
+      onError: (error) => {
+        toast.error("Failed to delete project");
+        console.error("Error deleting project:", error);
+      },
+    });
 
   // Function to handle drag start
   const handleDragStart = (
@@ -200,34 +137,40 @@ console.log(taskData)
     if (sourceColumnId === targetColumnId) return;
 
     // Create a new state
-    const newColumns = [...columns];
+    const newColumns: Array<TaskStage> = columns ? [...columns] : [];
 
     // Find the source column
     const sourceColumnIndex = newColumns.findIndex(
       (col) => col.id === sourceColumnId
     );
+    if (newColumns !== undefined  && sourceColumnIndex !== -1 && newColumns[sourceColumnIndex]?.tasks !== undefined) {
+      // Find the task in the source column
+      const taskIndex = newColumns[sourceColumnIndex]?.tasks.findIndex(
+        (task) => task.id === taskId
+      );
+      const task = newColumns[sourceColumnIndex]?.tasks[taskIndex];
 
-    // Find the task in the source column
-    const taskIndex = newColumns[sourceColumnIndex].tasks.findIndex(
-      (task) => task.id === taskId
-    );
-    const task = newColumns[sourceColumnIndex].tasks[taskIndex];
+      // Remove the task from the source column
+      newColumns[sourceColumnIndex]?.tasks.splice(taskIndex, 1);
 
-    // Remove the task from the source column
-    newColumns[sourceColumnIndex].tasks.splice(taskIndex, 1);
+      // Find the target column
+      const targetColumnIndex = newColumns.findIndex(
+        (col) => col.id === targetColumnId
+      );
 
-    // Find the target column
-    const targetColumnIndex = newColumns.findIndex(
-      (col) => col.id === targetColumnId
-    );
-
-    // Add the task to the target column
-    newColumns[targetColumnIndex].tasks.push(task);
-
-    // Update the state
-    setColumns(newColumns);
-  };
-
+      if(newColumns[targetColumnIndex].tasks !== undefined) {
+        // Add the task to the target column
+        newColumns[targetColumnIndex].tasks.push(task);
+        // Update the state
+        setColumns(newColumns);
+        // Update the task stage
+        ChangeTaskStageMutation.mutate({
+          taskId,
+          stageId: targetColumnId,
+        });
+      }
+}
+};
   // Function to get priority badge color
   const getPriorityColor = (priority: Priority) => {
     switch (priority) {
@@ -241,6 +184,7 @@ console.log(taskData)
         return "bg-gray-100 text-gray-800 hover:bg-gray-100";
     }
   };
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       {/* Main Content */}
@@ -264,7 +208,13 @@ console.log(taskData)
                 />
               </div>
             </form>
-            <AddTaskDialog projectId={params.pid as string} />
+            <AddTaskDialog
+              projectId={params.pid as string}
+              taskStages={taskStages}
+              defaultStatus={taskStages?.[0].id as string}
+              // project members
+              projectMembers={projectMembers}
+            />
           </div>
         </header>
 
@@ -274,7 +224,7 @@ console.log(taskData)
             {/* Project Info */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                {/* <h2 className="text-2xl font-bold">{projectName}</h2> */}
+                <h2 className="text-2xl font-bold">{projectTaskData?.name}</h2>
                 <Button variant="outline" size="sm">
                   <Settings className="mr-2 h-4 w-4" />
                   Project Settings
@@ -301,7 +251,7 @@ console.log(taskData)
 
             {/* Kanban Board */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {taskData.map((column) => (
+              {columns?.map((column) => (
                 <div
                   key={column.id}
                   className="flex flex-col rounded-lg border bg-muted/30"
@@ -318,13 +268,15 @@ console.log(taskData)
                         key={task.id}
                         className="cursor-grab bg-background p-0"
                         draggable
-                        onDragStart={(e) => handleDragStart(e, task.id, column.id as Status)}
+                        onDragStart={(e) =>
+                          handleDragStart(e, task.id, column.id as Status)
+                        }
                       >
                         <CardHeader className="p-3 pb-0">
                           <div className="flex items-start justify-between">
                             <CardTitle className="text-sm">
-                            </CardTitle>
                               {task.title}
+                            </CardTitle>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
@@ -338,7 +290,7 @@ console.log(taskData)
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem>Edit</DropdownMenuItem>
                                 <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                                <DropdownMenuItem>Delete</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => DeleteTaskMutation.mutate(task.id)}>Delete</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
@@ -351,7 +303,9 @@ console.log(taskData)
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant="outline"
-                                className={getPriorityColor(task.priority as Priority)}
+                                className={getPriorityColor(
+                                  task.priority as Priority
+                                )}
                               >
                                 {task.priority}
                               </Badge>

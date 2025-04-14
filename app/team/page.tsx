@@ -128,7 +128,6 @@ export default function TeamPage() {
   const { activeWorkspace } = workspaceStore.getState();
   const { memberData, membersLoading, errorLoadingMembers } =
     useGetWorkspaceMembers();
-  console.log(memberData);
   return (
     <div className="flex min-h-screen w-full flex-col">
       {/* Main Content */}
@@ -161,14 +160,6 @@ export default function TeamPage() {
         {/* Content */}
         <div className="flex-1 p-4 lg:p-6">
           <div className="flex flex-col gap-6">
-            {/* Team Info */}
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-bold">Team Members</h2>
-              <p className="text-muted-foreground">
-                Manage your team members and their access to projects.
-              </p>
-            </div>
-
             {/* Tabs */}
             <Tabs defaultValue="all">
               <TabsList>
