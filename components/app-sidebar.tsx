@@ -33,17 +33,17 @@ import workspaceStore from "@/store/workspaceStore";
 import sidebarStore from "@/store/sidebarStore";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [activeWorkspace, setActiveWorkspace] = React.useState<Workspace>({
-    id: "",
-    name: "",
-    description: "",
-    createdAt: "",
-    updatedAt: "",
-    ownerId: "",
-  });
-  const { setActiveWorkspace: setWorkspace } = workspaceStore.getState();
+  // const [activeWorkspace, setActiveWorkspace] = React.useState<Workspace>({
+  //   id: "",
+  //   name: "",
+  //   description: "",
+  //   createdAt: "",
+  //   updatedAt: "",
+  //   ownerId: "",
+  // });
+  const { activeWorkspace,  setActiveWorkspace } = workspaceStore.getState();
   const { session } = useAuth();
-  const { workspaceData, workspacesLoading, errorLoadingWorkspaces } =
+  const { workspaceData, workspacesLoading, errorLoadingWorkspaces, workspaceDataLoadedSuccess } =
     useGetWorkspaces();
 
   const { sidebar, setSidebar } = sidebarStore.getState();
@@ -176,17 +176,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
     workspaces: workspaceData,
   };
-
+// console.log({ workspaceData, workspacesLoading, errorLoadingWorkspaces, workspaceDataLoadedSuccess })
   React.useEffect(() => {
     if (workspaceData.length > 0) {
       setActiveWorkspace(workspaceData[0]);
-      setWorkspace(workspaceData[0]);
+      // setWorkspace(workspaceData[0]);
       setSidebar({
         ...sidebar,
         workspaces: workspaceData,
       });
     }
-  }, [workspaceData.length]);
+  }, [workspaceDataLoadedSuccess]);
 
   return (
     <Sidebar collapsible="icon" {...props}>

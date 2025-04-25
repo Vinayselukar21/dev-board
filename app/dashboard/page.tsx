@@ -1,3 +1,4 @@
+"use client";
 import {
   Card,
   CardContent,
@@ -13,11 +14,19 @@ import {
   LineChart,
   Search,
   Settings,
-  Users
+  Users,
 } from "lucide-react";
+import { useAuth } from "../providers/AuthProvider";
+import useGetDashboard from "@/hooks/useGetDashboard";
 
 export default function Page() {
-  return (
+  const { session } = useAuth();
+  const { dashboardData, dashboardLoading, errorLoadingDashboard } =
+    useGetDashboard();
+  console.log(dashboardData, "dashboardData");
+  return dashboardLoading ? (
+    "Loading..."
+  ) : (
     <div className="flex min-h-screen w-full flex-col">
       <main className="flex flex-1 flex-col">
         {/* Header */}
@@ -42,7 +51,9 @@ export default function Page() {
           <div className="flex flex-col gap-6">
             {/* Welcome Section */}
             <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-bold">Good morning, Alex</h2>
+              <h2 className="text-2xl font-bold">
+                Good morning, {session?.name}
+              </h2>
               <p className="text-muted-foreground">
                 Here's what's happening in your workspace today.
               </p>
@@ -58,7 +69,9 @@ export default function Page() {
                   <FolderKanban className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">12</div>
+                  <div className="text-2xl font-bold">
+                    {dashboardData?.projectCard?.count}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     +2 from last month
                   </p>
@@ -72,7 +85,9 @@ export default function Page() {
                   <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">64</div>
+                  <div className="text-2xl font-bold">
+                    {dashboardData?.taskCard?.completedTaskCount}
+                  </div>
                   <p className="text-xs text-muted-foreground">+12 this week</p>
                 </CardContent>
               </Card>
@@ -84,7 +99,9 @@ export default function Page() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">8</div>
+                  <div className="text-2xl font-bold">
+                    {dashboardData?.teamCard?.count}
+                  </div>
                   <p className="text-xs text-muted-foreground">+1 this month</p>
                 </CardContent>
               </Card>
@@ -115,51 +132,19 @@ export default function Page() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium">
-                          Website Redesign
+                    {dashboardData?.projectProgressCard?.map((project: any) => (
+                      <div className="space-y-2" key={project.id}>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-medium">
+                            {project?.name}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {project?.progress?.percentage}%
+                          </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">65%</div>
+                        <Progress value={project?.progress?.percentage} />
                       </div>
-                      <Progress value={65} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium">
-                          Social Media Campaign
-                        </div>
-                        <div className="text-sm text-muted-foreground">42%</div>
-                      </div>
-                      <Progress value={42} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium">
-                          Content Calendar
-                        </div>
-                        <div className="text-sm text-muted-foreground">78%</div>
-                      </div>
-                      <Progress value={78} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium">
-                          Email Newsletter
-                        </div>
-                        <div className="text-sm text-muted-foreground">25%</div>
-                      </div>
-                      <Progress value={25} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium">
-                          Product Launch
-                        </div>
-                        <div className="text-sm text-muted-foreground">12%</div>
-                      </div>
-                      <Progress value={12} />
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

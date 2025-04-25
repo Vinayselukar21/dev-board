@@ -14,13 +14,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!loading) {
       const isPublic = publicRoutes.includes(pathname);
-
       if (!session && !isPublic) {
         // Not authenticated → redirect to login
+        console.log("pushing to loginnnn --------------------------->")
         router.push("/login");
       } else if (session && isPublic) {
         // Authenticated → redirect to workspace or home
-        router.push("/dashboard");
+        console.log("pushing to pathname --------------------------->")
+        router.push(pathname);
       }
     }
   }, [session, loading, pathname]);

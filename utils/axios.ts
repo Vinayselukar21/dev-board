@@ -27,8 +27,9 @@ api.interceptors.response.use(
             console.log(res.data, "inside try: in axios file");
             // ✅ Redirect to dashboard
             if (
-              typeof window !== "undefined" &&
-              publicRoutes.includes(window.location.pathname)
+              typeof window !== "undefined" 
+              // &&
+              // publicRoutes.includes(window.location.pathname)
             ) {
               api(originalRequest); // 🔁 retry original request
               window.location.href = "/dashboard";

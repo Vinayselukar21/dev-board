@@ -24,6 +24,9 @@ const workspaceStore = createStore<WorkspaceStore>()(
         createdAt: "",
         updatedAt: "",
         ownerId: "",
+        departments:[],
+        members:[],
+        projects:[],
       },
       setActiveWorkspace: (
         activeWorkspace: WorkspaceStoreState["activeWorkspace"]

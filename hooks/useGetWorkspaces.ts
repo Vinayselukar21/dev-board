@@ -14,6 +14,7 @@ const useGetWorkspaces = () => {
     data,
     isLoading: workspacesLoading,
     error: errorLoadingWorkspaces,
+    isSuccess: workspaceDataLoadedSuccess
   } = useQuery<QueryResponse, Error>({
     queryKey: ["workspaces", session?.id],
     queryFn: async () => {
@@ -52,6 +53,6 @@ const useGetWorkspaces = () => {
       )
     : [];
 
-  return { workspaceData, workspacesLoading, errorLoadingWorkspaces };
+  return { workspaceData, workspacesLoading, errorLoadingWorkspaces, workspaceDataLoadedSuccess };
 };
 export default useGetWorkspaces;

@@ -50,7 +50,7 @@ interface AddTaskDialogProps {
 export function AddTaskDialog({
   trigger,
   projectId,
-  taskStages,
+  taskStages = [],
   defaultStatus,
   projectMembers,
 }: AddTaskDialogProps) {
@@ -61,12 +61,13 @@ export function AddTaskDialog({
   const [assignee, setAssignee] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [stage, setStage] = useState<string>(defaultStatus);
-
+console.log("projectMembers", projectMembers);
+console.log("taskStages", taskStages);
   const AddNewTaskMutation = useMutation({
     mutationFn: AddNewTask,
     onSuccess: () => {
       // Invalidate and refetch
-      toast.success("Task has been created");
+  toast.success("Task has been created");
       // Handle task creation logic here
       setOpen(false);
       // Reset form
@@ -101,7 +102,7 @@ export function AddTaskDialog({
       status: "",
       projectId: projectId as string,
       stageId: stage,
-      createdById: session.id,
+      createdById: session?.id,
     };
 
     AddNewTaskMutation.mutate(payload);
@@ -174,8 +175,8 @@ export function AddTaskDialog({
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {taskStages?.map((stage) => (
-                      <SelectItem key={stage.id} value={stage.id}>
+                    {taskStages && taskStages?.map((stage) => (
+                      <SelectItem key={stage?.id} value={stage?.id}>
                         {stage.title}
                       </SelectItem>
                     ))}
@@ -192,8 +193,8 @@ export function AddTaskDialog({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {projectMembers?.map((member) => (
-                      <SelectItem key={member.id} value={member.id}>
+                    {projectMembers && projectMembers?.map((member) => (
+                      <SelectItem key={member?.id} value={member?.id}>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
                             <AvatarFallback>{member.name}</AvatarFallback>

@@ -18,6 +18,17 @@ interface AuthContextType {
   logoutUser: () => Promise<void>;
 }
 
+interface WorkspaceMember {
+  id: string;
+  role: 'admin' | 'member' | 'viewer'; // Add other roles if needed
+  invitedAt: string; // ISO string (use `Date` if you prefer to parse it)
+  accepted: boolean;
+  userId: string;
+  workspaceId: string;
+  departmentId: string;
+};
+
+
 export interface AuthResponse {
   message: string;
   accessToken: string;
@@ -28,6 +39,7 @@ export interface AuthResponse {
     name: string;
     id: number;
     avatar: string | null;
+    memberships: WorkspaceMember[];
   };
 }
 
@@ -44,13 +56,13 @@ export function useAuth() {
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false); // default to true
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<any>(undefined);
 
-  // 🔁 Load session from localStorage on first mount
+  // 🔁 Load session from session storage on first mount
   useEffect(() => {
-    const localSession = localStorage.getItem("session");
-    if (localSession) {
-      setSession(JSON.parse(localSession));
+    const sessionString = sessionStorage.getItem("session");
+    if (sessionString) {
+      setSession(JSON.parse(sessionString));
     }
   }, []);
 
@@ -66,16 +78,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             email: res.data.user.email,
             avatar: res.data.user?.avatar,
             authStatus: res.data.authStatus,
+            memberships: res.data.user.memberships,
           };
           setSession(userSession);
-          localStorage.setItem("session", JSON.stringify(userSession));
+          sessionStorage.setItem("session", JSON.stringify(userSession));
         } else {
-          setSession(null);
-          localStorage.removeItem("session");
+          setSession(undefined);
+          sessionStorage.removeItem("session");
         }
       } catch (err) {
-        setSession(null);
-        localStorage.removeItem("session");
+        setSession(undefined);
+        sessionStorage.removeItem("session");
         if (window.location.pathname !== "/login") {
           router.push("/login");
         }
@@ -84,15 +97,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    fetchUser();
-  }, []);
+    if (session === undefined) {
+      fetchUser();
+    }
+  }, [session]);
 
-  // 🔐 Store session changes in localStorage
+  // 🔐 Store session changes in session storage
   useEffect(() => {
     if (session) {
-      localStorage.setItem("session", JSON.stringify(session));
+      sessionStorage.setItem("session", JSON.stringify(session));
     } else {
-      localStorage.removeItem("session");
+      sessionStorage.removeItem("session");
     }
   }, [session]);
 
@@ -110,6 +125,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           email: response.data.user.email,
           avatar: response.data.user?.avatar,
           authStatus: response.data.authStatus,
+          memberships: response.data.user.memberships,
         };
         setSession(userSession);
         router.push("/dashboard");
@@ -151,8 +167,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     try {
       await axios.post("/auth/logout");
-      setSession(null);
-      localStorage.removeItem("session");
+      setSession(undefined);
+      sessionStorage.removeItem("session");
       router.push("/login");
     } catch (error) {
       console.error(error);

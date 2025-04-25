@@ -15,6 +15,7 @@ import { Mail, Phone, Plus, Search } from "lucide-react";
 import { InviteMemberDialog } from "./_components/invite-member-dialog";
 import workspaceStore from "@/store/workspaceStore";
 import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
+import RegisterUserDialog from "./_components/register-new-user-dialog";
 
 // Team member data
 const teamMembers = [
@@ -146,7 +147,15 @@ export default function TeamPage() {
                 />
               </div>
             </form>
-            <InviteMemberDialog
+            {/* <InviteMemberDialog
+              trigger={
+                <Button size="sm" className="h-8 gap-1">
+                  <Plus className="h-4 w-4" />
+                  Add Member
+                </Button>
+              }
+            /> */}
+            <RegisterUserDialog
               trigger={
                 <Button size="sm" className="h-8 gap-1">
                   <Plus className="h-4 w-4" />

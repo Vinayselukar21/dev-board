@@ -19,7 +19,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import sidebarStore from "@/store/sidebarStore";
-import { useRouter } from "next/navigation";
 
 export function WorkspaceSwitcher({
   workspace,
@@ -31,12 +30,12 @@ export function WorkspaceSwitcher({
   setActiveWorkspace: (workspace: Workspace) => void;
 }) {
   const { isMobile } = useSidebar();
-  const router = useRouter();
-  const { sidebar, setSidebar } = sidebarStore.getState();
-
+  const { sidebar } = sidebarStore.getState();
+  
   if (!activeWorkspace) {
     return null;
   }
+
 
   return (
     <SidebarMenu>
@@ -72,7 +71,7 @@ export function WorkspaceSwitcher({
               <DropdownMenuItem
                 onClick={() => {
                   setActiveWorkspace(workspace);
-                  router.push(`/workspace/${workspace.id}`);
+                  // router.push(`/workspace/${workspace.id}`);
                 }}
                 key={workspace.id}
                 className="gap-2 p-2"
