@@ -14,7 +14,7 @@ import useGetMyDetails from "@/hooks/useGetMyDetails";
 export default function ProfileSettings() {
     const { myDataLoading, errorLoadingMyData, myData } = useGetMyDetails();
     console.log(myData)
-    const myInfo = myData.user
+    const myInfo = myData?.user
   return (
     <Card>
       <CardHeader>
@@ -41,7 +41,7 @@ export default function ProfileSettings() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="first-name">First Name</Label>
-                <Input id="first-name" defaultValue={myInfo.name} />
+                <Input id="first-name" defaultValue={myInfo?.name} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="last-name">Last Name</Label>
@@ -50,7 +50,7 @@ export default function ProfileSettings() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue={myInfo.email} />
+              <Input id="email" type="email" defaultValue={myInfo?.email} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="job-title">Job Title</Label>

@@ -41,6 +41,12 @@ const formSchema = z.object({
   role: z.string({
     required_error: "Please select a role.",
   }),
+  contactNo: z.string().min(10, {
+    message: "Contact number must be at least 10 digits.",
+  }),
+  location: z.string().min(2, {
+    message: "Location must be at least 2 characters.",
+  }),
 })
 interface InviteMemberDialogProps {
     trigger?: React.ReactNode;
@@ -70,6 +76,8 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
       email: "",
       phoneNumber: "",
       password: "",
+      location: "",
+      contactNo: "",
       role:"member"
     },
   })
@@ -81,6 +89,8 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
       email: values.email,
       password: values.password,
       role: values.role,
+      contactNo: values.contactNo,
+      location: values.location,
       workspaceId: activeWorkspace?.id,
       departmentId: values.department,
     }
@@ -128,12 +138,25 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
             />
             <FormField
               control={form.control}
-              name="phoneNumber"
+              name="contactNo"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
                     <Input placeholder="1234567890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Location" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

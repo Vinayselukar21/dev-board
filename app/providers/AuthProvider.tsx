@@ -10,6 +10,8 @@ interface AuthContextType {
     email: string;
     name: string;
     password: string;
+    contactNo: string | null;
+    location: string | null;
   }) => Promise<void>;
   loginWithCredentials: (values: {
     email: string;
@@ -38,6 +40,8 @@ export interface AuthResponse {
     email: string;
     name: string;
     id: number;
+    contactNo: string | null;
+    location: string | null;
     avatar: string | null;
     memberships: WorkspaceMember[];
   };
@@ -77,6 +81,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             name: res.data.user.name,
             email: res.data.user.email,
             avatar: res.data.user?.avatar,
+            contactNo: res.data.user?.contactNo,
+            location: res.data.user?.location,
             authStatus: res.data.authStatus,
             memberships: res.data.user.memberships,
           };
@@ -124,6 +130,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           name: response.data.user.name,
           email: response.data.user.email,
           avatar: response.data.user?.avatar,
+          contactNo: response.data.user.contactNo,
+          location: response.data.user.location,
           authStatus: response.data.authStatus,
           memberships: response.data.user.memberships,
         };
@@ -141,6 +149,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email: string;
     name: string;
     password: string;
+    contactNo: string | null;
+    location: string | null;
   }) => {
     setLoading(true);
     try {
@@ -150,6 +160,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           id: response.data.user.id,
           name: response.data.user.name,
           email: response.data.user.email,
+          contactNo: response.data.user.contactNo,
+          location: response.data.user.location,
           avatar: response.data.user?.avatar,
           authStatus: response.data.authStatus,
         };

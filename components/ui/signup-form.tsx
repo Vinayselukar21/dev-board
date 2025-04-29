@@ -27,8 +27,10 @@ export function SignupForm({
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+    const contactNo = formData.get("contactNo") as string;
+    const location = formData.get("location") as string;
 
-    signUpWithCredentials({ name, email, password });
+    signUpWithCredentials({ name, email, password, contactNo, location });
   };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -59,6 +61,18 @@ export function SignupForm({
                   placeholder="m@example.com"
                   required
                 />
+              </div>
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="contactNo">Contact No</Label>
+                </div>
+                <Input id="contactNo" type="text" name="contactNo" required />
+              </div>
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="location">Location</Label>
+                </div>
+                <Input id="location" type="text" name="location" required />
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
