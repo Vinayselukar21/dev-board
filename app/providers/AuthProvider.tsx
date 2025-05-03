@@ -22,14 +22,13 @@ interface AuthContextType {
 
 interface WorkspaceMember {
   id: string;
-  role: 'admin' | 'member' | 'viewer'; // Add other roles if needed
+  role: "admin" | "member" | "viewer"; // Add other roles if needed
   invitedAt: string; // ISO string (use `Date` if you prefer to parse it)
   accepted: boolean;
   userId: string;
   workspaceId: string;
   departmentId: string;
-};
-
+}
 
 export interface AuthResponse {
   message: string;
@@ -43,6 +42,8 @@ export interface AuthResponse {
     contactNo: string | null;
     location: string | null;
     avatar: string | null;
+    role: string | null;
+    createdAt: string | null;
     memberships: WorkspaceMember[];
   };
 }
@@ -59,7 +60,7 @@ export function useAuth() {
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const [loading, setLoading] = useState(false); // default to true
+  const [loading, setLoading] = useState(true); // Start with loading true
   const [session, setSession] = useState<any>(undefined);
 
   // 🔁 Load session from session storage on first mount
@@ -67,55 +68,60 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const sessionString = sessionStorage.getItem("session");
     if (sessionString) {
       setSession(JSON.parse(sessionString));
+      setLoading(false);
+    } else {
+      // If no session in storage, we need to validate
+      fetchUser();
     }
   }, []);
 
-  // 🔁 Auto-validate user if cookie exists
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get<AuthResponse>("/auth/me");
-        if (res.data.authStatus === "authenticated") {
-          const userSession = {
-            id: res.data.user.id,
-            name: res.data.user.name,
-            email: res.data.user.email,
-            avatar: res.data.user?.avatar,
-            contactNo: res.data.user?.contactNo,
-            location: res.data.user?.location,
-            authStatus: res.data.authStatus,
-            memberships: res.data.user.memberships,
-          };
-          setSession(userSession);
-          sessionStorage.setItem("session", JSON.stringify(userSession));
-        } else {
-          setSession(undefined);
-          sessionStorage.removeItem("session");
-        }
-      } catch (err) {
+  // Function to fetch user data - extracted for reusability
+  const fetchUser = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get<AuthResponse>("/auth/me");
+      if (res.data.authStatus === "authenticated") {
+        const userSession = {
+          id: res.data.user.id,
+          name: res.data.user.name,
+          email: res.data.user.email,
+          avatar: res.data.user?.avatar,
+          contactNo: res.data.user?.contactNo,
+          location: res.data.user?.location,
+          authStatus: res.data.authStatus,
+          role: res.data.user.role,
+          createdAt: res.data.user.createdAt,
+          memberships: res.data.user.memberships,
+        };
+        setSession(userSession);
+        sessionStorage.setItem("session", JSON.stringify(userSession));
+      } else {
         setSession(undefined);
         sessionStorage.removeItem("session");
-        if (window.location.pathname !== "/login") {
-          router.push("/login");
+        // If on a protected route, redirect to login
+        if (isProtectedRoute(window.location.pathname)) {
+          router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`);
         }
-      } finally {
-        setLoading(false);
       }
-    };
-
-    if (session === undefined) {
-      fetchUser();
-    }
-  }, [session]);
-
-  // 🔐 Store session changes in session storage
-  useEffect(() => {
-    if (session) {
-      sessionStorage.setItem("session", JSON.stringify(session));
-    } else {
+    } catch (err) {
+      setSession(undefined);
       sessionStorage.removeItem("session");
+      // If on a protected route, redirect to login
+      if (isProtectedRoute(window.location.pathname)) {
+        router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`);
+      }
+    } finally {
+      setLoading(false);
     }
-  }, [session]);
+  };
+
+  // Helper function to check if route is protected
+  const isProtectedRoute = (path: string) => {
+    const protectedRoutes = ['/dashboard', '/profile', '/settings'];
+    return protectedRoutes.some(route => 
+      path === route || path.startsWith(`${route}/`)
+    );
+  };
 
   const loginWithCredentials = async (values: {
     email: string;
@@ -134,9 +140,16 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           location: response.data.user.location,
           authStatus: response.data.authStatus,
           memberships: response.data.user.memberships,
+          role: response.data.user.role,
+          createdAt: response.data.user.createdAt,
         };
         setSession(userSession);
-        router.push("/dashboard");
+        sessionStorage.setItem("session", JSON.stringify(userSession));
+        
+        // Check if there's a redirect URL in the query params
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectTo = urlParams.get('redirectTo');
+        router.push(redirectTo || "/dashboard");
       }
     } catch (error) {
       console.error(error);
@@ -164,8 +177,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           location: response.data.user.location,
           avatar: response.data.user?.avatar,
           authStatus: response.data.authStatus,
+          role: response.data.user.role,
+          createdAt: response.data.user.createdAt,
+          memberships: response.data.user.memberships || [],
         };
         setSession(userSession);
+        sessionStorage.setItem("session", JSON.stringify(userSession));
         router.push("/dashboard");
       }
     } catch (error) {

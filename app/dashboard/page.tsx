@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import useGetDashboard from "@/hooks/useGetDashboard";
+import { Log } from "../types";
+import { format } from "date-fns";
 
 export default function Page() {
   const { session } = useAuth();
@@ -189,7 +191,20 @@ export default function Page() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex gap-4">
+                    {dashboardData?.logsCard.map((log: Log)=>{ return (<div className="flex gap-4" key={log.id}>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <Users className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">
+                          {log.message}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(log.createdAt , "dd MMM yyyy - hh:mm")}
+                        </p>
+                      </div>
+                    </div>)})}
+                    {/* <div className="flex gap-4">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <Users className="h-4 w-4" />
                       </div>
@@ -202,7 +217,7 @@ export default function Page() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-4">
+                   <div className="flex gap-4">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <FolderKanban className="h-4 w-4" />
                       </div>
@@ -240,7 +255,7 @@ export default function Page() {
                           3 days ago
                         </p>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </CardContent>
               </Card>

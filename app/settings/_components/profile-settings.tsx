@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -5,8 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useGetMyDetails from "@/hooks/useGetMyDetails";
@@ -54,7 +54,7 @@ export default function ProfileSettings() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="job-title">Job Title</Label>
-              <Input id="job-title" defaultValue="Project Manager" />
+              <Input id="job-title" defaultValue={myData?.jobTitle} />
             </div>
           </div>
         </div>
@@ -64,11 +64,11 @@ export default function ProfileSettings() {
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" type="tel" defaultValue="+1 (555) 123-4567" />
+              <Input id="phone" type="tel" defaultValue={myInfo?.contactNo} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="location">Location</Label>
-              <Input id="location" defaultValue="New York, NY" />
+              <Input id="location" defaultValue={myInfo?.location} />
             </div>
           </div>
         </div>

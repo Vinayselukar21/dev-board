@@ -100,3 +100,19 @@ export interface Task {
 }
 
 export type Priority = "low" | "medium" | "high";
+
+export interface Log {
+  id: string;
+  type: string; // e.g., "workspace"
+  action: string; // e.g., "create"
+  message: string;
+
+  workspaceId: string;
+  workspace?: Workspace;
+
+  userId: string;
+  user?: User;
+
+  createdAt: Date;
+  updatedAt: Date;
+}
