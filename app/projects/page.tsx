@@ -11,16 +11,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useGetProjects from "@/hooks/useGetProjects";
+import useGetProjectLogs from "@/hooks/useGetProjectLogs";
 import { FolderKanban, Plus, Search, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { AddProjectDialog } from "./_components/add-project-dialog";
 import workspaceStore from "@/store/workspaceStore";
+import { Log } from "../types";
+import { format } from "date-fns";
 
 export default function Page() {
   const { projectData, projectsLoading, errorLoadingProjects } =
     useGetProjects();
   const { activeWorkspace } = workspaceStore.getState();
-
+const {projectLogsData, projectLogsLoading, errorLoadingProjectLogs} = useGetProjectLogs();
+console.log(projectLogsData)
   return (
     <main className="flex flex-1 flex-col">
       {/* Header */}
@@ -105,8 +109,23 @@ export default function Page() {
             <TabsContent value="activity" className="pt-4">
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Recent Activity</h3>
+                {projectLogsData?.map((log : Log) => (
+                  <div className="flex gap-4 rounded-lg border p-4" key={log.id}>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <Users className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                       {log.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(log.createdAt, "dd MMM yyyy - hh:mm")}
+                      </p>
+                    </div>
+                  </div>
+                ))}
                 <div className="space-y-4">
-                  <div className="flex gap-4 rounded-lg border p-4">
+                  {/* <div className="flex gap-4 rounded-lg border p-4">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                       <Users className="h-4 w-4" />
                     </div>
@@ -144,7 +163,7 @@ export default function Page() {
                         3 days ago
                       </p>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </TabsContent>

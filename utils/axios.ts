@@ -11,53 +11,45 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor
-api.interceptors.request.use(
-  (config) => {
-    // You can add any request modifications here if needed
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor for API calls
 api.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   async (error) => {
-    const originalRequest = error.config;
-    
-    // If the error is due to an expired token (usually 401) and we haven't tried to refresh yet
+    console.log("axios func");
+    let originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+      console.log("inside retry");
       try {
-        // Call the refresh endpoint
-        const refreshResponse = await api.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-          {},
-          { withCredentials: true } // This will include cookies
-        );
-        
-        // If refresh was successful, retry the original request
-        if (refreshResponse.status === 200) {
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // If refresh token is also invalid, redirect to login
-        if (typeof window !== 'undefined') {
-          // Clear session storage
-          sessionStorage.removeItem('session');
-          
-          // Redirect to login and save the attempted URL
-          const currentPath = window.location.pathname;
-          window.location.href = `/login?redirectTo=${encodeURIComponent(currentPath)}`;
-        }
-        return Promise.reject(refreshError);
+        console.log("inside try");
+        await api
+          .get("/auth/refresh")
+          .then((res) => {
+            console.log(res.data, "inside try: in axios file");
+            // ✅ Redirect to dashboard
+            if (
+              typeof window !== "undefined" 
+              // &&
+              // publicRoutes.includes(window.location.pathname)
+            ) {
+              api(originalRequest); // 🔁 retry original request
+              window.location.href = "/dashboard";
+            }
+          })
+          .catch((err) => {
+            console.log(err, "catch: in axios file");
+            // if (
+            //   typeof window !== "undefined" &&
+            //   !publicRoutes.includes(window.location.pathname)
+            // ) {
+            //   window.location.href = "/login";
+            // }
+          });
+      } catch (refreshErr) {
+        console.error("Refresh token failed:", refreshErr);
+        return Promise.reject(refreshErr);
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

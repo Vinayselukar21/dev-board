@@ -1,4 +1,5 @@
 "use client";
+
 import axios from "@/utils/axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -13,17 +14,14 @@ interface AuthContextType {
     contactNo: string | null;
     location: string | null;
   }) => Promise<void>;
-  loginWithCredentials: (values: {
-    email: string;
-    password: string;
-  }) => Promise<void>;
+  loginWithCredentials: (values: { email: string; password: string }) => Promise<void>;
   logoutUser: () => Promise<void>;
 }
 
 interface WorkspaceMember {
   id: string;
-  role: "admin" | "member" | "viewer"; // Add other roles if needed
-  invitedAt: string; // ISO string (use `Date` if you prefer to parse it)
+  role: "admin" | "member" | "viewer";
+  invitedAt: string;
   accepted: boolean;
   userId: string;
   workspaceId: string;
@@ -42,8 +40,6 @@ export interface AuthResponse {
     contactNo: string | null;
     location: string | null;
     avatar: string | null;
-    role: string | null;
-    createdAt: string | null;
     memberships: WorkspaceMember[];
   };
 }
@@ -60,73 +56,67 @@ export function useAuth() {
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const [loading, setLoading] = useState(true); // Start with loading true
+  const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(undefined);
+  const [isClient, setIsClient] = useState(false); // ✅ hydration guard
 
-  // 🔁 Load session from session storage on first mount
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     const sessionString = sessionStorage.getItem("session");
     if (sessionString) {
       setSession(JSON.parse(sessionString));
-      setLoading(false);
-    } else {
-      // If no session in storage, we need to validate
-      fetchUser();
     }
-  }, []);
 
-  // Function to fetch user data - extracted for reusability
-  const fetchUser = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get<AuthResponse>("/auth/me");
-      if (res.data.authStatus === "authenticated") {
-        const userSession = {
-          id: res.data.user.id,
-          name: res.data.user.name,
-          email: res.data.user.email,
-          avatar: res.data.user?.avatar,
-          contactNo: res.data.user?.contactNo,
-          location: res.data.user?.location,
-          authStatus: res.data.authStatus,
-          role: res.data.user.role,
-          createdAt: res.data.user.createdAt,
-          memberships: res.data.user.memberships,
-        };
-        setSession(userSession);
-        sessionStorage.setItem("session", JSON.stringify(userSession));
-      } else {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get<AuthResponse>("/auth/me");
+        if (res.data.authStatus === "authenticated") {
+          const userSession = {
+            id: res.data.user.id,
+            name: res.data.user.name,
+            email: res.data.user.email,
+            avatar: res.data.user?.avatar,
+            contactNo: res.data.user?.contactNo,
+            location: res.data.user?.location,
+            authStatus: res.data.authStatus,
+            memberships: res.data.user.memberships,
+          };
+          setSession(userSession);
+          sessionStorage.setItem("session", JSON.stringify(userSession));
+        } else {
+          setSession(undefined);
+          sessionStorage.removeItem("session");
+        }
+      } catch (err) {
         setSession(undefined);
         sessionStorage.removeItem("session");
-        // If on a protected route, redirect to login
-        if (isProtectedRoute(window.location.pathname)) {
-          router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`);
+        if (window.location.pathname !== "/login") {
+          router.push("/login");
         }
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setSession(undefined);
+    };
+
+    fetchUser();
+  }, [isClient]);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    if (session) {
+      sessionStorage.setItem("session", JSON.stringify(session));
+    } else {
       sessionStorage.removeItem("session");
-      // If on a protected route, redirect to login
-      if (isProtectedRoute(window.location.pathname)) {
-        router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`);
-      }
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [session, isClient]);
 
-  // Helper function to check if route is protected
-  const isProtectedRoute = (path: string) => {
-    const protectedRoutes = ['/dashboard', '/profile', '/settings'];
-    return protectedRoutes.some(route => 
-      path === route || path.startsWith(`${route}/`)
-    );
-  };
-
-  const loginWithCredentials = async (values: {
-    email: string;
-    password: string;
-  }) => {
+  const loginWithCredentials = async (values: { email: string; password: string }) => {
     setLoading(true);
     try {
       const response = await axios.post<AuthResponse>("/auth/login", values);
@@ -140,16 +130,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           location: response.data.user.location,
           authStatus: response.data.authStatus,
           memberships: response.data.user.memberships,
-          role: response.data.user.role,
-          createdAt: response.data.user.createdAt,
         };
         setSession(userSession);
         sessionStorage.setItem("session", JSON.stringify(userSession));
-        
-        // Check if there's a redirect URL in the query params
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectTo = urlParams.get('redirectTo');
-        router.push(redirectTo || "/dashboard");
+        router.push("/dashboard");
       }
     } catch (error) {
       console.error(error);
@@ -177,9 +161,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           location: response.data.user.location,
           avatar: response.data.user?.avatar,
           authStatus: response.data.authStatus,
-          role: response.data.user.role,
-          createdAt: response.data.user.createdAt,
-          memberships: response.data.user.memberships || [],
         };
         setSession(userSession);
         sessionStorage.setItem("session", JSON.stringify(userSession));
@@ -205,6 +186,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }
   };
+
+  // ✅ Do not render until client mounted
+  if (!isClient) return null;
 
   return (
     <AuthContext.Provider
