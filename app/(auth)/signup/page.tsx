@@ -1,12 +1,11 @@
 "use client";
 import { useAuth } from "@/app/providers/AuthProvider";
-import { SignupForm } from "@/components/ui/signup-form";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
+import { SignupForm } from "./_components/signup-form";
 
 export default function Page() {
   const { session } = useAuth();
-  console.log(session);
   useEffect(() => {
     if (session && session?.authStatus === "authenticated") {
       redirect("/dashboard");

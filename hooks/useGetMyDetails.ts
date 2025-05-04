@@ -16,7 +16,6 @@ const useGetMyDetails = () => {
   const workspaceMemberId = session.memberships.find(
     (m: any) => m.workspaceId === workspace.id
   )?.id;
-  console.log();
   const {
     data,
     isLoading: myDataLoading,

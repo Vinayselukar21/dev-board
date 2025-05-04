@@ -171,14 +171,7 @@ export function ProjectSettingsDialog({
       setOpen(false);
     }
   };
-  console.log(
-    currentProject?.members,
-    selectedMembers,
-    "selectedMembers",
-    activeWorkspace?.members,
-    currentProject,
-    format(new Date(currentProject?.createdAt as string), "dd MMM yyyy")
-  );
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

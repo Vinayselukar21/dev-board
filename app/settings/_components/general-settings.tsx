@@ -10,7 +10,6 @@ import workspaceStore from "@/store/workspaceStore"
 
 export default function GeneralSettings(){
     const { activeWorkspace } = workspaceStore.getState();
-    console.log(activeWorkspace);
     return (
         <Card>
         <CardHeader>

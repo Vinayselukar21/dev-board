@@ -61,8 +61,7 @@ export function AddTaskDialog({
   const [assignee, setAssignee] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [stage, setStage] = useState<string>(defaultStatus);
-console.log("projectMembers", projectMembers);
-console.log("taskStages", taskStages);
+
   const AddNewTaskMutation = useMutation({
     mutationFn: AddNewTask,
     onSuccess: () => {
@@ -107,7 +106,6 @@ console.log("taskStages", taskStages);
 
     AddNewTaskMutation.mutate(payload);
   };
-  console.log("triggered add task dialog", projectId, defaultStatus);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

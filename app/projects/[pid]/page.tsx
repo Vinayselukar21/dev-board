@@ -65,7 +65,6 @@ export default function ProjectPage() {
 
   const { projectTaskData, tasksLoading, errorLoadingTasks } =
     useGetProjectTasks(params.pid as string);
-  console.log(projectTaskData);
 
   const taskStages = projectTaskData && projectTaskData?.taskStages?.map((stage) => ({
     id: stage.id,
@@ -83,7 +82,6 @@ export default function ProjectPage() {
       setColumns(taskColumns);
     }
   }, [projectTaskData?.taskStages]);
-  console.log(columns);
 
 
    const ChangeTaskStageMutation = useMutation({

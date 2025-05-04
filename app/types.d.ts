@@ -117,3 +117,27 @@ export interface Log {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description?: string;
+  date: Date;
+  time: string;
+  endTime: string;
+  occurrence: 'single' | 'recurring-month' | 'recurring-week';
+  participants: string[];
+
+  // Relations
+  projectId?: string;
+  project?: Project;
+
+  workspaceId: string;
+  workspace?: Workspace;
+
+  type: 'event' | 'meeting' | 'task';
+  location?: string;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+}

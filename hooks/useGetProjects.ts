@@ -12,7 +12,6 @@ interface QueryResponse {
 const useGetProjects = () => {
   const { sidebar, setSidebar } = sidebarStore.getState();
   const { activeWorkspace: workspace } = workspaceStore.getState();
-  console.log();
   const {
     data,
     isLoading: projectsLoading,

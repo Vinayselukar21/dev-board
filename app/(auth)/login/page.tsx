@@ -1,12 +1,11 @@
 "use client";
-import { LoginForm } from "@/components/login-form";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { useEffect } from "react";
 import { redirect } from "next/navigation";
+import { LoginForm } from "./_components/login-form";
 
 export default function Page() {
   const { session } = useAuth();
-  console.log(session);
   useEffect(() => {
     if (session && session?.authStatus === "authenticated") {
       redirect("/dashboard");

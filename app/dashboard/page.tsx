@@ -27,7 +27,6 @@ export default function Page() {
   const { session } = useAuth();
   const { dashboardData, dashboardLoading, errorLoadingDashboard } =
     useGetDashboard();
-  console.log(dashboardData, "dashboardData");
   return dashboardLoading ? (
     "Loading..."
   ) : (

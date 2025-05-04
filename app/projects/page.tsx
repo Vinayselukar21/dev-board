@@ -24,7 +24,6 @@ export default function Page() {
     useGetProjects();
   const { activeWorkspace } = workspaceStore.getState();
 const {projectLogsData, projectLogsLoading, errorLoadingProjectLogs} = useGetProjectLogs();
-console.log(projectLogsData)
   return (
     <main className="flex flex-1 flex-col">
       {/* Header */}

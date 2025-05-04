@@ -77,9 +77,7 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
       role:"member"
     },
   })
-console.log(form.formState.errors)
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
     const payload = {
       name: values.name,
       email: values.email,

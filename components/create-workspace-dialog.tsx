@@ -63,7 +63,6 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Handle workspace creation logic here
-console.log("kldskj")
     // Reset form and close dialog
     setName("")
     setDescription("")
@@ -84,7 +83,6 @@ console.log("kldskj")
   const prevStep = () => {
     setStep(step - 1)
   }
-console.log(step)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

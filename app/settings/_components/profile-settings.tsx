@@ -13,7 +13,6 @@ import useGetMyDetails from "@/hooks/useGetMyDetails";
 
 export default function ProfileSettings() {
     const { myDataLoading, errorLoadingMyData, myData } = useGetMyDetails();
-    console.log(myData)
     const myInfo = myData?.user
   return (
     <Card>

@@ -183,7 +183,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
     workspaces: workspaceData,
   };
-// console.log({ workspaceData, workspacesLoading, errorLoadingWorkspaces, workspaceDataLoadedSuccess })
+  
   React.useEffect(() => {
     if (workspaceData.length > 0) {
       setActiveWorkspace(workspaceData[0]);
