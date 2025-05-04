@@ -41,6 +41,7 @@ export interface WorkspaceMember {
   departmentId?: string;
   department?: Department;
   projects?: ProjectMember[];
+  jobTitle?: string;
   // projectMembers?: ProjectMember[];
   // add workspace member designation
 }

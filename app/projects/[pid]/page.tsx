@@ -38,6 +38,7 @@ import ChangeTaskStage from "@/hooks/Functions/ChangeTaskStage";
 import { toast } from "sonner";
 import DeleteTask from "@/hooks/Functions/DeleteTask";
 import { ProjectSettingsDialog } from "./_components/project-settings-dialog";
+import { format } from "date-fns";
 
 // Define types for our Kanban board
 
@@ -233,7 +234,7 @@ export default function ProjectPage() {
                 </Button>} projectId={params.pid as string} projectTaskData={projectTaskData} />}
               </div>
               <div className="flex items-center gap-4">
-                <div className="flex -space-x-2">
+                {/* <div className="flex -space-x-2">
                   <Avatar className="border-2 border-background">
                     <AvatarFallback>AK</AvatarFallback>
                   </Avatar>
@@ -243,10 +244,10 @@ export default function ProjectPage() {
                   <Avatar className="border-2 border-background">
                     <AvatarFallback>MC</AvatarFallback>
                   </Avatar>
-                </div>
+                </div> */}
                 <Separator orientation="vertical" className="h-6" />
                 <div className="text-sm text-muted-foreground">
-                  Created on June 5, 2023
+                  Created on {projectTaskData?.createdAt && format(new Date(projectTaskData?.createdAt), "dd MMM yyyy")}
                 </div>
               </div>
             </div>

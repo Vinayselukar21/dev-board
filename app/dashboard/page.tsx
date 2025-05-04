@@ -14,6 +14,8 @@ import {
   LineChart,
   Search,
   Settings,
+  StickyNote,
+  User,
   Users,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
@@ -184,7 +186,7 @@ export default function Page() {
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
+                  <CardTitle>Recent Activity </CardTitle>
                   <CardDescription>
                     Latest updates from your workspace
                   </CardDescription>
@@ -193,7 +195,11 @@ export default function Page() {
                   <div className="space-y-4">
                     {dashboardData?.logsCard.map((log: Log)=>{ return (<div className="flex gap-4" key={log.id}>
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <Users className="h-4 w-4" />
+                        {log.type === "user" && <User  className="h-4 w-4" />}
+                        {log.type === "workspace" && <Users className="h-4 w-4" />}
+                        {log.type === "task" && <StickyNote className="h-4 w-4" />}
+                        {log.type === "project" && <FolderKanban className="h-4 w-4" />}
+                        {log.type === "setting" && <Settings className="h-4 w-4" />}
                       </div>
                       <div>
                         <p className="text-sm font-medium">

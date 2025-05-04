@@ -7,8 +7,10 @@ import {
   FolderKanban,
   Frame,
   LayoutDashboard,
+  Link,
   Map,
   PieChart,
+  Plus,
   Settings,
   Settings2,
   SquareTerminal,
@@ -26,11 +28,16 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import workspaceStore from "@/store/workspaceStore";
 import sidebarStore from "@/store/sidebarStore";
+import { NavMain } from "./nav-main";
+import { Button } from "./ui/button";
+import { CreateWorkspaceDialog } from "./create-workspace-dialog";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // const [activeWorkspace, setActiveWorkspace] = React.useState<Workspace>({
@@ -204,10 +211,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         )}
       </SidebarHeader>
       <SidebarContent>
-        {/* <NavMain items={sidebarData.navMain} /> */}
+        {/* <NavMain items={sidebarData.navMain || []} /> */}
         <NavMenu menu={sidebarData.menu || []} />
       </SidebarContent>
       <SidebarFooter>
+      <CreateWorkspaceDialog trigger={<Button variant="ghost" className="text-muted-foreground">
+              <Plus />
+              <span>Add Workspace</span>
+            </Button>} />
         <NavUser user={sidebarData.user} />
       </SidebarFooter>
       <SidebarRail />

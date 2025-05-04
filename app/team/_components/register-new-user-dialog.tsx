@@ -29,9 +29,6 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  phoneNumber: z.string().min(10, {
-    message: "Phone number must be at least 10 digits.",
-  }),
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
@@ -74,14 +71,13 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
     defaultValues: {
       name: "",
       email: "",
-      phoneNumber: "",
       password: "",
       location: "",
       contactNo: "",
       role:"member"
     },
   })
-
+console.log(form.formState.errors)
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values)
     const payload = {

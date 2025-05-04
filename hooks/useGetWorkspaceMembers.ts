@@ -38,6 +38,7 @@ const useGetWorkspaceMembers = () => {
           workspaceId,
           user,
           projects,
+          jobTitle,
         }) => ({
           id,
           role: user.role,
@@ -48,6 +49,7 @@ const useGetWorkspaceMembers = () => {
           workspaceId,
           user,
           projects,
+          jobTitle,
         })
       )
     : [];

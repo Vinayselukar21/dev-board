@@ -159,7 +159,7 @@ export default function Page() {
             </form>
             <AddEventDialog
               trigger={
-                <Button size="sm" className="h-8 gap-1">
+                <Button size="sm" className="h-8 gap-1" variant="default">
                   <Plus className="h-4 w-4" />
                   Add Event
                 </Button>

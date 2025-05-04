@@ -17,114 +17,6 @@ import workspaceStore from "@/store/workspaceStore";
 import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
 import RegisterUserDialog from "./_components/register-new-user-dialog";
 
-// Team member data
-const teamMembers = [
-  {
-    id: "1",
-    name: "Alex Kim",
-    role: "Project Manager",
-    email: "alex@example.com",
-    phone: "+1 (555) 123-4567",
-    department: "Management",
-    joinDate: "Jan 2021",
-    projects: ["Website Redesign", "Social Media Campaign"],
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "AK",
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "Sarah Johnson",
-    role: "UX Designer",
-    email: "sarah@example.com",
-    phone: "+1 (555) 234-5678",
-    department: "Design",
-    joinDate: "Mar 2021",
-    projects: ["Website Redesign", "Email Newsletter"],
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "SJ",
-    status: "active",
-  },
-  {
-    id: "3",
-    name: "Michael Chen",
-    role: "Content Strategist",
-    email: "michael@example.com",
-    phone: "+1 (555) 345-6789",
-    department: "Marketing",
-    joinDate: "Jun 2021",
-    projects: ["Content Calendar", "Social Media Campaign"],
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "MC",
-    status: "active",
-  },
-  {
-    id: "4",
-    name: "Jessica Taylor",
-    role: "Frontend Developer",
-    email: "jessica@example.com",
-    phone: "+1 (555) 456-7890",
-    department: "Engineering",
-    joinDate: "Feb 2022",
-    projects: ["Website Redesign"],
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "JT",
-    status: "active",
-  },
-  {
-    id: "5",
-    name: "David Wilson",
-    role: "SEO Specialist",
-    email: "david@example.com",
-    phone: "+1 (555) 567-8901",
-    department: "Marketing",
-    joinDate: "Apr 2022",
-    projects: ["Website Redesign", "Content Calendar"],
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "DW",
-    status: "active",
-  },
-  {
-    id: "6",
-    name: "Emily Rodriguez",
-    role: "Graphic Designer",
-    email: "emily@example.com",
-    phone: "+1 (555) 678-9012",
-    department: "Design",
-    joinDate: "Jul 2022",
-    projects: ["Social Media Campaign", "Email Newsletter"],
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "ER",
-    status: "vacation",
-  },
-  {
-    id: "7",
-    name: "James Lee",
-    role: "Backend Developer",
-    email: "james@example.com",
-    phone: "+1 (555) 789-0123",
-    department: "Engineering",
-    joinDate: "Sep 2022",
-    projects: ["Website Redesign"],
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "JL",
-    status: "active",
-  },
-  {
-    id: "8",
-    name: "Olivia Martinez",
-    role: "Marketing Coordinator",
-    email: "olivia@example.com",
-    phone: "+1 (555) 890-1234",
-    department: "Marketing",
-    joinDate: "Nov 2022",
-    projects: ["Social Media Campaign", "Content Calendar"],
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "OM",
-    status: "offline",
-  },
-];
-
 export default function TeamPage() {
   const { activeWorkspace } = workspaceStore.getState();
   const { memberData, membersLoading, errorLoadingMembers } =
@@ -196,7 +88,7 @@ export default function TeamPage() {
                               Name
                             </th>
                             <th className="px-4 py-3 text-left text-sm font-medium">
-                              Role
+                              Job Title
                             </th>
                             <th className="hidden px-4 py-3 text-left text-sm font-medium sm:table-cell">
                               Department
@@ -237,7 +129,7 @@ export default function TeamPage() {
                                 </div>
                               </td>
                               <td className="px-4 py-3 text-sm">
-                                {member.role}
+                                {member.jobTitle}
                               </td>
                               <td className="hidden px-4 py-3 text-sm sm:table-cell">
                                 {member.department.name}
@@ -250,7 +142,7 @@ export default function TeamPage() {
                                   </div>
                                   <div className="flex items-center gap-1 text-xs">
                                     <Phone className="h-3 w-3" />
-                                    {/* <span>{member?.user?.phone}</span> */}
+                                    <span>{member?.user?.contactNo}</span>
                                   </div>
                                 </div>
                               </td>
@@ -311,7 +203,7 @@ export default function TeamPage() {
                                 Name
                               </th>
                               <th className="px-4 py-3 text-left text-sm font-medium">
-                                Role
+                                Job Title
                               </th>
                               <th className="hidden px-4 py-3 text-left text-sm font-medium md:table-cell">
                                 Contact
@@ -357,7 +249,7 @@ export default function TeamPage() {
                                     </div>
                                   </td>
                                   <td className="px-4 py-3 text-sm">
-                                    {member.role}
+                                    {member.jobTitle}
                                   </td>
                                   <td className="hidden px-4 py-3 text-sm md:table-cell">
                                     <div className="flex flex-col gap-1">
