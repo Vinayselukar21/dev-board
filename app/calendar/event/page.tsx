@@ -1,10 +1,24 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useEffect } from "react";
+import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { format } from "date-fns";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  CalendarIcon,
+  Clock,
+  ArrowLeft,
+  Trash2,
+  Check,
+  X
+} from "lucide-react";
+
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,67 +36,56 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Clock, ArrowLeft, Trash2, Check, X } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+// Utilities and hooks
+import { cn } from "@/lib/utils";
 import workspaceStore from "@/store/workspaceStore";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import AddNewCalendarEvent from "@/hooks/Functions/AddNewCalendarEvent";
 import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
+
+// Define the form schema with Zod
+const eventFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  date: z.date({
+    required_error: "Please select a date",
+  }),
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().optional(),
+  eventType: z.enum(["meeting", "event", "task"], {
+    required_error: "Please select an event type",
+  }),
+  occurrence: z.enum(["single", "recurring-month", "recurring-week"], {
+    required_error: "Please select occurrence type",
+  }),
+  projectId: z.string().optional(),
+  location: z.string().optional(),
+  participants: z.array(z.string()),
+});
+
+type EventFormValues = z.infer<typeof eventFormSchema>;
 
 export default function EventPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { eventsData, eventsLoading, errorLoadingEvents } =
-    useGetCalendarEvents();
+  const { eventsData, eventsLoading } = useGetCalendarEvents();
   const { activeWorkspace } = workspaceStore.getState();
 
   // Check if we're editing an existing event
   const eventId = searchParams.get("id");
   const isEditing = !!eventId;
-
-  // Form state
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [eventType, setEventType] = useState<"meeting" | "event" | "task">(
-    "meeting"
-  );
-  const [occurrence, setOccurrence] = useState<
-    "single" | "recurring-month" | "recurring-week"
-  >("single");
-  const [projectId, setProjectId] = useState("");
-  const [location, setLocation] = useState("");
-  const [participants, setParticipants] = useState<string[]>([]);
-  console.log(window, "window", isEditing, eventId, eventsData);
-  // Load event data if editing
-useEffect(() => {
-  if (!isEditing || !eventsData || eventsLoading) return;
-
-  const event = eventsData.find((e) => e.id === eventId);
-  if (!event) return;
-
-  console.log(event, 'event inside useEffect');
-
-  setTitle(event.title ?? '');
-  setDescription(event.description ?? '');
-  setDate(event.date ? new Date(event.date) : new Date());
-  setStartTime(event.time ?? '');        // only set if event is valid
-  setEndTime(event.endTime ?? '');
-  setEventType(event.type ?? 'meeting');
-  setProjectId(event.projectId ?? '');
-  setLocation(event.location ?? '');
-  setParticipants(
-    event.participants?.map((p: any) => p.workspaceMemberId) ?? []
-  );
-}, [isEditing, eventsData, eventsLoading]);
-
 
   // Generate time options for select
   const generateTimeOptions = () => {
@@ -99,64 +102,113 @@ useEffect(() => {
     return options;
   };
 
-  const timeOptions = generateTimeOptions();
+  // Memoize time options to prevent recalculation on every render
+  const timeOptions = React.useMemo(() => generateTimeOptions(), []);
 
-  const AddNewCalendarEventMutation = useMutation({
-    mutationFn: AddNewCalendarEvent,
-    onSuccess: () => {
-      toast.success("Calendar event added successfully");
-      queryClient.invalidateQueries({
-        queryKey: ["calendar-events", activeWorkspace?.id],
-      });
-      // Reset form and close dialog
-      console.log("running automatically");
-      setTitle("");
-      setDescription("");
-      setDate(undefined);
-      setStartTime("");
-      setEndTime("");
-      setEventType("meeting");
-      setProjectId("");
-      setLocation("");
-      setParticipants([]);
-      setOccurrence("single");
-    },
-    onError: (error) => {
-      console.error("Error adding calendar event:", error);
+  // Initialize form with defaults or event data
+  const form = useForm<EventFormValues>({
+    resolver: zodResolver(eventFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      date: new Date(),
+      startTime: "",
+      endTime: "",
+      eventType: "meeting" as const,
+      occurrence: "single" as const,
+      projectId: "",
+      location: "",
+      participants: [],
     },
   });
 
+  // Watch for form value changes
+  const participants = form.watch("participants");
+
+  // Initialize form with data from URL or existing event
+  React.useEffect(() => {
+    // Handle date from URL
+    const dateParam = searchParams.get("date");
+    if (dateParam && !isEditing) {
+      try {
+        const parsedDate = new Date(dateParam);
+        if (!isNaN(parsedDate.getTime())) {
+          form.setValue("date", parsedDate);
+        }
+      } catch (error) {
+        console.error("Invalid date parameter:", error);
+      }
+    }
+
+    // Handle existing event data
+    if (isEditing && eventId && eventsData) {
+      const event = eventsData.find((e) => e.id === eventId);
+      if (event) {
+        form.reset({
+          title: event.title || "",
+          description: event.description || "",
+          date: event.date ? new Date(event.date) : new Date(),
+          startTime: event.time || "",
+          endTime: event.endTime || "",
+          eventType: (event.type as "meeting" | "event" | "task") || "meeting",
+          occurrence: (event.occurrence as "single" | "recurring-month" | "recurring-week") || "single",
+          projectId: event.projectId || "",
+          location: event.location || "",
+          participants: event.participants?.map((p: any) => p.workspaceMemberId) || [],
+        });
+      }
+    }
+  }, [searchParams, isEditing, eventId, eventsData, form]);
+
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const AddNewCalendarEventMutation = useMutation({
+    mutationFn: AddNewCalendarEvent,
+    onSuccess: () => {
+      toast.success(isEditing ? "Event updated successfully" : "Calendar event added successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["calendar-events", activeWorkspace?.id],
+      });
+      
+      // Only reset form if we're not editing
+      if (!isEditing) {
+        form.reset();
+      }
+      
+      // Navigate back to calendar
+      router.push("/calendar");
+    },
+    onError: (error) => {
+      toast.error(isEditing ? "Error updating event" : "Error adding calendar event");
+      console.error("Error with calendar event:", error);
+    },
+  });
 
-    if (!date) return;
-
-    // Create event object
-    let payload: any = {
-      title,
-      description,
-      date,
-      time: startTime,
-      endTime,
-      type: eventType,
-      location,
-      participants,
-      occurrence,
+  function onSubmit(data: EventFormValues) {
+    // Create event payload
+    const payload: any = {
+      title: data.title,
+      description: data.description,
+      date: data.date,
+      time: data.startTime,
+      endTime: data.endTime,
+      type: data.eventType,
+      occurrence: data.occurrence,
+      location: data.location,
+      participants: data.participants,
       workspaceId: activeWorkspace?.id!,
     };
 
-    if (projectId) {
-      payload.projectId = projectId!;
+    if (data.projectId && data.projectId !== "none") {
+      payload.projectId = data.projectId;
     }
 
-    // In a real app, save to your backend
-    console.log("Saving event:", payload);
-    AddNewCalendarEventMutation.mutate(payload);
+    // If editing, include the event ID
+    if (isEditing && eventId) {
+      payload.id = eventId;
+    }
 
-    // Navigate back to calendar
-    router.push("/calendar");
-  };
+    AddNewCalendarEventMutation.mutate(payload);
+  }
 
   // Handle event deletion
   const handleDelete = () => {
@@ -165,8 +217,9 @@ useEffect(() => {
       window.confirm("Are you sure you want to delete this event?")
     ) {
       // In a real app, delete from your backend
-      console.log("Deleting event:", eventId);
-
+      // DeleteCalendarEventMutation.mutate(eventId);
+      
+      toast.success("Event deleted");
       // Navigate back to calendar
       router.push("/calendar");
     }
@@ -174,24 +227,30 @@ useEffect(() => {
 
   // Toggle participant selection
   const toggleParticipant = (memberId: string) => {
-    if (participants.includes(memberId)) {
-      setParticipants(participants.filter((id) => id !== memberId));
+    const currentParticipants = form.getValues("participants");
+    if (currentParticipants.includes(memberId)) {
+      form.setValue(
+        "participants", 
+        currentParticipants.filter(id => id !== memberId)
+      );
     } else {
-      setParticipants([...participants, memberId]);
+      form.setValue(
+        "participants", 
+        [...currentParticipants, memberId]
+      );
     }
   };
-  // console.log(title, "title")
-  // console.log(description, "description")
-  // console.log(date, "date")
-  // console.log(startTime, "startTime")
-  // console.log(endTime, "endTime")
-  // console.log(eventType, "eventType")
-  // console.log(projectId, "projectId")
-  // console.log(location, "location")
-  // console.log(participants, "participants")
-  // console.log(occurrence, "occurrence")
-  // console.log(activeWorkspace?.id, "activeWorkspace?.id")
 
+  // Don't render the form until we've loaded any existing event data
+  if (isEditing && eventsLoading) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center">
+        <p>Loading event data...</p>
+      </div>
+    );
+  }
+
+  console.log(participants, "participants");
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -210,309 +269,366 @@ useEffect(() => {
       {/* Content */}
       <div className="flex-1 overflow-auto w-full">
         <div className="container max-w-3xl p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="event-title">Event Title</Label>
-                <Input
-                  id="event-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter event title"
-                  required
-                />
-              </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Event Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter event title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              <div className="grid gap-2">
-                <Label htmlFor="event-description">Description</Label>
-                <Textarea
-                  id="event-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Add event details"
-                  className="min-h-[100px]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label>Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP") : "Select a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        initialFocus
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Add event details" 
+                        className="min-h-[100px]" 
+                        {...field} 
                       />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="event-occurrence">Occurrence</Label>
-                  <Select
-                    value={occurrence}
-                    onValueChange={(value) =>
-                      setOccurrence(
-                        value as "single" | "recurring-month" | "recurring-week"
-                      )
-                    }
-                  >
-                    <SelectTrigger id="event-occurrence" className="w-full">
-                      <SelectValue placeholder="Select occurrence" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="single">Single Event</SelectItem>
-                      <SelectItem value="recurring-month">Monthly</SelectItem>
-                      <SelectItem value="recurring-week">Weekly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="event-start">Start Time</Label>
-                  <Select
-                    value={startTime}
-                    onValueChange={(value) => {
-                      console.log(value, "value change in ui");
-                      setStartTime(value);
-                    }}
-                  >
-                    <SelectTrigger id="event-start" className="w-full">
-                      <SelectValue placeholder="Select time">
-                        {timeOptions && startTime ? (
-                          <div className="flex items-center">
-                            <Clock className="mr-2 h-4 w-4" />
-                            {
-                              timeOptions.filter(
-                                (option) => option.value === startTime
-                              )?.[0]?.label
-                            }
-                          </div>
-                        ) : (
-                          "Select time"
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                "Select a date"
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <div className="grid gap-2">
-                  <Label htmlFor="event-end">End Time</Label>
-                  <Select
-                    value={endTime}
-                    onValueChange={(value) => {
-                      console.log(value, "value change in ui");
-                      setEndTime(value);
-                    }}
-                  >
-                    <SelectTrigger id="event-end" className="w-full">
-                      <SelectValue placeholder="Select time">
-                        {timeOptions && endTime ? (
-                          <div className="flex items-center">
-                            <Clock className="mr-2 h-4 w-4" />
-                            {
-                              timeOptions.filter(
-                                (option) => option.value === endTime
-                              )?.[0]?.label
-                            }
-                          </div>
-                        ) : (
-                          "Select time"
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="event-type">Event Type</Label>
-                  <Select
-                    defaultValue={eventType}
-                    onValueChange={(value) =>
-                      setEventType(value as "meeting" | "event" | "task")
-                    }
-                  >
-                    <SelectTrigger id="event-type" className="w-full">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="meeting">Meeting</SelectItem>
-                      <SelectItem value="event">Event</SelectItem>
-                      <SelectItem value="task">Task</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="event-project">Related Project</Label>
-                  <Select
-                    value={projectId}
-                    onValueChange={(value) => {
-                      console.log(value, "value change in ui");
-                      setProjectId(value);
-                    }}
-                  >
-                    <SelectTrigger id="event-project" className="w-full">
-                      <SelectValue placeholder="Select project" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {activeWorkspace?.projects &&
-                        activeWorkspace?.projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="event-location">Location</Label>
-                <Input
-                  id="event-location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Add location (e.g., Meeting Room, Zoom, etc.)"
+                <FormField
+                  control={form.control}
+                  name="occurrence"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Occurrence</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select occurrence" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="single">Single Event</SelectItem>
+                          <SelectItem value="recurring-month">Monthly</SelectItem>
+                          <SelectItem value="recurring-week">Weekly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Time</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select time">
+                              {field.value ? (
+                                <div className="flex items-center">
+                                  <Clock className="mr-2 h-4 w-4" />
+                                  {timeOptions.find(option => option.value === field.value)?.label || field.value}
+                                </div>
+                              ) : (
+                                "Select time"
+                              )}
+                            </SelectValue>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {timeOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>End Time</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select time">
+                              {field.value ? (
+                                <div className="flex items-center">
+                                  <Clock className="mr-2 h-4 w-4" />
+                                  {timeOptions.find(option => option.value === field.value)?.label || field.value}
+                                </div>
+                              ) : (
+                                "Select time"
+                              )}
+                            </SelectValue>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {timeOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="eventType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Event Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="meeting">Meeting</SelectItem>
+                          <SelectItem value="event">Event</SelectItem>
+                          <SelectItem value="task">Task</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="projectId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Related Project</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select project" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {activeWorkspace?.projects &&
+                            activeWorkspace.projects.map((project) => (
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Add location (e.g., Meeting Room, Zoom, etc.)" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Participants Section */}
-              <div className="grid gap-2">
-                <Label>Participants</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {participants.length > 0 ? (
-                    participants.map((memberId) => {
-                      const member =
-                        activeWorkspace?.members &&
-                        activeWorkspace?.members.find((m) => m.id === memberId);
-                      if (!member) return null;
-                      return (
-                        <Badge
-                          key={member.id}
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          {member.user.name}
-                          <button
-                            type="button"
-                            onClick={() => toggleParticipant(member.id)}
-                            className="ml-1 rounded-full p-0.5 hover:bg-muted"
-                          >
-                            <X className="h-3 w-3" />
-                            <span className="sr-only">
-                              Remove {member.user.name}
-                            </span>
-                          </button>
-                        </Badge>
-                      );
-                    })
-                  ) : (
-                    <div className="text-sm text-muted-foreground">
-                      No participants selected
+              <FormField
+                control={form.control}
+                name="participants"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Participants</FormLabel>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {participants.length > 0 ? (
+                        participants.map((wMemberId: any) => {
+                          const member = activeWorkspace?.members?.find(
+                            (m) => m.id === wMemberId
+                          );
+                          return (
+                            <Badge
+                              key={wMemberId}
+                              className="flex items-center space-x-2 px-2 py-1 text-sm border border-gray-200"
+                              variant="secondary"
+                            >
+                              <Avatar className="h-5 w-5">
+                                <AvatarFallback>
+                                  {member?.user?.name?.charAt(0).toUpperCase() ??
+                                    "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span>{member?.user?.name ?? "Unknown"}</span>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-4 w-4 ml-1"
+                                onClick={() => toggleParticipant(wMemberId)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </Badge>
+                          );
+                        })
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          No participants selected.
+                        </p>
+                      )}
                     </div>
+
+                    <FormControl>
+                      <div className="grid gap-1">
+                        {activeWorkspace?.members?.map((member) => (
+                          <Button
+                            key={member.id}
+                            type="button"
+                            variant={
+                              participants.includes(member.id)
+                                ? "secondary"
+                                : "outline"
+                            }
+                            className="justify-start text-left"
+                            onClick={() => toggleParticipant(member.id)}
+                          >
+                            {participants.includes(member.id) ? (
+                              <Check className="mr-2 h-4 w-4" />
+                            ) : (
+                              <div className="w-4 mr-2" />
+                            )}
+                            {member.user.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-between pt-4">
+                <div>
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={handleDelete}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Event
+                    </Button>
                   )}
                 </div>
-
-                <div className="mt-2 max-h-[200px] overflow-y-auto rounded-md border p-2">
-                  {activeWorkspace?.members &&
-                    activeWorkspace?.members.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex items-center space-x-2 py-2"
-                      >
-                        <div
-                          className={`flex h-5 w-5 items-center justify-center rounded-md border ${
-                            participants.includes(member.id)
-                              ? "bg-primary border-primary"
-                              : "border-input"
-                          }`}
-                          onClick={() => toggleParticipant(member.id)}
-                        >
-                          {participants.includes(member.id) && (
-                            <Check className="h-3 w-3 text-primary-foreground" />
-                          )}
-                        </div>
-                        <div
-                          className="flex flex-1 cursor-pointer items-center gap-2 text-sm"
-                          onClick={() => toggleParticipant(member.id)}
-                        >
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-[10px]">
-                              USR
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-1 justify-between">
-                            <span>{member.user.name}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {member.role}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" asChild>
+                    <Link href="/calendar">Cancel</Link>
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {isEditing ? "Save Changes" : "Create Event"}
+                  </Button>
                 </div>
               </div>
-            </div>
-
-            <div className="flex justify-between pt-4">
-              <div>
-                {isEditing && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={handleDelete}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Event
-                  </Button>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" asChild>
-                  <Link href="/calendar">Cancel</Link>
-                </Button>
-                <Button type="submit">
-                  {isEditing ? "Save Changes" : "Create Event"}
-                </Button>
-              </div>
-            </div>
-          </form>
+            </form>
+          </Form>
         </div>
       </div>
     </div>
-  )
+  );
 }

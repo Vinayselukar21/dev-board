@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 import { CalendarEvent } from "@/app/types"
+import { EventDetailsDialog } from "./event-details-dialog"
 
 interface DayViewProps {
   currentDate: Date
@@ -48,7 +49,7 @@ export function DayView({ currentDate, events, onEventClick }: DayViewProps) {
           <h3 className="text-lg font-semibold">{format(currentDate, "EEEE")}</h3>
           <p className="text-sm text-muted-foreground">{format(currentDate, "MMMM d, yyyy")}</p>
         </div>
-        <Link href={`/calendar/event?date=${currentDate.toISOString()}`}>
+        <Link href={`/calendar/event?date=${encodeURIComponent(currentDate.toISOString())}`}>
           <Button size="sm">
             <Plus className="mr-1 h-4 w-4" />
             Add Event
@@ -77,9 +78,13 @@ export function DayView({ currentDate, events, onEventClick }: DayViewProps) {
                   const minuteOffset = (getMinuteFromTimeString(event.time) / 60) * 100
 
                   return (
-                    <div
+                    <EventDetailsDialog
                       key={event.id}
-                      className={`absolute left-2 right-2 rounded-sm px-3 py-2 text-sm ${
+                      event={event}
+                      onEdit={() => {onEventClick(event)}}
+                      trigger={<div
+                      key={event.id}
+                      className={`absolute left-2 right-2 rounded-sm px-3 py-2 text-sm cursor-pointer ${
                         event.type === "meeting"
                           ? "bg-blue-100 text-blue-800"
                           : event.type === "event"
@@ -90,7 +95,7 @@ export function DayView({ currentDate, events, onEventClick }: DayViewProps) {
                         top: `${minuteOffset}%`,
                         zIndex: index + 1,
                       }}
-                      onClick={() => onEventClick(event)}
+                      // onClick={() => onEventClick(event)}
                     >
                       <div className="font-medium">{event.title}</div>
                       {event.time && (
@@ -100,7 +105,7 @@ export function DayView({ currentDate, events, onEventClick }: DayViewProps) {
                         </div>
                       )}
                       {event.location && <div className="text-xs">{event.location}</div>}
-                    </div>
+                    </div>}/>
                   )
                 })}
               </div>

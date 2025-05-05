@@ -122,7 +122,7 @@ export interface CalendarEvent {
   id: string;
   title: string;
   description?: string;
-  date: Date;
+  date: string;
   time: string;
   endTime: string;
   occurrence: 'single' | 'recurring-month' | 'recurring-week';

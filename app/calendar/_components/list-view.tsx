@@ -15,7 +15,7 @@ interface ListViewProps {
 
 export function ListView({ currentDate, events, onEventClick }: ListViewProps) {
   // Sort events by date
-  const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime())
+  const sortedEvents = [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   // Group events by date
   const eventsByDate: Record<string, CalendarEvent[]> = {}
@@ -47,7 +47,7 @@ export function ListView({ currentDate, events, onEventClick }: ListViewProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-muted/50 p-4">
         <h3 className="text-lg font-semibold">Upcoming Events</h3>
-        <Link href={`/calendar/event?date=${currentDate.toISOString()}`}>
+        <Link href={`/calendar/event?date=${encodeURIComponent(currentDate.toISOString())}`}>
           <Button size="sm">
             <Plus className="mr-1 h-4 w-4" />
             Add Event

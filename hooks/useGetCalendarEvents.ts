@@ -26,7 +26,7 @@ const useGetCalendarEvents = () => {
     enabled: !!workspace.id,
   });
 
-  const eventsData = data?.calendarEvents || [];
+  const eventsData: CalendarEvent[] = data?.calendarEvents || [];
 
   return { eventsData, eventsLoading, errorLoadingEvents };
 };

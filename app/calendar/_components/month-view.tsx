@@ -10,11 +10,9 @@ interface MonthViewProps {
   events: CalendarEvent[]
   onEventClick: (event: CalendarEvent) => void
   onDateClick: (date: Date) => void 
-  open: boolean
-  setOpen: (open: boolean) => void
-}
+  }
 
-export function MonthView({ currentDate, events, onEventClick, onDateClick, open, setOpen }: MonthViewProps) {
+export function MonthView({ currentDate, events, onEventClick, onDateClick }: MonthViewProps) {
   // Helper functions for calendar
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate()
@@ -104,11 +102,9 @@ export function MonthView({ currentDate, events, onEventClick, onDateClick, open
                       {day}
                     </span>
                     <Link
-                      href={`/calendar/event?date=${new Date(
-                        currentDate.getFullYear(),
-                        currentDate.getMonth(),
-                        day,
-                      ).toISOString()}`}
+                      href={`/calendar/event?date=${encodeURIComponent(
+                        new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toISOString(),
+                      )}`}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Button variant="ghost" size="icon" className="h-6 w-6">
@@ -116,9 +112,9 @@ export function MonthView({ currentDate, events, onEventClick, onDateClick, open
                       </Button>
                     </Link>
                   </div>
-                  <div className="mt-1 space-y-1">
+                  <div className="mt-1 space-y-1 z-50">
                     {dayEvents.slice(0, 3).map((event) => (
-                      <div
+                       <div
                         key={event.id}
                         className={`rounded-sm px-1.5 py-0.5 text-xs ${
                           event.type === "meeting"
@@ -129,22 +125,14 @@ export function MonthView({ currentDate, events, onEventClick, onDateClick, open
                         }`}
                         onClick={(e) => {
                           e.stopPropagation()
-                          setOpen(true)
+                          onEventClick(event)
                         }}
                       >
                         {event.time && `${event.time} · `}
                         {event.title}
-                        <EventDetailsDialog
-                          key={event.id}
-                          event={event}
-                          open={open}
-                          onOpenChange={() => setOpen(!open)}
-                          onSave={() => {}}
-                          onDelete={() => {}}
-                          onEdit={() => {onEventClick(event)}}
-                          
-                        />
+                        
                       </div>
+                     
                     ))}
                     {dayEvents.length > 3 && (
                       <div className="px-1.5 py-0.5 text-xs text-muted-foreground">+{dayEvents.length - 3} more</div>

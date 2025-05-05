@@ -34,7 +34,6 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [viewType, setViewType] = useState<CalendarViewType>("month")
-  const [open, setOpen] = useState(false)
 
 const { eventsData, eventsLoading, errorLoadingEvents } = useGetCalendarEvents();
 console.log(eventsData, eventsLoading, errorLoadingEvents, "eventsData")
@@ -218,8 +217,6 @@ console.log(eventsData, eventsLoading, errorLoadingEvents, "eventsData")
                   events={eventsData}
                   onEventClick={handleEventClick}
                   onDateClick={handleDateClick}
-                  open={open}
-                  setOpen={setOpen}
                 />
               )}
 
