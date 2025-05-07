@@ -86,10 +86,10 @@ export function DayView({ currentDate, events, onEventClick }: DayViewProps) {
                       key={event.id}
                       className={`absolute left-2 right-2 rounded-sm px-3 py-2 text-sm cursor-pointer ${
                         event.type === "meeting"
-                          ? "bg-blue-100 text-blue-800"
-                          : event.type === "event"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
+                            ? "bg-blue-100 text-blue-800"
+                            : event.type === "event"
+                              ? "bg-purple-100 text-purple-800"
+                              : ""
                       }`}
                       style={{
                         top: `${minuteOffset}%`,

@@ -3,7 +3,6 @@
 import type React from "react";
 
 import { useAuth } from "@/app/providers/AuthProvider";
-import { DatePicker } from "@/components/date-picker-component";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,11 +27,15 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
 import workspaceStore from "@/store/workspaceStore";
-import { Plus, X } from "lucide-react";
+import { CalendarIcon, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import AddNewProject from "@/hooks/Functions/AddNewProject";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 interface AddProjectDialogProps {
   trigger?: React.ReactNode;
@@ -104,7 +107,6 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
       description: projectDescription,
       status: "active",
       deadline: dueDate?.toISOString(),
-      workspaceId: activeWorkspace?.id,
       createdById: session.id,
       members: selectedMembers,
     };
@@ -174,7 +176,28 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
               </div>
               <div className="grid gap-2">
                 <Label>Due Date</Label>
-                <DatePicker date={dueDate} setDate={setDueDate} />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dueDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dueDate ? format(dueDate, "PPP") : "Select a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={dueDate}
+                      onSelect={setDueDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div className="grid gap-2">

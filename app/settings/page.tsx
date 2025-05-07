@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from "lucide-react";
@@ -7,9 +7,20 @@ import GeneralSettings from "./_components/general-settings";
 import NotificationSettings from "./_components/notification-settings";
 import ProfileSettings from "./_components/profile-settings";
 import SecuritySettings from "./_components/security-settings";
+import PermissionSettings from "./_components/permission-settings";
+import { useIsMobile } from "@/hooks/use-mobile";
+import workspaceStore from "@/store/workspaceStore";
+import useGetMyDetails from "@/hooks/useGetMyDetails";
+import LoadingSettings from "./_components/loading-settings";
 
 export default function SettingsPage() {
+  const isMobile = useIsMobile();
+  const { activeWorkspace } = workspaceStore.getState();
+  const { myDataLoading, errorLoadingMyData, myData } = useGetMyDetails();
 
+  if (myDataLoading) {
+    return <LoadingSettings />;
+  }
   return (
     <div className="flex min-h-screen w-full flex-col">
       {/* Main Content */}
@@ -32,53 +43,74 @@ export default function SettingsPage() {
         </header>
 
         {/* Content */}
-        <div className="flex-1 p-4 lg:p-6">
-          <div className="flex flex-col gap-6">
-            {/* Settings Info */}
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-bold">Workspace Settings</h2>
-              <p className="text-muted-foreground">
-                Manage your workspace preferences and account settings.
-              </p>
+        {!isMobile && (
+          <div className="flex-1 p-4 lg:p-6">
+            <div className="flex flex-col gap-6">
+              {/* Settings Info */}
+              <div className="flex flex-col gap-2">
+                <h2 className="text-2xl font-bold">Workspace Settings</h2>
+                <p className="text-muted-foreground">
+                  Manage your workspace preferences and account settings.
+                </p>
+              </div>
+
+              {/* Settings Tabs */}
+              <Tabs defaultValue="general">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
+                  <TabsTrigger value="general">General</TabsTrigger>
+                  <TabsTrigger value="profile">Profile</TabsTrigger>
+                  <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                  <TabsTrigger value="security">Security</TabsTrigger>
+                  <TabsTrigger value="permissions">
+                    Permissions & Roles
+                  </TabsTrigger>
+                  <TabsTrigger value="billing">Billing</TabsTrigger>
+                </TabsList>
+
+                {/* General Settings */}
+                <TabsContent value="general" className="pt-4">
+                  <GeneralSettings activeWorkspace={activeWorkspace} />
+                </TabsContent>
+
+                {/* Profile Settings */}
+                <TabsContent value="profile" className="pt-4">
+                  <ProfileSettings myData={myData} />
+                </TabsContent>
+
+                {/* Notifications Settings */}
+                <TabsContent value="notifications" className="pt-4">
+                  <NotificationSettings />
+                </TabsContent>
+
+                {/* Security Settings */}
+                <TabsContent value="security" className="pt-4">
+                  <SecuritySettings />
+                </TabsContent>
+
+                {/* Permissions Settings */}
+                <TabsContent value="permissions" className="pt-4">
+                  <PermissionSettings />
+                </TabsContent>
+
+                {/* Billing Settings */}
+                <TabsContent value="billing" className="pt-4">
+                  <BillingSettings />
+                </TabsContent>
+              </Tabs>
             </div>
-
-            {/* Settings Tabs */}
-            <Tabs defaultValue="general">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
-                <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="profile">Profile</TabsTrigger>
-                <TabsTrigger value="notifications">Notifications</TabsTrigger>
-                <TabsTrigger value="security">Security</TabsTrigger>
-                <TabsTrigger value="billing">Billing</TabsTrigger>
-              </TabsList>
-
-              {/* General Settings */}
-              <TabsContent value="general" className="pt-4">
-                <GeneralSettings />
-              </TabsContent>
-
-              {/* Profile Settings */}
-              <TabsContent value="profile" className="pt-4">
-                <ProfileSettings />
-              </TabsContent>
-
-              {/* Notifications Settings */}
-              <TabsContent value="notifications" className="pt-4">
-                <NotificationSettings />
-              </TabsContent>
-
-              {/* Security Settings */}
-              <TabsContent value="security" className="pt-4">
-                <SecuritySettings />
-              </TabsContent>
-
-              {/* Billing Settings */}
-              <TabsContent value="billing" className="pt-4">
-                <BillingSettings />
-              </TabsContent>
-            </Tabs>
           </div>
-        </div>
+        )}
+
+        {isMobile && (
+          <div className="flex-1 p-2 space-y-2">
+            <GeneralSettings activeWorkspace={activeWorkspace} />
+            <ProfileSettings myData={myData} />
+            <NotificationSettings />
+            <SecuritySettings />
+            <PermissionSettings />
+            <BillingSettings /> 
+          </div>
+        )}
       </main>
     </div>
   );

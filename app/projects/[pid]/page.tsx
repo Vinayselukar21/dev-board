@@ -39,6 +39,7 @@ import { toast } from "sonner";
 import DeleteTask from "@/hooks/Functions/DeleteTask";
 import { ProjectSettingsDialog } from "./_components/project-settings-dialog";
 import { format } from "date-fns";
+import LoadingTasks from "./_components/loading-tasks";
 
 // Define types for our Kanban board
 
@@ -185,7 +186,9 @@ export default function ProjectPage() {
         return "bg-gray-100 text-gray-800 hover:bg-gray-100";
     }
   };
-
+  if(tasksLoading){
+    return <LoadingTasks/>
+  }
   return (
     <div className="flex min-h-screen w-full flex-col">
       {/* Main Content */}

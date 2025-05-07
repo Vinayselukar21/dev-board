@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
+  Calendar,
   CheckCircle2,
   Clock,
   FolderKanban,
@@ -22,14 +23,16 @@ import { useAuth } from "../providers/AuthProvider";
 import useGetDashboard from "@/hooks/useGetDashboard";
 import { Log } from "../types";
 import { format } from "date-fns";
+import LoadingDashboard from "./_components/loading-dashboard";
 
 export default function Page() {
   const { session } = useAuth();
   const { dashboardData, dashboardLoading, errorLoadingDashboard } =
     useGetDashboard();
-  return dashboardLoading ? (
-    "Loading..."
-  ) : (
+    if(dashboardLoading){
+      return <LoadingDashboard/>
+    }
+  return (
     <div className="flex min-h-screen w-full flex-col">
       <main className="flex flex-1 flex-col">
         {/* Header */}
@@ -192,13 +195,14 @@ export default function Page() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {dashboardData?.logsCard.map((log: Log)=>{ return (<div className="flex gap-4" key={log.id}>
+                    {dashboardData?.logsCard?.map((log: Log)=>{ return (<div className="flex gap-4" key={log.id}>
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                         {log.type === "user" && <User  className="h-4 w-4" />}
                         {log.type === "workspace" && <Users className="h-4 w-4" />}
                         {log.type === "task" && <StickyNote className="h-4 w-4" />}
                         {log.type === "project" && <FolderKanban className="h-4 w-4" />}
                         {log.type === "setting" && <Settings className="h-4 w-4" />}
+                        {log.type === "calendarEvent" && <Calendar className="h-4 w-4" />}
                       </div>
                       <div>
                         <p className="text-sm font-medium">

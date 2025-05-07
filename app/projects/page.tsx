@@ -18,12 +18,17 @@ import { AddProjectDialog } from "./_components/add-project-dialog";
 import workspaceStore from "@/store/workspaceStore";
 import { Log } from "../types";
 import { format } from "date-fns";
+import LoadingProjects from "./_components/loading-projects";
 
 export default function Page() {
   const { projectData, projectsLoading, errorLoadingProjects } =
     useGetProjects();
   const { activeWorkspace } = workspaceStore.getState();
 const {projectLogsData, projectLogsLoading, errorLoadingProjectLogs} = useGetProjectLogs();
+
+if(projectsLoading){
+  return <LoadingProjects/>
+}
   return (
     <main className="flex flex-1 flex-col">
       {/* Header */}

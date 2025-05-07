@@ -44,6 +44,7 @@ export interface WorkspaceMember {
   jobTitle?: string;
   // projectMembers?: ProjectMember[];
   // add workspace member designation
+  createdEvents?: CalendarEvent[];
 }
 
 export interface ProjectMember {
@@ -127,6 +128,7 @@ export interface CalendarEvent {
   endTime: string;
   occurrence: 'single' | 'recurring-month' | 'recurring-week';
   participants: string[];
+  status: "active" | "cancelled";
 
   // Relations
   projectId?: string;
@@ -135,9 +137,12 @@ export interface CalendarEvent {
   workspaceId: string;
   workspace?: Workspace;
 
-  type: 'event' | 'meeting' | 'task';
+  type: 'event' | 'meeting';
   location?: string;
 
   createdAt?: Date;
   updatedAt?: Date;
+
+  createdById: string;
+  createdBy: WorkspaceMember;
 }

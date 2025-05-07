@@ -23,6 +23,7 @@ import { DayView } from "./_components/day-view"
 import { ListView } from "./_components/list-view"
 import { CalendarEvent } from "../types"
 import useGetCalendarEvents from "@/hooks/useGetCalendarEvents"
+import LoadingCalendar from "./_components/loading-calendar"
 
 // Calendar view type
 type CalendarViewType = "month" | "week" | "day" | "list"
@@ -130,6 +131,10 @@ console.log(eventsData, eventsLoading, errorLoadingEvents, "eventsData")
       default:
         return currentDate.toLocaleString("default", { month: "long", year: "numeric" })
     }
+  }
+
+  if(eventsLoading){
+    return <LoadingCalendar/>
   }
 
   return (

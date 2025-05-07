@@ -5,6 +5,7 @@ import axios from "@/utils/axios";
 
 
 export interface Payload {
+  id: string;
   title: string;
   description?: string;
   date: Date;
@@ -19,18 +20,16 @@ export interface Payload {
   workspaceId: string;
   type: 'event' | 'meeting' | 'task';
   location?: string;
-
-  createdById?: string; // workspace member id
 }
 
 
-const AddNewCalendarEvent = async (payload: Payload) => {
+const EditCalendarEvent = async (payload: Payload) => {
   const { activeWorkspace } = workspaceStore.getState();
-  const response = await axios.post(
-    `/workspace/${activeWorkspace?.id}/newevent`,
+  const response = await axios.put(
+    `/workspace/${activeWorkspace?.id}/event/update`,
     payload
   );
   return response.data;
 };
 
-export default AddNewCalendarEvent;
+export default EditCalendarEvent;

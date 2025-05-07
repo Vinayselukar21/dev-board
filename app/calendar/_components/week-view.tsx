@@ -116,7 +116,7 @@ export function WeekView({
               return (
                 <div
                   key={dayIndex}
-                  className="relative min-h-[60px] p-1 border-r"
+                  className="min-h-[60px] border-r"
                   onClick={() => onDateClick(day)}
                 >
                   {dayEvents.map((event) => (
@@ -129,12 +129,12 @@ export function WeekView({
                       trigger={
                         <div
                           key={event.id}
-                          className={`absolute left-1 right-1 rounded-sm px-2 py-1 text-xs cursor-pointer ${
+                          className={`rounded-sm px-2 py-1 text-xs cursor-pointer m-1 ${
                             event.type === "meeting"
-                              ? "bg-blue-100 text-blue-800"
-                              : event.type === "event"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
+                            ? "bg-blue-100 text-blue-800"
+                            : event.type === "event"
+                              ? "bg-purple-100 text-purple-800"
+                              : ""
                           }`}
                           style={{ top: "4px" }}
                           onClick={(e) => {

@@ -89,18 +89,19 @@ export function MonthView({ currentDate, events, onEventClick, onDateClick }: Mo
               className={`min-h-[120px] border-b border-r p-1 cursor-pointer ${day ? "" : "bg-muted/20"} ${
                 isToday ? "bg-primary/5" : ""
               }`}
-              onClick={() => handleDayClick(day)}
+            
             >
               {day && (
                 <>
                   <div className="flex justify-between p-1">
-                    <span
+                    <Button variant="ghost" size="icon"
                       className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
                         isToday ? "bg-primary text-primary-foreground" : ""
                       }`}
+                        onClick={() => handleDayClick(day)}
                     >
                       {day}
-                    </span>
+                    </Button>
                     <Link
                       href={`/calendar/event?date=${encodeURIComponent(
                         new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toISOString(),
@@ -114,25 +115,36 @@ export function MonthView({ currentDate, events, onEventClick, onDateClick }: Mo
                   </div>
                   <div className="mt-1 space-y-1 z-50">
                     {dayEvents.slice(0, 3).map((event) => (
+                       <EventDetailsDialog
+                       key={event.id}
+                       event={event}
+                       onEdit={() => {
+                         onEventClick(event);
+                       }}
+                       trigger={
                        <div
                         key={event.id}
                         className={`rounded-sm px-1.5 py-0.5 text-xs ${
                           event.type === "meeting"
                             ? "bg-blue-100 text-blue-800"
                             : event.type === "event"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
+                              ? "bg-purple-100 text-purple-800"
+                              : ""
                         }`}
                         onClick={(e) => {
                           e.stopPropagation()
-                          onEventClick(event)
+                          // onEventClick(event)
                         }}
                       >
-                        {event.time && `${event.time} · `}
-                        {event.title}
-                        
+                       <span className={event.status === "cancelled" ? "line-through" : ""}> {event.time && `${event.time} · `}
+                       {event.title}</span>
+                       {event.status === "cancelled" && (
+                          <span className="ml-1 text-xs text-muted-foreground">(Cancelled)</span>
+                        )}
                       </div>
-                     
+                      }
+                    />
+                      
                     ))}
                     {dayEvents.length > 3 && (
                       <div className="px-1.5 py-0.5 text-xs text-muted-foreground">+{dayEvents.length - 3} more</div>

@@ -1,3 +1,4 @@
+import { WorkspaceMember } from "@/app/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,10 +10,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import useGetMyDetails from "@/hooks/useGetMyDetails";
 
-export default function ProfileSettings() {
-    const { myDataLoading, errorLoadingMyData, myData } = useGetMyDetails();
+export default function ProfileSettings({
+  myData,
+}: {
+  myData: WorkspaceMember;
+}) {
+    
     const myInfo = myData?.user
   return (
     <Card>

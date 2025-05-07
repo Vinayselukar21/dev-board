@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +15,8 @@ import {
   ArrowLeft,
   Trash2,
   Check,
-  X
+  X,
+  ChevronsUpDown,
 } from "lucide-react";
 
 // UI Components
@@ -53,83 +54,97 @@ import { cn } from "@/lib/utils";
 import workspaceStore from "@/store/workspaceStore";
 import AddNewCalendarEvent from "@/hooks/Functions/AddNewCalendarEvent";
 import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
+import EditCalendarEvent from "@/hooks/Functions/EditCalendarEvent";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import EventFormConstrains, { EventFormValues } from "./_components/EventFormConstrains";
+import CancelCalendarEvent from "@/hooks/Functions/CancelCalendarEvent";
+import DeleteCalendarEvent from "@/hooks/Functions/DeleteCalendarEvent";
+import { useAuth } from "@/app/providers/AuthProvider";
+import LoadingEvent from "./_components/loading-event";
 
-// Define the form schema with Zod
-const eventFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  date: z.date({
-    required_error: "Please select a date",
-  }),
-  startTime: z.string().min(1, "Start time is required"),
-  endTime: z.string().optional(),
-  eventType: z.enum(["meeting", "event", "task"], {
-    required_error: "Please select an event type",
-  }),
-  occurrence: z.enum(["single", "recurring-month", "recurring-week"], {
-    required_error: "Please select occurrence type",
-  }),
-  projectId: z.string().optional(),
-  location: z.string().optional(),
-  participants: z.array(z.string()),
-});
-
-type EventFormValues = z.infer<typeof eventFormSchema>;
 
 export default function EventPage() {
+  const {session} = useAuth();
+  const {form} = EventFormConstrains();
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { eventsData, eventsLoading } = useGetCalendarEvents();
   const { activeWorkspace } = workspaceStore.getState();
+  const [eventStatus, setEventStatus] = useState("active");
 
   // Check if we're editing an existing event
   const eventId = searchParams.get("id");
   const isEditing = !!eventId;
 
-  // Generate time options for select
-  const generateTimeOptions = () => {
-    const options = [];
-    for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const h = hour.toString().padStart(2, "0");
-        const m = minute.toString().padStart(2, "0");
-        const time = `${h}:${m}`;
-        const label = format(new Date().setHours(hour, minute), "h:mm a");
-        options.push({ value: time, label });
-      }
-    }
-    return options;
-  };
 
-  // Memoize time options to prevent recalculation on every render
-  const timeOptions = React.useMemo(() => generateTimeOptions(), []);
+  const timeOptions = [
+    { value: "00:00", label: "12:00 AM" },
+    { value: "00:30", label: "12:30 AM" },
+    { value: "01:00", label: "1:00 AM" },
+    { value: "01:30", label: "1:30 AM" },
+    { value: "02:00", label: "2:00 AM" },
+    { value: "02:30", label: "2:30 AM" },
+    { value: "03:00", label: "3:00 AM" },
+    { value: "03:30", label: "3:30 AM" },
+    { value: "04:00", label: "4:00 AM" },
+    { value: "04:30", label: "4:30 AM" },
+    { value: "05:00", label: "5:00 AM" },
+    { value: "05:30", label: "5:30 AM" },
+    { value: "06:00", label: "6:00 AM" },
+    { value: "06:30", label: "6:30 AM" },
+    { value: "07:00", label: "7:00 AM" },
+    { value: "07:30", label: "7:30 AM" },
+    { value: "08:00", label: "8:00 AM" },
+    { value: "08:30", label: "8:30 AM" },
+    { value: "09:00", label: "9:00 AM" },
+    { value: "09:30", label: "9:30 AM" },
+    { value: "10:00", label: "10:00 AM" },
+    { value: "10:30", label: "10:30 AM" },
+    { value: "11:00", label: "11:00 AM" },
+    { value: "11:30", label: "11:30 AM" },
+    { value: "12:00", label: "12:00 PM" },
+    { value: "12:30", label: "12:30 PM" },
+    { value: "13:00", label: "1:00 PM" },
+    { value: "13:30", label: "1:30 PM" },
+    { value: "14:00", label: "2:00 PM" },
+    { value: "14:30", label: "2:30 PM" },
+    { value: "15:00", label: "3:00 PM" },
+    { value: "15:30", label: "3:30 PM" },
+    { value: "16:00", label: "4:00 PM" },
+    { value: "16:30", label: "4:30 PM" },
+    { value: "17:00", label: "5:00 PM" },
+    { value: "17:30", label: "5:30 PM" },
+    { value: "18:00", label: "6:00 PM" },
+    { value: "18:30", label: "6:30 PM" },
+    { value: "19:00", label: "7:00 PM" },
+    { value: "19:30", label: "7:30 PM" },
+    { value: "20:00", label: "8:00 PM" },
+    { value: "20:30", label: "8:30 PM" },
+    { value: "21:00", label: "9:00 PM" },
+    { value: "21:30", label: "9:30 PM" },
+    { value: "22:00", label: "10:00 PM" },
+    { value: "22:30", label: "10:30 PM" },
+    { value: "23:00", label: "11:00 PM" },
+    { value: "23:30", label: "11:30 PM" },
+  ];
 
-  // Initialize form with defaults or event data
-  const form = useForm<EventFormValues>({
-    resolver: zodResolver(eventFormSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      date: new Date(),
-      startTime: "",
-      endTime: "",
-      eventType: "meeting" as const,
-      occurrence: "single" as const,
-      projectId: "",
-      location: "",
-      participants: [],
-    },
-  });
+ 
 
   // Watch for form value changes
   const participants = form.watch("participants");
 
-  // Initialize form with data from URL or existing event
+  const formInitialized = React.useRef(false);
   React.useEffect(() => {
-    // Handle date from URL
+    // Handle date from URL for new events
     const dateParam = searchParams.get("date");
-    if (dateParam && !isEditing) {
+    if (dateParam && !isEditing && !formInitialized.current) {
       try {
         const parsedDate = new Date(dateParam);
         if (!isNaN(parsedDate.getTime())) {
@@ -140,49 +155,120 @@ export default function EventPage() {
       }
     }
 
-    // Handle existing event data
-    if (isEditing && eventId && eventsData) {
+    // Only load event data once when editing an existing event
+    if (isEditing && eventId && eventsData && !formInitialized.current) {
       const event = eventsData.find((e) => e.id === eventId);
       if (event) {
-        form.reset({
-          title: event.title || "",
-          description: event.description || "",
-          date: event.date ? new Date(event.date) : new Date(),
-          startTime: event.time || "",
-          endTime: event.endTime || "",
-          eventType: (event.type as "meeting" | "event" | "task") || "meeting",
-          occurrence: (event.occurrence as "single" | "recurring-month" | "recurring-week") || "single",
-          projectId: event.projectId || "",
-          location: event.location || "",
-          participants: event.participants?.map((p: any) => p.workspaceMemberId) || [],
-        });
+        console.log(event, "form reset ran ");
+        // Set form initialized flag to true to prevent reloading
+        // formInitialized.current = true;
+
+        form.setValue("title", event.title || "");
+        form.setValue("description", event.description || "");
+        form.setValue("date", event.date ? new Date(event.date) : new Date());
+        form.setValue("startTime", event.time || "");
+        form.setValue("endTime", event.endTime || "");
+        form.setValue(
+          "eventType",
+          (event.type as "meeting" | "event") || "meeting"
+        );
+        form.setValue(
+          "occurrence",
+          (event.occurrence as
+            | "single"
+            | "recurring-month"
+            | "recurring-week") || "single"
+        );
+        form.setValue("projectId", event.projectId || "");
+        form.setValue("location", event.location || "");
+        form.setValue(
+          "participants",
+          event.participants?.map((p: any) => p.workspaceMemberId) || []
+        );
+        form.setValue("status", event.status || "active");
+        setEventStatus(event.status || "active");
       }
     }
-  }, [searchParams, isEditing, eventId, eventsData, form]);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, isEditing, eventId, eventsData]); // Dependencies remain the same
+
+  console.log(form.getValues(), "form.getValues()");
   // Handle form submission
   const AddNewCalendarEventMutation = useMutation({
     mutationFn: AddNewCalendarEvent,
     onSuccess: () => {
-      toast.success(isEditing ? "Event updated successfully" : "Calendar event added successfully");
+      toast.success(
+        isEditing
+          ? "Event updated successfully"
+          : "Calendar event added successfully"
+      );
       queryClient.invalidateQueries({
         queryKey: ["calendar-events", activeWorkspace?.id],
       });
-      
+
       // Only reset form if we're not editing
-      if (!isEditing) {
+      // if (!isEditing) {
         form.reset();
-      }
-      
+      // }
+
       // Navigate back to calendar
       router.push("/calendar");
     },
     onError: (error) => {
-      toast.error(isEditing ? "Error updating event" : "Error adding calendar event");
+      toast.error(
+        isEditing ? "Error updating event" : "Error adding calendar event"
+      );
       console.error("Error with calendar event:", error);
     },
   });
 
+  // Edit event mutation
+  const EditCalendarEventMutation = useMutation({
+    mutationFn: EditCalendarEvent,
+    onSuccess: () => {
+      toast.success("Event updated successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["calendar-events", activeWorkspace?.id],
+      });
+
+      // Only reset form if we're not editing
+      if (!isEditing) {
+        form.reset();
+      }
+
+      // Navigate back to calendar
+      router.push("/calendar");
+    },
+    onError: (error) => {
+      toast.error("Error updating event");
+      console.error("Error with calendar event:", error);
+    },
+  });
+
+  const DeleteCalendarEventMutation = useMutation({
+    mutationFn: DeleteCalendarEvent,
+    onSuccess: () => {
+      toast.success("Event deleted successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["calendar-events", activeWorkspace?.id],
+      });
+
+      // Only reset form if we're not editing
+      if (!isEditing) {
+        form.reset();
+      }
+
+      // Navigate back to calendar
+      router.push("/calendar");
+    },
+    onError: (error) => {
+      toast.error("Error deleting event");
+      console.error("Error with calendar event:", error);
+    },
+  });
+
+  
   function onSubmit(data: EventFormValues) {
     // Create event payload
     const payload: any = {
@@ -196,8 +282,9 @@ export default function EventPage() {
       location: data.location,
       participants: data.participants,
       workspaceId: activeWorkspace?.id!,
+      status: data.status,
+      createdById: session?.memberships.find((m: any) => m.workspaceId === activeWorkspace?.id)?.id!,
     };
-
     if (data.projectId && data.projectId !== "none") {
       payload.projectId = data.projectId;
     }
@@ -207,7 +294,14 @@ export default function EventPage() {
       payload.id = eventId;
     }
 
-    AddNewCalendarEventMutation.mutate(payload);
+    if (isEditing) {
+      EditCalendarEventMutation.mutate({
+        ...payload,
+        id: eventId!,
+      });
+    } else {
+      AddNewCalendarEventMutation.mutate(payload);
+    }
   }
 
   // Handle event deletion
@@ -217,40 +311,72 @@ export default function EventPage() {
       window.confirm("Are you sure you want to delete this event?")
     ) {
       // In a real app, delete from your backend
-      // DeleteCalendarEventMutation.mutate(eventId);
-      
+      DeleteCalendarEventMutation.mutate(eventId!);
+
       toast.success("Event deleted");
       // Navigate back to calendar
       router.push("/calendar");
     }
   };
 
+  const CancelCalendarEventMutation = useMutation({
+    mutationFn: CancelCalendarEvent,
+    onSuccess: () => {
+      toast.success("Event cancelled");
+      queryClient.invalidateQueries({
+        queryKey: ["calendar-events", activeWorkspace?.id],
+      });
+
+      // Only reset form if we're not editing
+      if (!isEditing) {
+        form.reset();
+      }
+
+      // Navigate back to calendar
+      router.push("/calendar");
+    },
+    onError: (error) => {
+      toast.error("Error cancelling event");
+      console.error("Error with calendar event:", error);
+    },
+  });
+
+  // Handle event cancellation
+  const handleCancel = () => {
+    if (
+      isEditing &&
+      window.confirm("Are you sure you want to cancel this event?")
+    ) {
+      // In a real app, delete from your backend
+      CancelCalendarEventMutation.mutate({ eventId: eventId! });
+    }
+  };
+
   // Toggle participant selection
   const toggleParticipant = (memberId: string) => {
-    const currentParticipants = form.getValues("participants");
+    const currentParticipants = [...form.getValues("participants")];
+
     if (currentParticipants.includes(memberId)) {
+      // Remove participant
       form.setValue(
-        "participants", 
-        currentParticipants.filter(id => id !== memberId)
+        "participants",
+        currentParticipants.filter((id) => id !== memberId),
+        { shouldDirty: true, shouldTouch: false }
       );
     } else {
-      form.setValue(
-        "participants", 
-        [...currentParticipants, memberId]
-      );
+      // Add participant
+      form.setValue("participants", [...currentParticipants, memberId], {
+        shouldDirty: true,
+        shouldTouch: false,
+      });
     }
   };
 
   // Don't render the form until we've loaded any existing event data
   if (isEditing && eventsLoading) {
-    return (
-      <div className="flex min-h-screen w-full flex-col items-center justify-center">
-        <p>Loading event data...</p>
-      </div>
-    );
+    return <LoadingEvent/>
   }
 
-  console.log(participants, "participants");
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -262,7 +388,7 @@ export default function EventPage() {
           </Link>
         </Button>
         <h1 className="text-lg font-semibold">
-          {isEditing ? "Edit Event" : "Add New Event"}
+          {isEditing && eventStatus !== "cancelled" ? "Edit Event" : isEditing && eventStatus === "cancelled" ? "View Event" : "Add New Event"}
         </h1>
       </header>
 
@@ -274,9 +400,10 @@ export default function EventPage() {
               <FormField
                 control={form.control}
                 name="title"
+                disabled={eventStatus === "cancelled"}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Event Title</FormLabel>
+                    <FormLabel>Event Title {eventStatus === "cancelled" && <Badge className="bg-red-100 text-red-800">Cancelled</Badge>}</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter event title" {...field} />
                     </FormControl>
@@ -288,14 +415,15 @@ export default function EventPage() {
               <FormField
                 control={form.control}
                 name="description"
+                disabled={eventStatus === "cancelled"}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Add event details" 
-                        className="min-h-[100px]" 
-                        {...field} 
+                      <Textarea
+                        placeholder="Add event details"
+                        className="min-h-[100px]"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -307,11 +435,12 @@ export default function EventPage() {
                 <FormField
                   control={form.control}
                   name="date"
+                 
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel>Date</FormLabel>
                       <Popover>
-                        <PopoverTrigger asChild>
+                        <PopoverTrigger asChild  disabled={eventStatus === "cancelled"}>
                           <FormControl>
                             <Button
                               variant="outline"
@@ -321,11 +450,9 @@ export default function EventPage() {
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                "Select a date"
-                              )}
+                              {field.value
+                                ? format(field.value, "PPP")
+                                : "Select a date"}
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
@@ -350,18 +477,23 @@ export default function EventPage() {
                     <FormItem>
                       <FormLabel>Occurrence</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
+                       key={field.value}
+                       value={field.value}
+                       onValueChange={(value) => {
+                         field.onChange(value);
+                        }}
+                        disabled={eventStatus === "cancelled"}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select occurrence" />
+                            <SelectValue placeholder="Select occurrence"  />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="single">Single Event</SelectItem>
-                          <SelectItem value="recurring-month">Monthly</SelectItem>
+                          <SelectItem value="recurring-month">
+                            Monthly
+                          </SelectItem>
                           <SelectItem value="recurring-week">Weekly</SelectItem>
                         </SelectContent>
                       </Select>
@@ -372,29 +504,25 @@ export default function EventPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+             
+
                 <FormField
                   control={form.control}
                   name="startTime"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Start Time</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
+                      <Select 
+                       key={field.value}
+                       value={field.value}
+                       onValueChange={(value) => {
+                           field.onChange(value);
+                       }}
+                       disabled={eventStatus === "cancelled"}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select time">
-                              {field.value ? (
-                                <div className="flex items-center">
-                                  <Clock className="mr-2 h-4 w-4" />
-                                  {timeOptions.find(option => option.value === field.value)?.label || field.value}
-                                </div>
-                              ) : (
-                                "Select time"
-                              )}
-                            </SelectValue>
+                            <SelectValue placeholder="Select time" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -410,6 +538,7 @@ export default function EventPage() {
                   )}
                 />
 
+             
                 <FormField
                   control={form.control}
                   name="endTime"
@@ -417,22 +546,16 @@ export default function EventPage() {
                     <FormItem>
                       <FormLabel>End Time</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value || ""}
+                        key={field.value}
+                        disabled={eventStatus === "cancelled"}
+                        value={field.value}
+                        onValueChange={(value) => {
+                            field.onChange(value);
+                        }}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select time">
-                              {field.value ? (
-                                <div className="flex items-center">
-                                  <Clock className="mr-2 h-4 w-4" />
-                                  {timeOptions.find(option => option.value === field.value)?.label || field.value}
-                                </div>
-                              ) : (
-                                "Select time"
-                              )}
-                            </SelectValue>
+                            <SelectValue placeholder="Select time" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -457,9 +580,12 @@ export default function EventPage() {
                     <FormItem>
                       <FormLabel>Event Type</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        key={field.value}
                         value={field.value}
+                        disabled={eventStatus === "cancelled"}
+                        onValueChange={(value) => {
+                            field.onChange(value);
+                        }}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -469,7 +595,6 @@ export default function EventPage() {
                         <SelectContent>
                           <SelectItem value="meeting">Meeting</SelectItem>
                           <SelectItem value="event">Event</SelectItem>
-                          <SelectItem value="task">Task</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -477,6 +602,7 @@ export default function EventPage() {
                   )}
                 />
 
+                {/* // Project ID Select Component */}
                 <FormField
                   control={form.control}
                   name="projectId"
@@ -484,9 +610,12 @@ export default function EventPage() {
                     <FormItem>
                       <FormLabel>Related Project</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value || ""}
+                        key={field.value}
+                        value={field.value}
+                        disabled={eventStatus === "cancelled"}
+                        onValueChange={(value) => {
+                            field.onChange(value);
+                        }}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -512,13 +641,14 @@ export default function EventPage() {
               <FormField
                 control={form.control}
                 name="location"
+                disabled={eventStatus === "cancelled"}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Location</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="Add location (e.g., Meeting Room, Zoom, etc.)" 
-                        {...field} 
+                      <Input
+                        placeholder="Add location (e.g., Meeting Room, Zoom, etc.)"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -530,86 +660,132 @@ export default function EventPage() {
               <FormField
                 control={form.control}
                 name="participants"
-                render={() => (
-                  <FormItem>
+               
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
                     <FormLabel>Participants</FormLabel>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {participants.length > 0 ? (
-                        participants.map((wMemberId: any) => {
+                    <Popover>
+                      <PopoverTrigger asChild  disabled={eventStatus === "cancelled"}>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value?.length && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value?.length > 0
+                              ? `${field.value.length} participant${
+                                  field.value.length > 1 ? "s" : ""
+                                } selected`
+                              : "Select participants"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search participants..." />
+                          <CommandEmpty>No participants found.</CommandEmpty>
+                          <CommandGroup className="max-h-64 overflow-auto">
+                            {activeWorkspace?.members?.map((member) => (
+                              <CommandItem
+                                key={member.id}
+                                value={member.user.name}
+                                onSelect={() => {
+                                  toggleParticipant(member.id);
+                                }}
+                              >
+                                <div className="flex items-center gap-2 w-full">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarFallback>
+                                      {member?.user?.name
+                                        ?.charAt(0)
+                                        .toUpperCase() ?? "U"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span>{member.user.name}</span>
+                                  <Check
+                                    className={cn(
+                                      "ml-auto h-4 w-4",
+                                      participants.includes(member.id)
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+
+                    {/* Selected participants display */}
+                    {participants.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {participants.map((memberId) => {
                           const member = activeWorkspace?.members?.find(
-                            (m) => m.id === wMemberId
+                            (m) => m.id === memberId
                           );
                           return (
                             <Badge
-                              key={wMemberId}
-                              className="flex items-center space-x-2 px-2 py-1 text-sm border border-gray-200"
+                              key={memberId}
+                              className="flex items-center gap-1 px-2 py-1 text-sm"
                               variant="secondary"
                             >
-                              <Avatar className="h-5 w-5">
-                                <AvatarFallback>
-                                  {member?.user?.name?.charAt(0).toUpperCase() ??
-                                    "U"}
+                              <Avatar className="h-4 w-4 mr-1">
+                                <AvatarFallback className="text-xs">
+                                  {member?.user?.name
+                                    ?.charAt(0)
+                                    .toUpperCase() ?? "U"}
                                 </AvatarFallback>
                               </Avatar>
-                              <span>{member?.user?.name ?? "Unknown"}</span>
+                              <span className="max-w-[150px] truncate">
+                                {member?.user?.name ?? "Unknown"}
+                              </span>
                               <Button
                                 type="button"
                                 size="icon"
                                 variant="ghost"
-                                className="h-4 w-4 ml-1"
-                                onClick={() => toggleParticipant(wMemberId)}
+                                disabled={eventStatus === "cancelled"}
+                                className="h-4 w-4 p-0 ml-1 hover:bg-destructive/10"
+                                onClick={() => toggleParticipant(memberId)}
                               >
                                 <X className="h-3 w-3" />
                               </Button>
                             </Badge>
                           );
-                        })
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          No participants selected.
-                        </p>
-                      )}
-                    </div>
-
-                    <FormControl>
-                      <div className="grid gap-1">
-                        {activeWorkspace?.members?.map((member) => (
-                          <Button
-                            key={member.id}
-                            type="button"
-                            variant={
-                              participants.includes(member.id)
-                                ? "secondary"
-                                : "outline"
-                            }
-                            className="justify-start text-left"
-                            onClick={() => toggleParticipant(member.id)}
-                          >
-                            {participants.includes(member.id) ? (
-                              <Check className="mr-2 h-4 w-4" />
-                            ) : (
-                              <div className="w-4 mr-2" />
-                            )}
-                            {member.user.name}
-                          </Button>
-                        ))}
+                        })}
                       </div>
-                    </FormControl>
+                    )}
+
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="flex justify-between pt-4">
-                <div>
+              {eventStatus === "cancelled" ? null : <div className="flex justify-between pt-4">
+                <div className="flex gap-2">
                   {isEditing && (
                     <Button
                       type="button"
                       variant="destructive"
                       onClick={handleDelete}
                     >
-                      <Trash2 className="mr-2 h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                       Delete Event
+                    </Button>
+                  )}
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancel}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Cancel Event
                     </Button>
                   )}
                 </div>
@@ -617,14 +793,11 @@ export default function EventPage() {
                   <Button type="button" variant="outline" asChild>
                     <Link href="/calendar">Cancel</Link>
                   </Button>
-                  <Button 
-                    type="submit"
-                    disabled={form.formState.isSubmitting}
-                  >
+                  <Button type="submit" disabled={form.formState.isSubmitting}>
                     {isEditing ? "Save Changes" : "Create Event"}
                   </Button>
                 </div>
-              </div>
+              </div>}
             </form>
           </Form>
         </div>

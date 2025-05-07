@@ -44,6 +44,9 @@ const formSchema = z.object({
   location: z.string().min(2, {
     message: "Location must be at least 2 characters.",
   }),
+  jobTitle: z.string().min(2, {
+    message: "Job title must be at least 2 characters.",
+  }),
 })
 interface InviteMemberDialogProps {
     trigger?: React.ReactNode;
@@ -74,7 +77,8 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
       password: "",
       location: "",
       contactNo: "",
-      role:"member"
+      role:"member",
+      jobTitle: ""
     },
   })
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -85,6 +89,7 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
       role: values.role,
       contactNo: values.contactNo,
       location: values.location,
+      jobTitle: values.jobTitle,
       workspaceId: activeWorkspace?.id,
       departmentId: values.department,
     }
@@ -130,6 +135,20 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
                 </FormItem>
               )}
             />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} required placeholder="Enter password"/>
+                    </FormControl>
+                    <FormDescription>Password must be at least 8 characters.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             <FormField
               control={form.control}
               name="contactNo"
@@ -137,12 +156,13 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="1234567890" {...field} />
+                    <Input placeholder="Enter phone number" {...field} required/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
               name="location"
@@ -150,7 +170,7 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
                 <FormItem>
                   <FormLabel>Location</FormLabel>
                   <FormControl>
-                    <Input placeholder="Location" {...field} />
+                    <Input placeholder="Enter location" {...field} required/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -158,28 +178,28 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
             />
             <FormField
               control={form.control}
-              name="password"
+              name="jobTitle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Job Title</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input placeholder="Enter job title" {...field} required/>
                   </FormControl>
-                  <FormDescription>Password must be at least 8 characters.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="department"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Department</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} required>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a department" />
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a department"/>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -200,9 +220,9 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} required>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                     </FormControl>
@@ -216,6 +236,7 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
                 </FormItem>
               )}
             />
+            </div>
             <DialogFooter>
               <Button type="submit">Register</Button>
             </DialogFooter>

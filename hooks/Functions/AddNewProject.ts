@@ -7,7 +7,6 @@ interface Payload {
   description: string;
   status: string;
   deadline: string | undefined;
-  workspaceId: string;
   createdById: string;
   members: string[];
 }

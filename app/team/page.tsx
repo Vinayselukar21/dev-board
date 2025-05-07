@@ -16,11 +16,15 @@ import { InviteMemberDialog } from "./_components/invite-member-dialog";
 import workspaceStore from "@/store/workspaceStore";
 import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
 import RegisterUserDialog from "./_components/register-new-user-dialog";
+import LoadingTeams from "./_components/loading-teams";
 
 export default function TeamPage() {
   const { activeWorkspace } = workspaceStore.getState();
   const { memberData, membersLoading, errorLoadingMembers } =
     useGetWorkspaceMembers();
+    if(membersLoading){
+      return <LoadingTeams/>
+    }
   return (
     <div className="flex min-h-screen w-full flex-col">
       {/* Main Content */}
