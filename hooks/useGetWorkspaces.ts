@@ -30,6 +30,7 @@ const useGetWorkspaces = () => {
   const workspaceData: Array<Workspace> = Array.isArray(data?.workspaces)
     ? data?.workspaces.map(
         ({
+          icon,
           name,
           description,
           id,
@@ -40,6 +41,7 @@ const useGetWorkspaces = () => {
           members,
           projects,
         }) => ({
+          icon,
           name,
           description,
           id,

@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,77 +12,137 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { PlusCircle, Upload } from "lucide-react"
-import workspaceStore from "@/store/workspaceStore"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PlusCircle, Upload } from "lucide-react";
+import workspaceStore from "@/store/workspaceStore";
+import { icons } from "./workspace-switcher";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import CreateNewWorkspace from "@/hooks/Functions/CreateNewWorkspace";
+import { toast } from "sonner";
+import { useAuth } from "@/app/providers/AuthProvider";
+
 
 interface CreateWorkspaceDialogProps {
-  trigger?: React.ReactNode
+  trigger?: React.ReactNode;
 }
 
 export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
-  const { activeWorkspace:workspaces } = workspaceStore.getState()
-  const [open, setOpen] = useState(false)
-  const [step, setStep] = useState(1)
+  const {session} = useAuth();
+  const queryClient = useQueryClient();
+  const { activeWorkspace: workspaces } = workspaceStore.getState();
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(1);
 
   // Form state
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [workspaceType, setWorkspaceType] = useState("team")
-  const [logoPreview, setLogoPreview] = useState<string | null>(null)
-  const [inviteEmails, setInviteEmails] = useState("")
-  const [templateId, setTemplateId] = useState("")
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [workspaceType, setWorkspaceType] = useState("team");
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [inviteEmails, setInviteEmails] = useState("");
+  const [templateId, setTemplateId] = useState("");
+  const [icon, setIcon] = useState("AudioWaveform");
 
   // Sample templates
   const templates = [
-    { id: "blank", name: "Blank Workspace", description: "Start from scratch with an empty workspace" },
-    { id: "marketing", name: "Marketing Team", description: "Templates for marketing campaigns and content planning" },
-    { id: "design", name: "Design Team", description: "Templates for design projects and asset management" },
-    { id: "engineering", name: "Engineering Team", description: "Templates for software development and sprints" },
-    { id: "product", name: "Product Team", description: "Templates for product roadmaps and feature planning" },
-  ]
+    {
+      id: "blank",
+      name: "Blank Workspace",
+      description: "Start from scratch with an empty workspace",
+    },
+    {
+      id: "marketing",
+      name: "Marketing Team",
+      description: "Templates for marketing campaigns and content planning",
+    },
+    {
+      id: "design",
+      name: "Design Team",
+      description: "Templates for design projects and asset management",
+    },
+    {
+      id: "engineering",
+      name: "Engineering Team",
+      description: "Templates for software development and sprints",
+    },
+    {
+      id: "product",
+      name: "Product Team",
+      description: "Templates for product roadmaps and feature planning",
+    },
+  ];
 
-  // Handle file upload for logo
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
+  // // Handle file upload for logo
+  // const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setLogoPreview(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // Handle workspace creation logic here
     // Reset form and close dialog
-    setName("")
-    setDescription("")
-    setWorkspaceType("team")
-    setLogoPreview(null)
-    setInviteEmails("")
-    setTemplateId("")
-    setStep(1)
-    setOpen(false)
-  }
+    setName("");
+    setDescription("");
+    setWorkspaceType("team");
+    setLogoPreview(null);
+    setInviteEmails("");
+    setTemplateId("");
+    setStep(1);
+    setOpen(false);
+  };
 
   // Go to next step
   const nextStep = () => {
-    setStep(step + 1)
-  }
+    setStep(step + 1);
+  };
 
   // Go to previous step
   const prevStep = () => {
-    setStep(step - 1)
+    setStep(step - 1);
+  };
+
+  const CreateNewWorkspaceMutation = useMutation({
+    mutationFn: CreateNewWorkspace,
+    onSuccess: () => {
+      // setOpen(false);
+      toast.success("Workspace created successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["workspaces", session?.id],
+      });
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error("Error creating workspace");
+    },
+  });
+
+  const handleCreateWorkspace = () => {
+    CreateNewWorkspaceMutation.mutate({
+      name,
+      description,
+      icon,
+      ownerId: session.id,
+    });
   }
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -94,29 +154,47 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
-        <form onSubmit={handleSubmit}>
+        <div>
           <DialogHeader>
             <DialogTitle>Create New Workspace</DialogTitle>
-            <DialogDescription>Set up a new workspace for your team to collaborate on projects.</DialogDescription>
+            <DialogDescription>
+              Set up a new workspace for your team to collaborate on projects.
+            </DialogDescription>
           </DialogHeader>
 
           {/* Step indicators */}
           <div className="my-4 flex items-center justify-center">
             <div className="flex items-center">
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step >= 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  step >= 1
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
               >
                 1
               </div>
-              <div className={`h-1 w-10 ${step >= 2 ? "bg-primary" : "bg-muted"}`}></div>
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step >= 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                className={`h-1 w-10 ${step >= 2 ? "bg-primary" : "bg-muted"}`}
+              ></div>
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  step >= 2
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
               >
                 2
               </div>
-              <div className={`h-1 w-10 ${step >= 3 ? "bg-primary" : "bg-muted"}`}></div>
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step >= 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                className={`h-1 w-10 ${step >= 3 ? "bg-primary" : "bg-muted"}`}
+              ></div>
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  step >= 3
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
               >
                 3
               </div>
@@ -125,9 +203,19 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
 
           {/* Step 1: Basic Info */}
           {step === 1 && (
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-1 py-4">
+              <div className="flex flex-col items-center">
+                  <Label className="mb-5">Choose icon for your workspace</Label>
+                  <div className="grid grid-cols-3 gap-4 w-full sm:w-1/2 mx-auto sm:grid-cols-5">
+                    {icons.map((Icon, index) => (
+                      <div key={index} className="flex items-center justify-center ">
+                        <Icon.icon className={`h-10 w-10 cursor-pointer hover:scale-110 p-2 rounded-lg ${icon === Icon.label ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`} onClick={() => setIcon(Icon.label)} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               <div className="flex flex-col items-center gap-4 sm:flex-row">
-                <div className="relative">
+                {/* <div className="relative">
                   <div className="flex h-24 w-24 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/25 bg-muted">
                     {logoPreview ? (
                       <div className="h-full w-full overflow-hidden rounded-md">
@@ -154,7 +242,8 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                   >
                     +
                   </Label>
-                </div>
+                </div> */}
+                
                 <div className="grid w-full gap-2">
                   <Label htmlFor="workspace-name">Workspace Name</Label>
                   <Input
@@ -178,7 +267,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                 />
               </div>
 
-              <div className="grid gap-2">
+              {/* <div className="grid gap-2">
                 <Label htmlFor="workspace-type">Workspace Type</Label>
                 <Select value={workspaceType} onValueChange={setWorkspaceType}>
                   <SelectTrigger id="workspace-type">
@@ -191,7 +280,12 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                     <SelectItem value="project">Project Workspace</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
+              <DialogFooter className="mt-6">
+              <Button type="button" onClick={handleCreateWorkspace}>
+                Save & Continue
+              </Button>
+          </DialogFooter>
             </div>
           )}
 
@@ -209,7 +303,9 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                     <div
                       key={template.id}
                       className={`flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50 ${
-                        templateId === template.id ? "border-primary bg-primary/5" : ""
+                        templateId === template.id
+                          ? "border-primary bg-primary/5"
+                          : ""
                       }`}
                       onClick={() => setTemplateId(template.id)}
                     >
@@ -219,7 +315,9 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                       />
                       <div>
                         <h4 className="font-medium">{template.name}</h4>
-                        <p className="text-sm text-muted-foreground">{template.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {template.description}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -232,7 +330,9 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
           {step === 3 && (
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="invite-emails">Invite Team Members (Optional)</Label>
+                <Label htmlFor="invite-emails">
+                  Invite Team Members (Optional)
+                </Label>
                 <Textarea
                   id="invite-emails"
                   value={inviteEmails}
@@ -241,7 +341,8 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                   className="min-h-[100px]"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Enter multiple email addresses separated by commas or on new lines.
+                  Enter multiple email addresses separated by commas or on new
+                  lines.
                 </p>
               </div>
 
@@ -260,15 +361,18 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
               </div>
 
               <div className="mt-4 rounded-md bg-muted/50 p-3">
-                <h4 className="font-medium">You'll be able to invite more people later</h4>
+                <h4 className="font-medium">
+                  You'll be able to invite more people later
+                </h4>
                 <p className="text-sm text-muted-foreground">
-                  You can always add more team members after creating your workspace.
+                  You can always add more team members after creating your
+                  workspace.
                 </p>
               </div>
             </div>
           )}
 
-          <DialogFooter className="mt-6">
+          {/* <DialogFooter className="mt-6">
             {step > 1 && (
               <Button type="button" variant="outline" onClick={prevStep}>
                 Back
@@ -281,9 +385,9 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
             ) : (
               <Button type="button">Create Workspace</Button>
             )}
-          </DialogFooter>
-        </form>
+          </DialogFooter> */}
+        </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

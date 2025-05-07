@@ -19,6 +19,7 @@ const workspaceStore = createStore<WorkspaceStore>()(
     (set) => ({
       activeWorkspace: {
         id: "",
+        icon: "",
         name: "",
         description: "",
         createdAt: "",

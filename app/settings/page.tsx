@@ -59,11 +59,11 @@ export default function SettingsPage() {
                 <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
                   <TabsTrigger value="general">General</TabsTrigger>
                   <TabsTrigger value="profile">Profile</TabsTrigger>
-                  <TabsTrigger value="notifications">Notifications</TabsTrigger>
-                  <TabsTrigger value="security">Security</TabsTrigger>
                   <TabsTrigger value="permissions">
                     Permissions & Roles
                   </TabsTrigger>
+                  <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                  <TabsTrigger value="security">Security</TabsTrigger>
                   <TabsTrigger value="billing">Billing</TabsTrigger>
                 </TabsList>
 

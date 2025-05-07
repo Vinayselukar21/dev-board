@@ -18,6 +18,7 @@ export interface User {
 
 export interface Workspace {
   id: string;
+  icon: string;
   name: string;
   description?: string;
   createdAt: string;
