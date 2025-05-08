@@ -68,9 +68,9 @@ export default function TeamPage() {
             <Tabs defaultValue="all">
               <TabsList>
                 <TabsTrigger value="all">All Members</TabsTrigger>
-                {activeWorkspace?.departments?.map((department) => (
+                {activeWorkspace?.departments && activeWorkspace?.departments?.map((department) => (
                   <TabsTrigger key={department.id} value={department.id}>
-                    {department.name}
+                    {department?.name}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -108,7 +108,7 @@ export default function TeamPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y">
-                          {memberData.map((member) => (
+                          {memberData && memberData.map((member) => (
                             <tr key={member.id} className="hover:bg-muted/50">
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-3">
@@ -135,7 +135,7 @@ export default function TeamPage() {
                                 {member.jobTitle}
                               </td>
                               <td className="hidden px-4 py-3 text-sm sm:table-cell">
-                                {member.department.name}
+                                {member?.department?.name}
                               </td>
                               <td className="hidden px-4 py-3 text-sm md:table-cell">
                                 <div className="flex flex-col gap-1">
@@ -151,13 +151,13 @@ export default function TeamPage() {
                               </td>
                               <td className="hidden px-4 py-3 text-sm lg:table-cell">
                                 <div className="flex flex-wrap gap-1">
-                                  {member.projects?.map((project) => (
+                                  {member.projects && member.projects?.map((project) => (
                                     <Badge
                                       key={project.id}
                                       variant="outline"
                                       className="text-xs"
                                     >
-                                      {project.project.name}
+                                      {project?.project?.name}
                                     </Badge>
                                   ))}
                                 </div>
@@ -183,7 +183,7 @@ export default function TeamPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
-              {activeWorkspace?.departments?.map((department) => (
+              {activeWorkspace?.departments && activeWorkspace?.departments?.map((department) => (
                 <TabsContent
                   value={department.id}
                   className="pt-4"
@@ -191,9 +191,9 @@ export default function TeamPage() {
                 >
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle>{department.name} Team</CardTitle>
+                      <CardTitle>{department?.name} Team</CardTitle>
                       <CardDescription>
-                        View and manage members in the {department.name}{" "}
+                        View and manage members in the {department?.name}{" "}
                         department.
                       </CardDescription>
                     </CardHeader>
@@ -220,7 +220,7 @@ export default function TeamPage() {
                             </tr>
                           </thead>
                           <tbody className="divide-y">
-                            {memberData
+                            {memberData && memberData
                               ?.filter(
                                 (member) =>
                                   member.department.id === department.id
@@ -268,13 +268,13 @@ export default function TeamPage() {
                                   </td>
                                   <td className="hidden px-4 py-3 text-sm lg:table-cell">
                                     <div className="flex flex-wrap gap-1">
-                                      {member.projects?.map((project) => (
+                                      {member.projects && member.projects?.map((project) => (
                                         <Badge
                                           key={project.id}
                                           variant="outline"
                                           className="text-xs"
                                         >
-                                          {project.project.name}
+                                          {project?.project?.name}
                                         </Badge>
                                       ))}
                                     </div>
