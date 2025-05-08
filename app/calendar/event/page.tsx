@@ -1,29 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { format } from "date-fns";
 import {
-  CalendarIcon,
-  Clock,
   ArrowLeft,
-  Trash2,
+  CalendarIcon,
   Check,
-  X,
   ChevronsUpDown,
+  Trash2,
+  X
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState } from "react";
+import { toast } from "sonner";
 
 // UI Components
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -31,30 +41,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
 
 // Utilities and hooks
-import { cn } from "@/lib/utils";
-import workspaceStore from "@/store/workspaceStore";
-import AddNewCalendarEvent from "@/hooks/Functions/AddNewCalendarEvent";
-import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
-import EditCalendarEvent from "@/hooks/Functions/EditCalendarEvent";
+import { useAuth } from "@/app/providers/AuthProvider";
 import {
   Command,
   CommandEmpty,
@@ -62,10 +52,15 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import EventFormConstrains, { EventFormValues } from "./_components/EventFormConstrains";
+import AddNewCalendarEvent from "@/hooks/Functions/AddNewCalendarEvent";
 import CancelCalendarEvent from "@/hooks/Functions/CancelCalendarEvent";
 import DeleteCalendarEvent from "@/hooks/Functions/DeleteCalendarEvent";
-import { useAuth } from "@/app/providers/AuthProvider";
+import EditCalendarEvent from "@/hooks/Functions/EditCalendarEvent";
+import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
+import { cn } from "@/lib/utils";
+import workspaceStore from "@/store/workspaceStore";
+import { useStore } from "zustand";
+import EventFormConstrains, { EventFormValues } from "./_components/EventFormConstrains";
 import LoadingEvent from "./_components/loading-event";
 
 
@@ -76,7 +71,7 @@ export default function EventPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { eventsData, eventsLoading } = useGetCalendarEvents();
-  const { activeWorkspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
   const [eventStatus, setEventStatus] = useState("active");
 
   // Check if we're editing an existing event

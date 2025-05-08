@@ -2,23 +2,27 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { Project } from "@/app/types";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -27,21 +31,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarIcon, Plus, Trash2, X } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { Project } from "@/app/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import AddNewProjectStage from "@/hooks/Functions/AddNewProjectStage";
-import { toast } from "sonner";
-import workspaceStore from "@/store/workspaceStore";
+import { Textarea } from "@/components/ui/textarea";
 import AddMemberToProject from "@/hooks/Functions/AddMemberToProject";
+import AddNewProjectStage from "@/hooks/Functions/AddNewProjectStage";
+import { cn } from "@/lib/utils";
+import workspaceStore from "@/store/workspaceStore";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { CalendarIcon, Trash2, X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useStore } from "zustand";
 
 interface ProjectSettingsDialogProps {
   projectId: string;
@@ -55,7 +55,7 @@ export function ProjectSettingsDialog({
   trigger,
 }: ProjectSettingsDialogProps) {
   const queryClient = useQueryClient();
-  const { activeWorkspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
   const [open, setOpen] = useState(false);
   // Find the current project from the workspace
   const currentProject = projectTaskData || null;

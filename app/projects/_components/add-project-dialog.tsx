@@ -5,6 +5,7 @@ import type React from "react";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -25,17 +26,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import AddNewProject from "@/hooks/Functions/AddNewProject";
 import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
-import workspaceStore from "@/store/workspaceStore";
+import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { CalendarIcon, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import AddNewProject from "@/hooks/Functions/AddNewProject";
 import { toast } from "sonner";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 
 interface AddProjectDialogProps {
   trigger?: React.ReactNode;
@@ -48,9 +47,6 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState<Date | undefined>(new Date()); // task
   const [category, setCategory] = useState<string>("");
-
-  // Active workspace
-  const { activeWorkspace } = workspaceStore.getState();
 
   // Get workspace members
   const { memberData, membersLoading, errorLoadingMembers } =

@@ -10,20 +10,21 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import useGetProjects from "@/hooks/useGetProjects";
 import useGetProjectLogs from "@/hooks/useGetProjectLogs";
-import { FolderKanban, Plus, Search, Settings, Users } from "lucide-react";
-import Link from "next/link";
-import { AddProjectDialog } from "./_components/add-project-dialog";
+import useGetProjects from "@/hooks/useGetProjects";
 import workspaceStore from "@/store/workspaceStore";
-import { Log } from "../types";
 import { format } from "date-fns";
+import { Plus, Search, Users } from "lucide-react";
+import Link from "next/link";
+import { useStore } from "zustand";
+import { Log } from "../types";
+import { AddProjectDialog } from "./_components/add-project-dialog";
 import LoadingProjects from "./_components/loading-projects";
 
 export default function Page() {
   const { projectData, projectsLoading, errorLoadingProjects } =
     useGetProjects();
-  const { activeWorkspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
 const {projectLogsData, projectLogsLoading, errorLoadingProjectLogs} = useGetProjectLogs();
 
 if(projectsLoading){

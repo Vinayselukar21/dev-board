@@ -2,8 +2,9 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useAuth } from "@/app/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -23,14 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { PlusCircle, Upload } from "lucide-react";
-import workspaceStore from "@/store/workspaceStore";
-import { icons } from "./workspace-switcher";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Textarea } from "@/components/ui/textarea";
 import CreateNewWorkspace from "@/hooks/Functions/CreateNewWorkspace";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { PlusCircle } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { icons } from "./workspace-switcher";
 
 
 interface CreateWorkspaceDialogProps {
@@ -40,7 +39,6 @@ interface CreateWorkspaceDialogProps {
 export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
   const {session} = useAuth();
   const queryClient = useQueryClient();
-  const { activeWorkspace: workspaces } = workspaceStore.getState();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
 

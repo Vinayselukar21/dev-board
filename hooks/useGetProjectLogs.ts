@@ -2,6 +2,7 @@ import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { Log } from "@/app/types";
 import workspaceStore from "@/store/workspaceStore";
+import { useStore } from "zustand";
 
 interface QueryResponse {
   message: string;
@@ -9,21 +10,21 @@ interface QueryResponse {
 }
 
 const useGetProjectLogs = () => {
-  const { activeWorkspace: workspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
   const {
     data,
     isLoading: projectLogsLoading,
     error: errorLoadingProjectLogs,
   } = useQuery<QueryResponse, Error>({
-    queryKey: ["project-logs", workspace.id],
+    queryKey: ["project-logs", activeWorkspace.id],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/projects/${workspace.id}/logs`
+        `/projects/${activeWorkspace.id}/logs`
       );
       return res.data;
     },
     retry: 1,
-    enabled: !!workspace.id,
+    enabled: !!activeWorkspace.id,
   });
 
   const projectLogsData: Array<Log> = Array.isArray(data?.logs)

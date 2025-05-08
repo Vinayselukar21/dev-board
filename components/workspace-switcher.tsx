@@ -30,6 +30,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import sidebarStore from "@/store/sidebarStore";
+import { useStore } from "zustand";
 
 export const icons = [
   { label: "AudioWaveform", icon: AudioWaveform },
@@ -54,14 +55,13 @@ export function WorkspaceSwitcher({
   setActiveWorkspace: (workspace: Workspace) => void;
 }) {
   const { isMobile } = useSidebar();
-  const { sidebar } = sidebarStore.getState();
+  const sidebar = useStore(sidebarStore, (state) => state.sidebar);
   
   if (!activeWorkspace) {
     return null;
   }
   const WorkspaceIcon = icons.find((icon) => icon.label === activeWorkspace.icon)?.icon
   
-  console.log(activeWorkspace.icon , WorkspaceIcon)
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -78,7 +78,6 @@ export function WorkspaceSwitcher({
                 <span className="truncate font-medium">
                   {activeWorkspace.name}
                 </span>
-                {/* <span className="truncate text-xs">{activeWorkspace.plan}</span> */}
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -92,13 +91,12 @@ export function WorkspaceSwitcher({
             <DropdownMenuLabel className="text-muted-foreground text-xs">
               Workspaces
             </DropdownMenuLabel>
-            {sidebar.workspaces.map((workspace, index) => {
+            {sidebar.workspaces.map((workspace) => {
               const Icon = icons.find((icon) => icon.label === workspace.icon)?.icon
               return (
                 <DropdownMenuItem
                   onClick={() => {
                     setActiveWorkspace(workspace);
-                    // router.push(`/workspace/${workspace.id}`);
                   }}
                   key={workspace.id}
                   className="gap-2 p-2"
@@ -107,19 +105,9 @@ export function WorkspaceSwitcher({
                   {Icon && <Icon className="size-3.5 shrink-0" />}
                   </div>
                   {workspace.name}
-                  {/* <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut> */}
                 </DropdownMenuItem>
               )
             })}
-            {/* <DropdownMenuSeparator /> */}
-            {/* <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                <Plus className="size-4" />
-              </div>
-              <div className="text-muted-foreground font-medium">
-                Add workspace
-              </div>
-            </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

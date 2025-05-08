@@ -4,6 +4,7 @@ import { useAuth } from "@/app/providers/AuthProvider";
 import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
+import { useStore } from "zustand";
 
 interface QueryResponse {
   message: string;
@@ -12,24 +13,24 @@ interface QueryResponse {
 
 const useGetMyDetails = () => {
   const { session } = useAuth();
-  const { activeWorkspace: workspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
   const workspaceMemberId = session.memberships.find(
-    (m: any) => m.workspaceId === workspace.id
+    (m: any) => m.workspaceId === activeWorkspace.id
   )?.id;
   const {
     data,
     isLoading: myDataLoading,
     error: errorLoadingMyData,
   } = useQuery<QueryResponse, Error>({
-    queryKey: ["mydetails", workspace.id],
+    queryKey: ["mydetails", activeWorkspace.id],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/workspace/${workspace.id}/member/${workspaceMemberId}`
+        `/workspace/${activeWorkspace.id}/member/${workspaceMemberId}`
       );
       return res.data;
     },
     retry: 1,
-    enabled: !!workspace.id,
+    enabled: !!activeWorkspace.id,
   });
 
   const myData = data?.workspaceMember;

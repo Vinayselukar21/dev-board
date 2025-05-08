@@ -1,5 +1,4 @@
 "use client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,15 +10,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Phone, Plus, Search } from "lucide-react";
-import { InviteMemberDialog } from "./_components/invite-member-dialog";
-import workspaceStore from "@/store/workspaceStore";
 import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
-import RegisterUserDialog from "./_components/register-new-user-dialog";
+import workspaceStore from "@/store/workspaceStore";
+import { Mail, Phone, Plus, Search } from "lucide-react";
+import { useStore } from "zustand";
 import LoadingTeams from "./_components/loading-teams";
+import RegisterUserDialog from "./_components/register-new-user-dialog";
 
 export default function TeamPage() {
-  const { activeWorkspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
   const { memberData, membersLoading, errorLoadingMembers } =
     useGetWorkspaceMembers();
     if(membersLoading){

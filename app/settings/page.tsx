@@ -1,21 +1,22 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
+import useGetMyDetails from "@/hooks/useGetMyDetails";
+import workspaceStore from "@/store/workspaceStore";
 import { Search } from "lucide-react";
+import { useStore } from "zustand";
 import BillingSettings from "./_components/billing-settings";
 import GeneralSettings from "./_components/general-settings";
+import LoadingSettings from "./_components/loading-settings";
 import NotificationSettings from "./_components/notification-settings";
+import PermissionSettings from "./_components/permission-settings";
 import ProfileSettings from "./_components/profile-settings";
 import SecuritySettings from "./_components/security-settings";
-import PermissionSettings from "./_components/permission-settings";
-import { useIsMobile } from "@/hooks/use-mobile";
-import workspaceStore from "@/store/workspaceStore";
-import useGetMyDetails from "@/hooks/useGetMyDetails";
-import LoadingSettings from "./_components/loading-settings";
 
 export default function SettingsPage() {
   const isMobile = useIsMobile();
-  const { activeWorkspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
   const { myDataLoading, errorLoadingMyData, myData } = useGetMyDetails();
 
   if (myDataLoading) {

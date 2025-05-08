@@ -3,6 +3,7 @@ import { CalendarEvent } from "@/app/types";
 import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
+import { useStore } from "zustand";
 
 interface QueryResponse {
   message: string;
@@ -10,11 +11,11 @@ interface QueryResponse {
 }
 
 const useGetCalendarEvents = () => {
-  const { activeWorkspace: workspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
   const { session } = useAuth();
 
   const workspaceMemberId = session.memberships.find(
-    (m: any) => m.workspaceId === workspace.id
+    (m: any) => m.workspaceId === activeWorkspace.id
   )?.id;
 
   const {
@@ -22,15 +23,15 @@ const useGetCalendarEvents = () => {
     isLoading: eventsLoading,
     error: errorLoadingEvents,
   } = useQuery<QueryResponse, Error>({
-    queryKey: ["calendar-events", workspace.id],
+    queryKey: ["calendar-events", activeWorkspace.id],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/workspace/${workspace.id}/${workspaceMemberId}/events/getall`
+        `/workspace/${activeWorkspace.id}/${workspaceMemberId}/events/getall`
       );
       return res.data;
     },
     retry: 1,
-    enabled: !!workspace.id && !!workspaceMemberId,
+    enabled: !!activeWorkspace.id && !!workspaceMemberId,
   });
 
   const eventsData: CalendarEvent[] = data?.calendarEvents || [];

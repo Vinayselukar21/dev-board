@@ -1,25 +1,15 @@
 "use client";
 
 import {
-  BookOpen,
-  Bot,
   CalendarDays,
   FolderKanban,
-  Frame,
   LayoutDashboard,
-  Link,
-  Map,
-  PieChart,
   Plus,
   Settings,
-  Settings2,
-  SquareTerminal,
-  Users,
+  Users
 } from "lucide-react";
 import * as React from "react";
 
-import { Workspace } from "@/app/types";
-import useGetWorkspaces from "@/hooks/useGetWorkspaces";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { NavMenu } from "@/components/nav-menu";
 import { NavUser } from "@/components/nav-user";
@@ -28,32 +18,25 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
+  SidebarRail
 } from "@/components/ui/sidebar";
-import { WorkspaceSwitcher } from "./workspace-switcher";
-import workspaceStore from "@/store/workspaceStore";
+import useGetWorkspaces from "@/hooks/useGetWorkspaces";
 import sidebarStore from "@/store/sidebarStore";
-import { NavMain } from "./nav-main";
-import { Button } from "./ui/button";
+import workspaceStore from "@/store/workspaceStore";
+import { useStore } from "zustand";
 import { CreateWorkspaceDialog } from "./create-workspace-dialog";
+import { Button } from "./ui/button";
+import { WorkspaceSwitcher } from "./workspace-switcher";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  // const [activeWorkspace, setActiveWorkspace] = React.useState<Workspace>({
-  //   id: "",
-  //   name: "",
-  //   description: "",
-  //   createdAt: "",
-  //   updatedAt: "",
-  //   ownerId: "",
-  // });
-  const { activeWorkspace,  setActiveWorkspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
+  const setActiveWorkspace = useStore(workspaceStore, (state) => state.setActiveWorkspace);
   const { session } = useAuth();
   const { workspaceData, workspacesLoading, errorLoadingWorkspaces, workspaceDataLoadedSuccess } =
     useGetWorkspaces();
 
-  const { sidebar, setSidebar } = sidebarStore.getState();
+    const sidebar = useStore(sidebarStore, (state) => state.sidebar);
+    const setSidebar = useStore(sidebarStore, (state) => state.setSidebar);
 
   // This is sample data.
   const sidebarData = {
@@ -181,7 +164,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         routeName: "settings",
       },
     ],
-    workspaces: workspaceData,
   };
   
   React.useEffect(() => {
@@ -195,6 +177,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, [workspaceDataLoadedSuccess]);
 
+  console.log(activeWorkspace , " in app sidebar")
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -204,7 +187,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           "Error loading workspaces"
         ) : (
           <WorkspaceSwitcher
-            workspace={sidebarData.workspaces}
+            workspace={workspaceData}
             activeWorkspace={activeWorkspace}
             setActiveWorkspace={setActiveWorkspace}
           />

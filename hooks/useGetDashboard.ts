@@ -1,6 +1,7 @@
 import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
+import { useStore } from "zustand";
 
 interface QueryResponse {
   message: string;
@@ -8,21 +9,22 @@ interface QueryResponse {
 }
 
 const useGetDashboard = () => {
-  const { activeWorkspace: workspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
+  console.log(activeWorkspace.id , activeWorkspace.name)
   const {
     data,
     isLoading: dashboardLoading,
     error: errorLoadingDashboard,
   } = useQuery<QueryResponse, Error>({
-    queryKey: ["dashboard", workspace.id],
+    queryKey: ["dashboard", activeWorkspace.id],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/workspace/${workspace.id}/dashboard`
+        `/workspace/${activeWorkspace.id}/dashboard`
       );
       return res.data;
     },
     retry: 1,
-    enabled: !!workspace.id,
+    enabled: !!activeWorkspace.id,
   });
 
   const dashboardData = data?.dashboard;

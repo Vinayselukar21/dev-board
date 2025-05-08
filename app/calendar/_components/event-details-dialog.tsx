@@ -2,7 +2,8 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { CalendarEvent, Project } from "@/app/types";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,38 +14,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
+import workspaceStore from "@/store/workspaceStore";
+import { format } from "date-fns";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  CalendarIcon,
   Clock,
   Folder,
-  Locate,
   MapPin,
-  Trash2,
-  User,
+  User
 } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-// import { useWorkspace } from "@/contexts/workspace-context"
-import { Badge } from "@/components/ui/badge";
-import { CalendarEvent, Project } from "@/app/types";
-import workspaceStore from "@/store/workspaceStore";
-import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
+import { useEffect, useState } from "react";
+import { useStore } from "zustand";
 
 interface EventDetailsDialogProps {
   event: CalendarEvent | null;
@@ -57,7 +37,7 @@ export function EventDetailsDialog({
   onEdit,
   trigger,
 }: EventDetailsDialogProps) {
-  const { activeWorkspace } = workspaceStore.getState();
+  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
 
   // Form state
   const [title, setTitle] = useState("");
