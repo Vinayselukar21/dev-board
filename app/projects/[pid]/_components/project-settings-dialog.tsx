@@ -18,11 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
 import {
   Select,
   SelectContent,
@@ -42,6 +38,7 @@ import { CalendarIcon, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useStore } from "zustand";
+import DatePicker from "@/components/date-picker";
 
 interface ProjectSettingsDialogProps {
   projectId: string;
@@ -111,7 +108,7 @@ export function ProjectSettingsDialog({
       // Invalidate and refetch
       toast.success("New stage has been created");
       // Handle task creation logic here
-      setOpen(false);
+      // setOpen(false);
       // Reset form
       setNewColumnName("");
       // Invalidate projects
@@ -132,8 +129,8 @@ export function ProjectSettingsDialog({
         {
           id: newColumnId,
           name: newColumnName,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
           projectId: projectId as string,
         },
       ]);
@@ -240,8 +237,8 @@ export function ProjectSettingsDialog({
                     defaultValue={
                       currentProject?.createdAt
                         ? format(
-                            new Date(currentProject?.createdAt as string),
-                            "dd MMM yyyy"
+                            new Date(currentProject?.createdAt),
+                            "MMM d, yyyy"
                           )
                         : ""
                     }
@@ -249,29 +246,7 @@ export function ProjectSettingsDialog({
                 </div>
 
                 <div className="grid gap-2">
-                  <Label>Due Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !dueDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dueDate ? format(dueDate, "PPP") : "Select a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={dueDate}
-                        onSelect={setDueDate}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <DatePicker Date={dueDate} setDate={setDueDate} label="Due Date" />
                 </div>
               </div>
 

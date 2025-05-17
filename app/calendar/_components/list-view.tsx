@@ -21,7 +21,7 @@ export function ListView({ currentDate, events, onEventClick }: ListViewProps) {
   const eventsByDate: Record<string, CalendarEvent[]> = {}
 
   sortedEvents.forEach((event) => {
-    const dateKey = format(event.date, "yyyy-MM-dd")
+    const dateKey = format(event.date, "MMMM d, yyyy")
     if (!eventsByDate[dateKey]) {
       eventsByDate[dateKey] = []
     }

@@ -3,6 +3,7 @@
 import axios from "@/utils/axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Organization } from "../types";
 
 interface AuthContextType {
   session: any;
@@ -13,6 +14,10 @@ interface AuthContextType {
     password: string;
     contactNo: string | null;
     location: string | null;
+    jobTitle: string;
+    designation: string;
+    organizationName: string;
+    organizationType: string;
   }) => Promise<void>;
   loginWithCredentials: (values: { email: string; password: string }) => Promise<void>;
   logoutUser: () => Promise<void>;
@@ -41,6 +46,11 @@ export interface AuthResponse {
     location: string | null;
     avatar: string | null;
     memberships: WorkspaceMember[];
+    organizationId: string;
+    ownedOrganization: Organization;
+    organization: Organization;
+    jobTitle: string;
+    designation: string;
   };
 }
 
@@ -83,8 +93,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             avatar: res.data.user?.avatar,
             contactNo: res.data.user?.contactNo,
             location: res.data.user?.location,
+            jobTitle: res.data.user?.jobTitle,
+            designation: res.data.user?.designation,
             authStatus: res.data.authStatus,
             memberships: res.data.user.memberships,
+            organizationId: res.data.user.organizationId,
+            organization: res.data.user.organization,
+            ownedOrganization: res.data.user.ownedOrganization,
           };
           setSession(userSession);
           sessionStorage.setItem("session", JSON.stringify(userSession));
@@ -128,8 +143,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           avatar: response.data.user?.avatar,
           contactNo: response.data.user.contactNo,
           location: response.data.user.location,
+          jobTitle: response.data.user.jobTitle,
+          designation: response.data.user.designation,
           authStatus: response.data.authStatus,
           memberships: response.data.user.memberships,
+          organizationId: response.data.user.organizationId,
+          organization: response.data.user.organization,
+          ownedOrganization: response.data.user.ownedOrganization,
         };
         setSession(userSession);
         sessionStorage.setItem("session", JSON.stringify(userSession));
@@ -148,6 +168,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password: string;
     contactNo: string | null;
     location: string | null;
+    organizationName: string;
+    organizationType: string;
+    jobTitle: string;
+    designation: string;
   }) => {
     setLoading(true);
     try {
@@ -159,8 +183,14 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           email: response.data.user.email,
           contactNo: response.data.user.contactNo,
           location: response.data.user.location,
+          jobTitle: response.data.user.jobTitle,
+          designation: response.data.user.designation,
           avatar: response.data.user?.avatar,
           authStatus: response.data.authStatus,
+          memberships: response.data.user.memberships,
+          organizationId: response.data.user.organizationId,
+          organization: response.data.user.organization,
+          ownedOrganization: response.data.user.ownedOrganization,
         };
         setSession(userSession);
         sessionStorage.setItem("session", JSON.stringify(userSession));

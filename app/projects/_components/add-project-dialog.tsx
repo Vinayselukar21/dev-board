@@ -35,6 +35,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import DatePicker from "@/components/date-picker";
 
 interface AddProjectDialogProps {
   trigger?: React.ReactNode;
@@ -171,29 +172,11 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label>Due Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !dueDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dueDate ? format(dueDate, "PPP") : "Select a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={dueDate}
-                      onSelect={setDueDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  Date={dueDate}
+                  setDate={setDueDate}
+                  label="Due Date"
+                />
               </div>
             </div>
             <div className="grid gap-2">

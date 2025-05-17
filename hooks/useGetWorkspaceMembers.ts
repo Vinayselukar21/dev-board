@@ -32,6 +32,7 @@ const useGetWorkspaceMembers = () => {
     ? data?.members.map(
         ({
           id,
+          role,
           accepted,
           department,
           invitedAt,
@@ -39,10 +40,14 @@ const useGetWorkspaceMembers = () => {
           workspaceId,
           user,
           projects,
-          jobTitle,
+          departmentId,
+          workspace,
+          calendarEvents,
+          createdEvents,
+          relationships,
         }) => ({
           id,
-          role: user.role,
+          role,
           accepted,
           department,
           invitedAt,
@@ -50,7 +55,11 @@ const useGetWorkspaceMembers = () => {
           workspaceId,
           user,
           projects,
-          jobTitle,
+          departmentId,
+          workspace,
+          calendarEvents,
+          createdEvents,
+          relationships,
         })
       )
     : [];

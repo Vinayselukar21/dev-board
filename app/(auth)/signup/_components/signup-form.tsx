@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -29,8 +30,10 @@ export function SignupForm({
     const password = formData.get("password") as string;
     const contactNo = formData.get("contactNo") as string;
     const location = formData.get("location") as string;
+    const organizationName = formData.get("organizationName") as string;
+    const organizationType = formData.get("organizationType") as string;
 
-    signUpWithCredentials({ name, email, password, contactNo, location });
+    signUpWithCredentials({ name, email, password, contactNo, location, organizationName, organizationType });
   };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -42,6 +45,31 @@ export function SignupForm({
         <CardContent>
           <form onSubmit={(e) => handleSubmit(e)}>
             <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="organizationName">Organization Name</Label>
+                <Input
+                  id="organizationName"
+                  type="text"
+                  name="organizationName"
+                  placeholder="Enter your organization name"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="organizationType">Organization Type</Label>
+                <Select
+                  name="organizationType"
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select organization type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="work">Work</SelectItem>
+                    <SelectItem value="personal">Personal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="name">Name</Label>
                 <Input

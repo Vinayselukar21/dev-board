@@ -14,8 +14,8 @@ import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
 import workspaceStore from "@/store/workspaceStore";
 import { Mail, Phone, Plus, Search } from "lucide-react";
 import { useStore } from "zustand";
+import { InviteMemberDialog } from "./_components/add-member-dialog";
 import LoadingTeams from "./_components/loading-teams";
-import RegisterUserDialog from "./_components/register-new-user-dialog";
 
 export default function TeamPage() {
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
@@ -24,6 +24,7 @@ export default function TeamPage() {
     if(membersLoading){
       return <LoadingTeams/>
     }
+    
   return (
     <div className="flex min-h-screen w-full flex-col">
       {/* Main Content */}
@@ -42,15 +43,7 @@ export default function TeamPage() {
                 />
               </div>
             </form>
-            {/* <InviteMemberDialog
-              trigger={
-                <Button size="sm" className="h-8 gap-1">
-                  <Plus className="h-4 w-4" />
-                  Add Member
-                </Button>
-              }
-            /> */}
-            <RegisterUserDialog
+            <InviteMemberDialog
               trigger={
                 <Button size="sm" className="h-8 gap-1">
                   <Plus className="h-4 w-4" />
@@ -69,7 +62,7 @@ export default function TeamPage() {
               <TabsList>
                 <TabsTrigger value="all">All Members</TabsTrigger>
                 {activeWorkspace?.departments && activeWorkspace?.departments?.map((department) => (
-                  <TabsTrigger key={department.id} value={department.id}>
+                  <TabsTrigger key={department?.id} value={department?.id}>
                     {department?.name}
                   </TabsTrigger>
                 ))}
@@ -90,6 +83,9 @@ export default function TeamPage() {
                             <th className="px-4 py-3 text-left text-sm font-medium">
                               Name
                             </th>
+                            <th className="hidden px-4 py-3 text-left text-sm font-medium md:table-cell">
+                              Designation
+                            </th>
                             <th className="px-4 py-3 text-left text-sm font-medium">
                               Job Title
                             </th>
@@ -102,6 +98,9 @@ export default function TeamPage() {
                             <th className="hidden px-4 py-3 text-left text-sm font-medium lg:table-cell">
                               Projects
                             </th>
+                            <th className="hidden px-4 py-3 text-left text-sm font-medium md:table-cell">
+                              Role
+                            </th>
                             <th className="px-4 py-3 text-left text-sm font-medium">
                               Status
                             </th>
@@ -109,7 +108,7 @@ export default function TeamPage() {
                         </thead>
                         <tbody className="divide-y">
                           {memberData && memberData.map((member) => (
-                            <tr key={member.id} className="hover:bg-muted/50">
+                            <tr key={member?.id} className="hover:bg-muted/50">
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-3">
                                   {/* <Avatar>
@@ -131,8 +130,11 @@ export default function TeamPage() {
                                   </div>
                                 </div>
                               </td>
+                              <td className="hidden px-4 py-3 text-sm md:table-cell">
+                                {member.user.designation}
+                              </td>
                               <td className="px-4 py-3 text-sm">
-                                {member.jobTitle}
+                                {member.user.jobTitle}
                               </td>
                               <td className="hidden px-4 py-3 text-sm sm:table-cell">
                                 {member?.department?.name}
@@ -151,7 +153,7 @@ export default function TeamPage() {
                               </td>
                               <td className="hidden px-4 py-3 text-sm lg:table-cell">
                                 <div className="flex flex-wrap gap-1">
-                                  {member.projects && member.projects?.map((project) => (
+                                  {member?.projects && member.projects?.map((project) => (
                                     <Badge
                                       key={project.id}
                                       variant="outline"
@@ -161,6 +163,9 @@ export default function TeamPage() {
                                     </Badge>
                                   ))}
                                 </div>
+                              </td>
+                              <td className="hidden px-4 py-3 text-sm md:table-cell">
+                                {member.role}
                               </td>
                               {/* <td className="px-4 py-3 text-sm">
                                 <Badge
@@ -185,9 +190,9 @@ export default function TeamPage() {
               </TabsContent>
               {activeWorkspace?.departments && activeWorkspace?.departments?.map((department) => (
                 <TabsContent
-                  value={department.id}
+                  value={department?.id}
                   className="pt-4"
-                  key={department.id}
+                  key={department?.id}
                 >
                   <Card>
                     <CardHeader className="pb-2">
@@ -205,6 +210,9 @@ export default function TeamPage() {
                               <th className="px-4 py-3 text-left text-sm font-medium">
                                 Name
                               </th>
+                              <th className="hidden px-4 py-3 text-left text-sm font-medium md:table-cell">
+                                Designation
+                              </th>
                               <th className="px-4 py-3 text-left text-sm font-medium">
                                 Job Title
                               </th>
@@ -213,6 +221,9 @@ export default function TeamPage() {
                               </th>
                               <th className="hidden px-4 py-3 text-left text-sm font-medium lg:table-cell">
                                 Projects
+                              </th>
+                              <th className="hidden px-4 py-3 text-left text-sm font-medium md:table-cell">
+                                Role
                               </th>
                               <th className="px-4 py-3 text-left text-sm font-medium">
                                 Status
@@ -223,11 +234,11 @@ export default function TeamPage() {
                             {memberData && memberData
                               ?.filter(
                                 (member) =>
-                                  member.department.id === department.id
+                                  member?.department?.id === department?.id
                               )
                               .map((member) => (
                                 <tr
-                                  key={member.id}
+                                  key={member?.id}
                                   className="hover:bg-muted/50"
                                 >
                                   <td className="px-4 py-3">
@@ -251,8 +262,11 @@ export default function TeamPage() {
                                       </div>
                                     </div>
                                   </td>
+                                  <td className="hidden px-4 py-3 text-sm md:table-cell">
+                                    {member.user.designation}
+                                  </td>
                                   <td className="px-4 py-3 text-sm">
-                                    {member.jobTitle}
+                                    {member.user.jobTitle}
                                   </td>
                                   <td className="hidden px-4 py-3 text-sm md:table-cell">
                                     <div className="flex flex-col gap-1">
@@ -262,7 +276,7 @@ export default function TeamPage() {
                                       </div>
                                       <div className="flex items-center gap-1 text-xs">
                                         <Phone className="h-3 w-3" />
-                                        {/* <span>{member?.user?.phone}</span> */}
+                                        <span>{member?.user?.contactNo}</span>
                                       </div>
                                     </div>
                                   </td>
@@ -270,7 +284,7 @@ export default function TeamPage() {
                                     <div className="flex flex-wrap gap-1">
                                       {member.projects && member.projects?.map((project) => (
                                         <Badge
-                                          key={project.id}
+                                          key={project?.id}
                                           variant="outline"
                                           className="text-xs"
                                         >
@@ -278,6 +292,9 @@ export default function TeamPage() {
                                         </Badge>
                                       ))}
                                     </div>
+                                  </td>
+                                  <td className="hidden px-4 py-3 text-sm md:table-cell">
+                                    {member.role}
                                   </td>
                                   {/* <td className="px-4 py-3 text-sm">
                                 <Badge

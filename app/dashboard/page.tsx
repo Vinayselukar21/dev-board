@@ -209,7 +209,7 @@ export default function Page() {
                           {log.message}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(log.createdAt , "dd MMM yyyy - hh:mm")}
+                          {format(log.createdAt!, "dd MMM yyyy - hh:mm")}
                         </p>
                       </div>
                     </div>)})}

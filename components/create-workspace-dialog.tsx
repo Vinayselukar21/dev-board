@@ -30,7 +30,10 @@ import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { icons } from "./workspace-switcher";
-
+import { Badge } from "./ui/badge";
+import AddNewDepartment from "@/hooks/Functions/AddNewDepartment";
+import { useStore } from "zustand";
+import workspaceStore from "@/store/workspaceStore";
 
 interface CreateWorkspaceDialogProps {
   trigger?: React.ReactNode;
@@ -50,35 +53,10 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
   const [inviteEmails, setInviteEmails] = useState("");
   const [templateId, setTemplateId] = useState("");
   const [icon, setIcon] = useState("AudioWaveform");
+  const [departmentName, setDepartmentName] = useState("");
 
-  // Sample templates
-  const templates = [
-    {
-      id: "blank",
-      name: "Blank Workspace",
-      description: "Start from scratch with an empty workspace",
-    },
-    {
-      id: "marketing",
-      name: "Marketing Team",
-      description: "Templates for marketing campaigns and content planning",
-    },
-    {
-      id: "design",
-      name: "Design Team",
-      description: "Templates for design projects and asset management",
-    },
-    {
-      id: "engineering",
-      name: "Engineering Team",
-      description: "Templates for software development and sprints",
-    },
-    {
-      id: "product",
-      name: "Product Team",
-      description: "Templates for product roadmaps and feature planning",
-    },
-  ];
+  const setActiveWorkspace = useStore(workspaceStore,(state) => state.setActiveWorkspace);
+  const activeWorkspace = useStore(workspaceStore,(state) => state.activeWorkspace);
 
   // // Handle file upload for logo
   // const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,12 +97,13 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
 
   const CreateNewWorkspaceMutation = useMutation({
     mutationFn: CreateNewWorkspace,
-    onSuccess: () => {
-      // setOpen(false);
+    onSuccess: (data:any) => {
+      setActiveWorkspace(data?.workspace);
       toast.success("Workspace created successfully");
       queryClient.invalidateQueries({
-        queryKey: ["workspaces", session?.id],
+        queryKey: ["my-org"],
       });
+      nextStep();
     },
     onError: (error) => {
       console.log(error);
@@ -138,6 +117,30 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
       description,
       icon,
       ownerId: session.id,
+      organizationId: session?.organizationId,
+    });
+  }
+
+  const AddNewDepartmentMutation = useMutation({
+    mutationFn: AddNewDepartment,
+    onSuccess: () => {
+      // setOpen(false);
+      toast.success("Department added successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["workspaces", session?.id],
+      });
+      setDepartmentName("");
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error("Error adding department");
+    },
+  });
+
+  const handleAddDepartment = () => {
+    AddNewDepartmentMutation.mutate({
+      workspaceId: activeWorkspace?.id!,
+      name: departmentName,
     });
   }
   
@@ -290,37 +293,23 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
           {/* Step 2: Choose Template */}
           {step === 2 && (
             <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label>Choose a Template</Label>
-                <p className="text-sm text-muted-foreground">
-                  Select a template to start with or create a blank workspace.
-                </p>
-
-                <div className="mt-2 grid gap-3">
-                  {templates.map((template) => (
-                    <div
-                      key={template.id}
-                      className={`flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50 ${
-                        templateId === template.id
-                          ? "border-primary bg-primary/5"
-                          : ""
-                      }`}
-                      onClick={() => setTemplateId(template.id)}
-                    >
-                      <Checkbox
-                        checked={templateId === template.id}
-                        onCheckedChange={() => setTemplateId(template.id)}
-                      />
-                      <div>
-                        <h4 className="font-medium">{template.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {template.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <Label>Departments</Label>
+              <div className="flex flex-wrap gap-2">
+                {activeWorkspace.departments && activeWorkspace.departments.map((department) => (
+                  <Badge key={department.id} className="py-1 px-2 rounded-full">
+                    {department.name}
+                  </Badge>
+                ))}
               </div>
+              <div className="grid gap-2">
+                <Label>Add New Department</Label>
+                <Input placeholder="Add New Department" value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} />
+              </div>
+              <DialogFooter className="mt-6">
+              <Button type="button" onClick={handleAddDepartment} disabled={departmentName === ""}>
+                Save & Continue
+              </Button>
+          </DialogFooter>
             </div>
           )}
 

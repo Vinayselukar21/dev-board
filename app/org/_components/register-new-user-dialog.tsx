@@ -1,5 +1,6 @@
 "use client"
 
+import { useAuth } from "@/app/providers/AuthProvider"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -13,7 +14,8 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import RegisterAndAddNewMemberToWorkspace from "@/hooks/Functions/RegisterAndAddNewMemberToWorkspace"
+import RegisterAndAddNewMemberToOrg from "@/hooks/Functions/RegisterAndAddNewMemberToOrg"
+import organizationStore from "@/store/organizationStore"
 import workspaceStore from "@/store/workspaceStore"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -33,36 +35,35 @@ const formSchema = z.object({
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
-  department: z.string({
-    required_error: "Please select a department.",
-  }),
-  role: z.string({
-    required_error: "Please select a role.",
-  }),
   contactNo: z.string().min(10, {
     message: "Contact number must be at least 10 digits.",
   }),
   location: z.string().min(2, {
     message: "Location must be at least 2 characters.",
   }),
-  jobTitle: z.string().min(2, {
-    message: "Job title must be at least 2 characters.",
-  }),
+  // workspace
+  workspaceId: z.string().optional(),
+  department: z.string().optional(),
+  role: z.string().optional(),
+  jobTitle: z.string().optional(),
 })
 interface InviteMemberDialogProps {
     trigger?: React.ReactNode;
   }
 export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps) {
   const queryClient = useQueryClient();
+  const {session} = useAuth()
   const [open, setOpen] = useState(false)
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
-
-
+  const activeOrganization = useStore(
+    organizationStore,
+    (state) => state.activeOrganization
+  );
   const RegisterNewUser = useMutation({
-    mutationFn: RegisterAndAddNewMemberToWorkspace,
+    mutationFn: RegisterAndAddNewMemberToOrg,
     onSuccess: () => {
       toast.success( "User registered and added successfully.");
-      queryClient.invalidateQueries({ queryKey: ["members", activeWorkspace?.id] });
+      queryClient.invalidateQueries({ queryKey: ["my-org"] });
       setOpen(false);
     },
     onError: () => {
@@ -79,27 +80,34 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
       location: "",
       contactNo: "",
       role:"member",
-      jobTitle: ""
+      jobTitle: "",
+      department: "",
+      workspaceId: "",
     },
   })
+  const isWorkspaceSelected = form.watch("workspaceId");
   function onSubmit(values: z.infer<typeof formSchema>) {
     const payload = {
       name: values.name,
       email: values.email,
       password: values.password,
-      role: values.role,
       contactNo: values.contactNo,
       location: values.location,
-      jobTitle: values.jobTitle,
-      workspaceId: activeWorkspace?.id,
-      departmentId: values.department,
+      organizationId: activeOrganization?.id,
+      // if the owner adds a new member to the organization & workspace the below fields are used
+      workspaceId: values.workspaceId || "",
+      role: values.role || "",
+      jobTitle: values.jobTitle || "",
+      departmentId: values.department || "",
     }
     RegisterNewUser.mutate(payload)
     // Here you would typically send the data to your backend
   }
-
+  console.log(form.formState.errors)
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(open) =>{ setOpen(open)
+      form.reset()
+    }}>
       <DialogTrigger asChild>
       {trigger || <Button variant="outline">Register User</Button>}
       </DialogTrigger>
@@ -177,6 +185,31 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
                 </FormItem>
               )}
             />
+             <FormField
+              control={form.control}
+              name="workspaceId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Workspace</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a workspace" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {activeOrganization?.workspaces?.map((workspace) => (
+                        <SelectItem key={workspace.id} value={workspace.id}>
+                          {workspace.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {isWorkspaceSelected && ( <>
             <FormField
               control={form.control}
               name="jobTitle"
@@ -184,7 +217,7 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
                 <FormItem>
                   <FormLabel>Job Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter job title" {...field} required/>
+                    <Input placeholder="Enter job title" {...field}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -197,7 +230,7 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Department</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a department"/>
@@ -221,7 +254,7 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a role" />
@@ -237,7 +270,7 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
                 </FormItem>
               )}
             />
-            </div>
+            </div></>)}
             <DialogFooter>
               <Button type="submit">Register</Button>
             </DialogFooter>

@@ -5,6 +5,7 @@ interface Payload {
   name: string;
   description: string;
   ownerId: string;
+  organizationId: string;
 }
 
 const CreateNewWorkspace = async (payload: Payload) => {

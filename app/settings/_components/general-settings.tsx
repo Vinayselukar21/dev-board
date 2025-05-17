@@ -1,23 +1,63 @@
-'use client'
-import { Workspace } from "@/app/types"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+"use client";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { Department, Workspace } from "@/app/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import AddNewDepartment from "@/hooks/Functions/AddNewDepartment";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function GeneralSettings({
   activeWorkspace,
 }: {
   activeWorkspace: Workspace | null;
-}){
-    
-    return (
-        <Card>
+}) {
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
+  const [departmentName, setDepartmentName] = useState("");
+
+   const AddNewDepartmentMutation = useMutation({
+      mutationFn: AddNewDepartment,
+      onSuccess: () => {
+        // setOpen(false);
+        toast.success("Department added successfully");
+        queryClient.invalidateQueries({
+          queryKey: ["workspaces", session?.id],
+        });
+        setDepartmentName("");
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error("Error adding department");
+      },
+    });
+  
+    const handleAddDepartment = () => {
+      AddNewDepartmentMutation.mutate({
+        workspaceId: activeWorkspace?.id!,
+        name: departmentName,
+      });
+    }
+  return (
+    <div className="space-y-6">
+      <Card>
         <CardHeader>
           <CardTitle>General Settings</CardTitle>
-          <CardDescription>Manage your workspace name, description, and preferences.</CardDescription>
+          <CardDescription>
+            Manage your workspace name, description, and preferences.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
@@ -25,7 +65,10 @@ export default function GeneralSettings({
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="workspace-name">Workspace Name</Label>
-                <Input id="workspace-name" defaultValue={activeWorkspace?.name} />
+                <Input
+                  id="workspace-name"
+                  defaultValue={activeWorkspace?.name}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="workspace-description">Description</Label>
@@ -92,5 +135,37 @@ export default function GeneralSettings({
           <Button>Save Changes</Button>
         </CardContent>
       </Card>
-    )
+      <Card>
+        <CardHeader>
+          <CardTitle>Departments</CardTitle>
+          <CardDescription>
+            Manage your departments.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex gap-2 flex-wrap">
+              {activeWorkspace?.departments?.map((department: Department) => (
+                <Badge variant="outline" key={department?.id}>
+                  {department?.name}
+                </Badge>
+              ))}
+            </div>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="workspace-name">Department Name</Label>
+                <Input
+                  id="workspace-name"
+                  defaultValue={departmentName}
+                  onChange={(e) => setDepartmentName(e.target.value)}
+                />
+              </div>
+            </div>
+            <Button onClick={handleAddDepartment}>Add Department</Button>
+          </div>
+
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

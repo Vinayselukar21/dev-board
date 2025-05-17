@@ -1,19 +1,38 @@
+
+export interface Organization {
+  id: string;
+  name: string;
+  type: string; // personal, work
+  createdAt: string;
+  updatedAt: string;
+  ownerId: string;
+  owner?: User;
+  users?: User[];
+  workspaces?: Workspace[];
+  logs?: Log[];
+}
+
 export interface User {
   id: string;
   email: string;
   name?: string;
-  role: string;
+  password: string;
+  role: string; // admin, member, viewer
   createdAt: string;
   updatedAt: string;
   isVerified: boolean;
   lastLogin?: string;
   contactNo?: string;
   location?: string;
+  jobTitle: string;
+  designation: string;
   ownedWorkspaces?: Workspace[];
   memberships?: WorkspaceMember[];
   assignedTasks?: Task[];
   Project?: Project[];
   Task?: Task[];
+  ownedOrganization?: Organization;
+  organization?: Organization;
 }
 
 export interface Workspace {
@@ -23,65 +42,99 @@ export interface Workspace {
   description?: string;
   createdAt: string;
   updatedAt: string;
+
   ownerId: string;
   owner?: User;
-  members?: WorkspaceMember[];
-  projects?: Project[];
-  departments?: Department[];
+
+  members: WorkspaceMember[];
+
+  projects: Project[];
+
+  departments: Department[];
+
+  logs?: Log[];
+
+  calendarEvents?: CalendarEvent[];
+
+  relationships?: MemberWorkspaceRelationship[];
+
+  organizationId?: string;
+  organization?: Organization;
 }
 
 export interface WorkspaceMember {
   id: string;
-  role: string;
+  role: string; //member, admin
   invitedAt: string;
   accepted: boolean;
+
   userId: string;
   workspaceId: string;
+  departmentId: string;
+
   user: User;
-  workspace?: Workspace;
-  departmentId?: string;
-  department?: Department;
-  projects?: ProjectMember[];
-  jobTitle?: string;
-  // projectMembers?: ProjectMember[];
-  // add workspace member designation
-  createdEvents?: CalendarEvent[];
+  workspace: Workspace;
+  department?: Department
+
+  projects: ProjectMember[];
+  calendarEvents: CalendarEventParticipant[]
+
+  createdEvents: CalendarEvent[]
+
+  relationships: MemberWorkspaceRelationship[]
 }
 
+export interface MemberWorkspaceRelationship {
+  id: string;
+  workspaceMemberId: string;
+  workspaceId: string;
+
+  // Optional nested objects if needed
+  workspaceMember?: WorkspaceMember;
+  workspace?: Workspace;
+  
+}
 export interface ProjectMember {
   id: string;
   projectId: string;
   memberId: string;
+
   project: Project;
   member: WorkspaceMember;
+
   assignedAt: string;
 }
 
 export interface Project {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   status: string;
-  deadline?: string;
-  createdAt: string;
-  updatedAt: string;
+  deadline?: Date | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+
   workspaceId: string;
-  workspace: Workspace;
+  workspace?: Workspace;
+
   createdById: string;
   createdBy?: User;
+
   tasks?: Task[];
   taskStages?: TaskStage[];
-  members?: ProjectMember[];
+
+  calendarEvents?: CalendarEvent[];
+  
+  members?:ProjectMember[];
 }
 
 export interface TaskStage {
   id: string;
   name: string;
-  createdAt: string; // or Date if you're using JS Date objects
-  updatedAt: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 
   projectId: string;
-  // Optionally include related project and tasks if needed
   project?: Project;
   tasks?: Task[];
 }
@@ -93,32 +146,51 @@ export interface Task {
   status: string;
   priority: string;
   dueDate?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+
   projectId: string;
   project: Project;
+
+  stageId: string;
+  stage: TaskStage;
+
   createdById: string;
   createdBy: User;
+
   assignees: User[];
 }
 
-export type Priority = "low" | "medium" | "high";
+export interface Department {
+  id: string;
+  workspaceId: string;
+  workspace: Workspace;
+  name: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  members: WorkspaceMember[];
+}
+
 
 export interface Log {
   id: string;
-  type: string; // e.g., "workspace"
-  action: string; // e.g., "create"
+  type: "workspace" | "project" | "task"; // assuming these are the only valid types
+  action: string;
   message: string;
 
   workspaceId: string;
   workspace?: Workspace;
-
+  
   userId: string;
   user?: User;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+   
+  organizationId: string;
+  organization?: Organization;
 }
+
 
 export interface CalendarEvent {
   id: string;
@@ -127,23 +199,34 @@ export interface CalendarEvent {
   date: string;
   time: string;
   endTime: string;
-  occurrence: 'single' | 'recurring-month' | 'recurring-week';
-  participants: string[];
-  status: "active" | "cancelled";
+  occurrence: 'single' | 'recurring-weekly' | 'recurring-monthly';
+  type: 'event' | 'meeting' | 'task';
+  location?: string;
+  status: 'active' | 'cancelled';
+
+  createdById: string;
+  createdBy: WorkspaceMember;
 
   // Relations
   projectId?: string;
   project?: Project;
 
   workspaceId: string;
-  workspace?: Workspace;
+  workspace: Workspace;
+  
+  participants: CalendarEventParticipant[];
 
-  type: 'event' | 'meeting';
-  location?: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+}
 
-  createdAt?: Date;
-  updatedAt?: Date;
 
-  createdById: string;
-  createdBy: WorkspaceMember;
+export interface CalendarEventParticipant {
+  id: string;
+  calendarEventId: string;
+  workspaceMemberId: string;
+
+  // Optional nested objects
+  calendarEvent?: CalendarEvent;
+  workspaceMember?: WorkspaceMember;
 }

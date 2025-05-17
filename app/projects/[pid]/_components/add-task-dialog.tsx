@@ -26,11 +26,7 @@ import {
 } from "@/components/ui/select";
 import { CalendarIcon, Plus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -38,6 +34,7 @@ import AddNewTask from "@/hooks/Functions/AddNewTask";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/app/providers/AuthProvider";
+import DatePicker from "@/components/date-picker";
 
 interface AddTaskDialogProps {
   trigger?: React.ReactNode;
@@ -205,29 +202,11 @@ export function AddTaskDialog({
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label>Due Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !dueDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dueDate ? format(dueDate, "PPP") : "Select a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={dueDate}
-                      onSelect={setDueDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  Date={dueDate}
+                  setDate={setDueDate}
+                  label="Due Date"
+                />
               </div>
             </div>
             {projectId && (

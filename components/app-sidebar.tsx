@@ -27,6 +27,8 @@ import { useStore } from "zustand";
 import { CreateWorkspaceDialog } from "./create-workspace-dialog";
 import { Button } from "./ui/button";
 import { WorkspaceSwitcher } from "./workspace-switcher";
+import useGetMyOrgData from "@/hooks/useGetMyOrgData";
+import organizationStore from "@/store/organizationStore";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
@@ -34,12 +36,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { session } = useAuth();
   const { workspaceData, workspacesLoading, errorLoadingWorkspaces, workspaceDataLoadedSuccess } =
     useGetWorkspaces();
+  const {myOrgData, myOrgLoading, errorLoadingMyOrg} = useGetMyOrgData();
 
     const sidebar = useStore(sidebarStore, (state) => state.sidebar);
     const setSidebar = useStore(sidebarStore, (state) => state.setSidebar);
 
   // This is sample data.
-  const sidebarData = {
+  const  sidebarData = {
     user: {
       name: session?.name,
       email: session?.email,
@@ -198,10 +201,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMenu menu={sidebarData.menu || []} />
       </SidebarContent>
       <SidebarFooter>
-      <CreateWorkspaceDialog trigger={<Button variant="ghost" className="text-muted-foreground">
-              <Plus />
-              <span>Add Workspace</span>
-            </Button>} />
+      
         <NavUser user={sidebarData.user} />
       </SidebarFooter>
       <SidebarRail />

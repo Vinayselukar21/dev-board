@@ -6,7 +6,9 @@ import {
   ChevronsUpDown,
   CreditCard,
   LogOut,
+  Settings,
   Sparkles,
+  Users,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,6 +28,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/app/providers/AuthProvider";
+import { Badge } from "./ui/badge";
+import { useRouter } from "next/navigation";
 
 export function NavUser({
   user,
@@ -36,8 +40,10 @@ export function NavUser({
     avatar: string;
   };
 }) {
+  const router = useRouter();
   const { isMobile } = useSidebar();
-const { logoutUser } = useAuth();
+const { logoutUser, session } = useAuth();
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -77,11 +83,14 @@ const { logoutUser } = useAuth();
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
+            <DropdownMenuGroup >
+              {session.ownedOrganization ? <DropdownMenuItem className="flex flex-col gap-2 items-start">
+               <p>{session.organization.name}</p>
+               <Badge variant="default">Owner</Badge>
+              </DropdownMenuItem> : <DropdownMenuItem className="flex flex-col gap-2 items-start">
+               <p>{session.organization.name}</p>
+               <Badge variant="outline">Member</Badge>
+              </DropdownMenuItem>}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
@@ -96,6 +105,16 @@ const { logoutUser } = useAuth();
               <DropdownMenuItem>
                 <Bell />
                 Notifications
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                router.push("/org");
+              }}>
+                <Users />
+                View Organization
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings />
+                Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

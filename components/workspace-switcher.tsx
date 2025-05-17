@@ -91,7 +91,7 @@ export function WorkspaceSwitcher({
             <DropdownMenuLabel className="text-muted-foreground text-xs">
               Workspaces
             </DropdownMenuLabel>
-            {sidebar.workspaces && sidebar.workspaces.map((workspace) => {
+            {sidebar?.workspaces && sidebar?.workspaces.map((workspace) => {
               const Icon = icons.find((icon) => icon.label === workspace.icon)?.icon
               return (
                 <DropdownMenuItem
