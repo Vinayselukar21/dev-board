@@ -8,6 +8,7 @@ type SidebarStoreState = {
 
 type SidebarStoreActions = {
   setSidebar: (sidebar: SidebarStoreState["sidebar"]) => void;
+  resetSidebar: () => void;
 };
 
 type SidebarStore = SidebarStoreState & SidebarStoreActions;
@@ -17,6 +18,9 @@ const sidebarStore = createStore<SidebarStore>()(
     (set) => ({
       sidebar: { workspaces: [], projects: [] },
       setSidebar: (sidebar) => set({ sidebar }),
+      resetSidebar: () => {
+        set({ sidebar: { workspaces: [], projects: [] } });
+      },
     }),
     { name: "sidebar-storage" }
   )

@@ -19,9 +19,11 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import RegisterUserDialog from "./_components/register-new-user-dialog";
 import { CreateWorkspaceDialog } from "@/components/create-workspace-dialog";
+import useGetRoles from "@/hooks/useGetAllRoles";
 
 export default function TeamPage() {
   const router = useRouter();
+    const {organizationRolesData, workspaceRolesData, rolesLoading, errorLoadingRoles} = useGetRoles();
   const activeWorkspace = useStore(
     workspaceStore,
     (state) => state.activeWorkspace
@@ -47,6 +49,8 @@ export default function TeamPage() {
   const handleDelete = (member: User) => {
     console.log(member);
   };
+
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       {/* Main Content */}
@@ -217,7 +221,7 @@ export default function TeamPage() {
                               Job Title
                             </th>
                             <th className="hidden px-4 py-3 text-left text-sm font-medium sm:table-cell">
-                              Department
+                              Designation
                             </th>
                             <th className="hidden px-4 py-3 text-left text-sm font-medium md:table-cell">
                               Contact
@@ -250,19 +254,16 @@ export default function TeamPage() {
                                   </Avatar> */}
                                     <div>
                                       <div className="font-medium">
-                                        {member?.name}
-                                      </div>
-                                      <div className="hidden text-xs text-muted-foreground sm:block md:hidden">
-                                        {member.role}
+                                        {member?.name} <Badge variant="outline">{member?.organizationRole?.name}</Badge>
                                       </div>
                                     </div>
                                   </div>
                                 </td>
                                 <td className="px-4 py-3 text-sm">
-                                  {/* {member?.jobTitle}  */}lala
+                                  {member?.jobTitle}
                                 </td>
                                 <td className="hidden px-4 py-3 text-sm sm:table-cell">
-                                  {/* {member?.department?.name} */} lala
+                                  {member?.designation}
                                 </td>
                                 <td className="hidden px-4 py-3 text-sm md:table-cell">
                                   <div className="flex flex-col gap-1">

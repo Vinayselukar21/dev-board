@@ -124,7 +124,7 @@ if(projectsLoading){
                        {log.message}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {format(log.createdAt, "dd MMM yyyy - hh:mm")}
+                        {format(log.createdAt!, "dd MMM yyyy - hh:mm")}
                       </p>
                     </div>
                   </div>
@@ -192,7 +192,7 @@ if(projectsLoading){
                           </div>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                          {member?.role?.name.charAt(0).toUpperCase() + member?.role?.name.slice(1)}
                         </div>
                       </div>
                     ))}

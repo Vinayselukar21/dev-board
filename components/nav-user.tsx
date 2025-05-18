@@ -30,6 +30,11 @@ import {
 import { useAuth } from "@/app/providers/AuthProvider";
 import { Badge } from "./ui/badge";
 import { useRouter } from "next/navigation";
+import sidebarStore from "@/store/sidebarStore";
+import workspaceStore from "@/store/workspaceStore";
+import organizationStore from "@/store/organizationStore";
+import appSettingStore from "@/store/appSettingStore";
+import rolesStore from "@/store/rolesStore";
 
 export function NavUser({
   user,
@@ -43,6 +48,22 @@ export function NavUser({
   const router = useRouter();
   const { isMobile } = useSidebar();
 const { logoutUser, session } = useAuth();
+
+const {resetSidebar} = sidebarStore.getState();
+const {resetActiveWorkspace} = workspaceStore.getState();
+const {resetActiveOrganization} = organizationStore.getState();
+const {resetAppSettings} = appSettingStore.getState();
+const {resetRolesData} =  rolesStore.getState();
+
+const handleLogout = () => {
+  logoutUser();
+  resetSidebar();
+  resetActiveWorkspace();
+  resetActiveOrganization();
+  resetAppSettings();
+  resetRolesData();
+}
+
 
   return (
     <SidebarMenu>
@@ -120,7 +141,7 @@ const { logoutUser, session } = useAuth();
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                logoutUser();
+                handleLogout();
               }}
             >
               <LogOut />

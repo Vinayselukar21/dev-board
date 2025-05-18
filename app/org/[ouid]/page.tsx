@@ -23,84 +23,6 @@ import organizationStore from "@/store/organizationStore";
 import { useStore } from "zustand";
 import { useParams } from "next/navigation";
 
-// // Sample user data
-// const users = [
-//   {
-//     id: "99a62e34-8e7c-4954-a8ae-c4f9901c5158",
-//     email: "christopher@wakare.com",
-//     name: "Christopher Wakare",
-//     password: "$2b$10$A3ZueSHA0KjqAwvLOWU0juKtbNR4/sp2HKkIbX2i6JDYG0SkDBUmq",
-//     role: "admin",
-//     createdAt: "2025-05-09T10:00:33.652Z",
-//     updatedAt: "2025-05-09T10:00:34.114Z",
-//     contactNo: "1234567890",
-//     location: "Thane, Mumbai",
-//     isVerified: false,
-//     lastLogin: null,
-//     organizationId: "f3f3d124-57a8-4457-b874-6de2b5f40936",
-//     memberships: [
-//       {
-//         id: "cmagmn9kw0003cdscgmqddyvw",
-//         role: "admin",
-//         invitedAt: "2025-05-09T10:02:09.270Z",
-//         accepted: false,
-//         jobTitle: "",
-//         userId: "99a62e34-8e7c-4954-a8ae-c4f9901c5158",
-//         workspaceId: "cmagmn9kw0001cdscku581wdv",
-//         departmentId: null,
-//         organizationId: null,
-//         workspace: {
-//           id: "cmagmn9kw0001cdscku581wdv",
-//           icon: "AudioWaveform",
-//           name: "Next Js Team Workspace",
-//           description: "The workspace consists of Next js team and projects",
-//           createdAt: "2025-05-09T10:02:09.270Z",
-//           updatedAt: "2025-05-09T10:02:09.270Z",
-//           ownerId: "99a62e34-8e7c-4954-a8ae-c4f9901c5158",
-//           organizationId: "f3f3d124-57a8-4457-b874-6de2b5f40936",
-//         },
-//       },
-//     ],
-//   },
-//   {
-//     id: "2523aae5-a203-412c-a067-9df89b4cf314",
-//     email: "vinay@selukar.com",
-//     name: "Vinay Selukar",
-//     password: "$2b$10$VosJvnWalpExowInrAq5y.hgk6yklUMHHPCp2tfzFr6wZdzaZz6Vy",
-//     role: "user",
-//     createdAt: "2025-05-09T10:03:48.532Z",
-//     updatedAt: "2025-05-09T10:03:48.532Z",
-//     contactNo: "7709428041",
-//     location: "Nagpur",
-//     isVerified: false,
-//     lastLogin: null,
-//     organizationId: "f3f3d124-57a8-4457-b874-6de2b5f40936",
-//     memberships: [
-//       {
-//         id: "cmagmpe440003cdd8wqn23szp",
-//         role: "member",
-//         invitedAt: "2025-05-09T10:03:48.532Z",
-//         accepted: false,
-//         jobTitle: "Fullstack Developer",
-//         userId: "2523aae5-a203-412c-a067-9df89b4cf314",
-//         workspaceId: "cmagmn9kw0001cdscku581wdv",
-//         departmentId: "cmagmnkfk000bcdscra3wpxsf",
-//         organizationId: "f3f3d124-57a8-4457-b874-6de2b5f40936",
-//         workspace: {
-//           id: "cmagmn9kw0001cdscku581wdv",
-//           icon: "AudioWaveform",
-//           name: "Next Js Team Workspace",
-//           description: "The workspace consists of Next js team and projects",
-//           createdAt: "2025-05-09T10:02:09.270Z",
-//           updatedAt: "2025-05-09T10:02:09.270Z",
-//           ownerId: "99a62e34-8e7c-4954-a8ae-c4f9901c5158",
-//           organizationId: "f3f3d124-57a8-4457-b874-6de2b5f40936",
-//         },
-//       },
-//     ],
-//   },
-// ]
-
 export default function UserProfile() {
   const params = useParams();
   const activeOrganization = useStore(
@@ -130,6 +52,7 @@ export default function UserProfile() {
     return <p>Loading...</p>;
   }
 
+  console.log(selectedUser)
   return (
     <div className="container mx-auto py-10 px-4">
       <div className="max-w-4xl mx-auto">
@@ -148,7 +71,7 @@ export default function UserProfile() {
             <SelectContent>
               {users.map((user) => (
                 <SelectItem key={user.id} value={user.id}>
-                  {user.name} ({user.email})
+                  {user?.name} ({user.email})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -161,11 +84,11 @@ export default function UserProfile() {
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16">
                   <AvatarImage
-                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${selectedUser.name}`}
-                    alt={selectedUser.name}
+                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${selectedUser?.name}`}
+                    alt={selectedUser?.name}
                   />
                   <AvatarFallback>
-                    {selectedUser.name &&
+                    {selectedUser?.name &&
                       selectedUser?.name
                         .split(" ")
                         .map((n) => n[0])
@@ -174,9 +97,9 @@ export default function UserProfile() {
                 </Avatar>
                 <div>
                   <CardTitle className="text-2xl">
-                    {selectedUser.name}
+                    {selectedUser?.name}
                   </CardTitle>
-                  <CardDescription>{selectedUser.email}</CardDescription>
+                  <CardDescription>{selectedUser?.email}</CardDescription>
                   <div className="mt-1">
                     <Badge
                       variant={
@@ -217,7 +140,7 @@ export default function UserProfile() {
                       <div>
                         <p className="text-sm font-medium">Full Name</p>
                         <p className="text-sm text-muted-foreground">
-                          {selectedUser.name}
+                          {selectedUser?.name}
                         </p>
                       </div>
                     </div>
@@ -226,7 +149,7 @@ export default function UserProfile() {
                       <div>
                         <p className="text-sm font-medium">Contact Number</p>
                         <p className="text-sm text-muted-foreground">
-                          {selectedUser.contactNo}
+                          {selectedUser?.contactNo}
                         </p>
                       </div>
                     </div>
@@ -235,7 +158,25 @@ export default function UserProfile() {
                       <div>
                         <p className="text-sm font-medium">Location</p>
                         <p className="text-sm text-muted-foreground">
-                          {selectedUser.location}
+                          {selectedUser?.location}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">Job Title</p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedUser?.jobTitle}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">Designation</p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedUser?.designation}
                         </p>
                       </div>
                     </div>
@@ -254,7 +195,7 @@ export default function UserProfile() {
                     <div>
                       <p className="text-sm font-medium">User ID</p>
                       <p className="text-xs text-muted-foreground break-all">
-                        {selectedUser.id}
+                        {selectedUser?.id}
                       </p>
                     </div>
                     <div>
@@ -264,20 +205,20 @@ export default function UserProfile() {
                     <div>
                       <p className="text-sm font-medium">Created At</p>
                       <p className="text-sm text-muted-foreground">
-                        {formatDate(selectedUser.createdAt)}
+                        {formatDate(selectedUser?.createdAt)}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm font-medium">Updated At</p>
                       <p className="text-sm text-muted-foreground">
-                        {formatDate(selectedUser.updatedAt)}
+                        {formatDate(selectedUser?.updatedAt)}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm font-medium">Last Login</p>
                       <p className="text-sm text-muted-foreground">
-                        {selectedUser.lastLogin
-                          ? formatDate(selectedUser.lastLogin)
+                        {selectedUser?.lastLogin
+                          ? formatDate(selectedUser?.lastLogin)
                           : "Never"}
                       </p>
                     </div>
@@ -307,13 +248,13 @@ export default function UserProfile() {
                           </div>
                           <Badge
                             variant={
-                              membership.role === "admin"
+                              membership.role.name === "Owner"
                                 ? "default"
                                 : "secondary"
                             }
                           >
-                            {membership.role.charAt(0).toUpperCase() +
-                              membership.role.slice(1)}
+                            {membership.role.name.charAt(0).toUpperCase() +
+                              membership.role.name.slice(1)}
                           </Badge>
                         </div>
 
@@ -322,13 +263,13 @@ export default function UserProfile() {
                         </p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          {membership.jobTitle && (
+                          {selectedUser.jobTitle && (
                             <div className="flex items-center gap-2">
                               <Briefcase className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="font-medium">Job Title</p>
                                 <p className="text-muted-foreground">
-                                  {membership.jobTitle || "Not specified"}
+                                  {selectedUser.jobTitle || "Not specified"}
                                 </p>
                               </div>
                             </div>

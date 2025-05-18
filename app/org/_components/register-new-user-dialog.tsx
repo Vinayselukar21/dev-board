@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import RegisterAndAddNewMemberToOrg from "@/hooks/Functions/RegisterAndAddNewMemberToOrg"
 import organizationStore from "@/store/organizationStore"
+import rolesStore from "@/store/rolesStore"
 import workspaceStore from "@/store/workspaceStore"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -41,11 +42,17 @@ const formSchema = z.object({
   location: z.string().min(2, {
     message: "Location must be at least 2 characters.",
   }),
+  roleId: z.string().min(1, {
+    message: "Please select a role",
+  }),
+  designation: z.string().min(2, {
+    message: "Designation must be at least 2 characters.",
+  }),
   // workspace
   workspaceId: z.string().optional(),
   department: z.string().optional(),
-  role: z.string().optional(),
   jobTitle: z.string().optional(),
+  organizationRoleId: z.string().optional(),
 })
 interface InviteMemberDialogProps {
     trigger?: React.ReactNode;
@@ -59,6 +66,14 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
     organizationStore,
     (state) => state.activeOrganization
   );
+
+
+
+  const workspaceRolesData = useStore(rolesStore, (state) => state.workspaceRolesData);
+  const organizationRolesData = useStore(rolesStore, (state) => state.organizationRolesData);
+
+  console.log(workspaceRolesData, organizationRolesData)
+
   const RegisterNewUser = useMutation({
     mutationFn: RegisterAndAddNewMemberToOrg,
     onSuccess: () => {
@@ -79,10 +94,12 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
       password: "",
       location: "",
       contactNo: "",
-      role:"member",
+      roleId:"",
       jobTitle: "",
       department: "",
       workspaceId: "",
+      organizationRoleId: "",
+      designation: "",
     },
   })
   const isWorkspaceSelected = form.watch("workspaceId");
@@ -96,9 +113,11 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
       organizationId: activeOrganization?.id,
       // if the owner adds a new member to the organization & workspace the below fields are used
       workspaceId: values.workspaceId || "",
-      role: values.role || "",
+      roleId: values.roleId || "",
+      organizationRoleId: values.organizationRoleId || "",
       jobTitle: values.jobTitle || "",
       departmentId: values.department || "",
+      designation: values.designation || "",
     }
     RegisterNewUser.mutate(payload)
     // Here you would typically send the data to your backend
@@ -185,6 +204,58 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="organizationRoleId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Organization Role</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {organizationRolesData.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <FormField
+              control={form.control}
+              name="designation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Designation</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter designation" {...field}/>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+              />
+             <FormField
+              control={form.control}
+              name="jobTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Job Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter job title" {...field}/>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+              />
+              </div>
              <FormField
               control={form.control}
               name="workspaceId"
@@ -210,19 +281,7 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
               )}
             />
             {isWorkspaceSelected && ( <>
-            <FormField
-              control={form.control}
-              name="jobTitle"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Job Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter job title" {...field}/>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+           
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -250,10 +309,10 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
             />
             <FormField
               control={form.control}
-              name="role"
+              name="roleId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>Workspace Role</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -261,9 +320,11 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="member">Member</SelectItem>
-                      <SelectItem value="viewer">Viewer</SelectItem>
+                      {workspaceRolesData.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

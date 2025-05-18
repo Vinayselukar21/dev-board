@@ -9,6 +9,7 @@ type AppSettingStoreActions = {
   setCalendarSettings: (
     calendarSettings: AppSettingStoreState["calendarSettings"]
   ) => void;
+  resetAppSettings: () => void;
 };
 
 type AppSettingStore = AppSettingStoreState & AppSettingStoreActions;
@@ -20,6 +21,9 @@ const appSettingStore = createStore<AppSettingStore>()(
       setCalendarSettings: (calendarSettings: AppSettingStoreState["calendarSettings"]) => {
         console.log(calendarSettings , "inside store");
         set({ calendarSettings });
+      },
+      resetAppSettings: () => {
+        set({ calendarSettings: { view: "month" } });
       },
     }),
     { name: "appSetting-storage" }

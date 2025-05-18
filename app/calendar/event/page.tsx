@@ -1,10 +1,8 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import {
   ArrowLeft,
-  CalendarIcon,
   Check,
   ChevronsUpDown,
   Trash2,
@@ -19,7 +17,6 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
@@ -29,7 +26,6 @@ import {
   FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
 import {
   Select,
   SelectContent,
@@ -38,9 +34,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
 
 // Utilities and hooks
 import { useAuth } from "@/app/providers/AuthProvider";
+import DatePicker from "@/components/date-picker";
 import {
   Command,
   CommandEmpty,
@@ -58,7 +56,6 @@ import workspaceStore from "@/store/workspaceStore";
 import { useStore } from "zustand";
 import EventFormConstrains, { EventFormValues } from "./_components/EventFormConstrains";
 import LoadingEvent from "./_components/loading-event";
-import DatePicker from "@/components/date-picker";
 
 
 export default function EventPage() {

@@ -32,8 +32,10 @@ export function SignupForm({
     const location = formData.get("location") as string;
     const organizationName = formData.get("organizationName") as string;
     const organizationType = formData.get("organizationType") as string;
+    const jobTitle = formData.get("jobTitle") as string;
+    const designation = formData.get("designation") as string;
 
-    signUpWithCredentials({ name, email, password, contactNo, location, organizationName, organizationType });
+    signUpWithCredentials({ name, email, password, contactNo, location, organizationName, organizationType, jobTitle, designation });
   };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -99,6 +101,14 @@ export function SignupForm({
               <div className="grid gap-2">
                 <Label htmlFor="contactNo">Contact No</Label>
                 <Input id="contactNo" type="text" name="contactNo" required pattern="[0-9]{10}" placeholder="Enter your contact number" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="jobTitle">Job Title</Label>
+                <Input id="jobTitle" type="text" name="jobTitle" required placeholder="Enter your job title" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="designation">Designation</Label>
+                <Input id="designation" type="text" name="designation" required placeholder="Enter your designation" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="location">Location</Label>

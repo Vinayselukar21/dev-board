@@ -12,18 +12,7 @@ import workspaceStore from "@/store/workspaceStore";
 import organizationStore from "@/store/organizationStore";
 import { useParams } from "next/navigation";
 import { Workspace } from "@/app/types";
-export const icons = [
-  { label: "AudioWaveform", icon: AudioWaveform },
-  { label: "BookOpen", icon: BookOpen },
-  { label: "Bot", icon: Bot },
-  { label: "Command", icon: Command },
-  { label: "Frame", icon: Frame },
-  { label: "GalleryVerticalEnd", icon: GalleryVerticalEnd },
-  { label: "Map", icon: Map },
-  { label: "Pie Chart", icon: PieChart },
-  { label: "Settings 2", icon: Settings2 },
-  { label: "Square Terminal", icon: SquareTerminal },
-];
+import { icons } from "@/components/workspace-switcher";
 // Mock data - in a real app, this would come from an API or database
 // const workspaceData = {
 //   id: "cmagmn9kw0001cdscku581wdv",
@@ -262,7 +251,8 @@ function getInitials(name: string | undefined) {
 }
 
 // Helper function to format dates
-function formatDate(dateString: string) {
+function formatDate(dateString: string | Date | null | undefined) {
+  if (!dateString) return "";
   return format(new Date(dateString), "MMM d, yyyy")
 }
 
@@ -375,7 +365,7 @@ export default function WorkspaceDashboard() {
                         <p className="font-medium">{member?.user?.name}</p>
                         <p className="text-sm text-muted-foreground">{member?.user?.jobTitle || "No job title"}</p>
                       </div>
-                      <Badge variant={member?.role === "admin" ? "default" : "outline"}>{member?.role}</Badge>
+                      <Badge variant={member?.role.name === "Owner" ? "default" : "outline"}>{member?.role.name}</Badge>
                     </div>
                   ))}
                 </div>
@@ -443,8 +433,8 @@ export default function WorkspaceDashboard() {
                     <div className="ml-auto flex flex-col gap-2 sm:flex-row sm:items-center">
                       <div className="flex flex-col gap-1 sm:mr-4">
                         <span className="text-sm font-medium">Role</span>
-                        <Badge variant={member?.role === "admin" ? "default" : "outline"} className="w-fit">
-                          {member?.role}
+                        <Badge variant={member?.role.name === "Owner" ? "default" : "outline"} className="w-fit">
+                          {member?.role.name}
                         </Badge>
                       </div>
                       <div className="flex flex-col gap-1 sm:mr-4">

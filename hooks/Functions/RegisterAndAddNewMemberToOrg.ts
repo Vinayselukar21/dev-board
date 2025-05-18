@@ -4,13 +4,15 @@ interface RegisterUserPayload {
   name: string;
   email: string;
   password: string;
-  role: string; // "admin" | "member" | "viewer";
+  roleId: string; 
   workspaceId?: string;
   departmentId?: string;
   organizationId: string;
   jobTitle?: string;
   contactNo?: string;
   location?: string;
+  organizationRoleId?: string;
+  designation?: string;
 }
 const RegisterAndAddNewMemberToOrg = async (
   payload: RegisterUserPayload
