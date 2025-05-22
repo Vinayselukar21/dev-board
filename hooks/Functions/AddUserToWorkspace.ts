@@ -3,7 +3,7 @@ import axios from "@/utils/axios";
 
 interface Payload {
     userIds: string[];
-    role: "member" | "admin";
+    roleId: string;
     departmentId: string;
 }
 

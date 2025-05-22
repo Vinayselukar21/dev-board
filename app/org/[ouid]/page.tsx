@@ -122,7 +122,7 @@ export default function UserProfile() {
           </Card>
 
           <Tabs defaultValue="personal">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="personal">Personal Info</TabsTrigger>
               <TabsTrigger value="account">Account Details</TabsTrigger>
               <TabsTrigger value="workspace">Workspace</TabsTrigger>
@@ -301,6 +301,8 @@ export default function UserProfile() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            
           </Tabs>
         </div>
       </div>

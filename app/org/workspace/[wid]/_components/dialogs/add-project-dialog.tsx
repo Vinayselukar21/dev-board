@@ -3,9 +3,9 @@
 import type React from "react";
 
 import { useAuth } from "@/app/providers/AuthProvider";
+import DatePicker from "@/components/date-picker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -28,14 +28,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import AddNewProject from "@/hooks/Functions/AddNewProject";
 import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
-import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { CalendarIcon, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import DatePicker from "@/components/date-picker";
 
 interface AddProjectDialogProps {
   trigger?: React.ReactNode;
@@ -121,12 +117,7 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || (
-          <Button size="sm" className="h-8 gap-1">
-            <Plus className="h-4 w-4" />
-            New Project
-          </Button>
-        )}
+        {trigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[550px]">
         <form onSubmit={handleSubmit}>
@@ -184,11 +175,11 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
               <div className="flex flex-wrap gap-2">
                 {selectedMembers.length > 0 ? (
                   selectedMembers.map((memberId) => {
-                    const member = members.find((m) => m.id === memberId);
+                    const member = members?.find((m) => m.id === memberId);
                     if (!member) return null;
 
                     // Check if member has expected structure
-                    const name = member.user?.name || "Unknown";
+                    const name = member?.user?.name || "Unknown";
 
                     return (
                       <Badge
@@ -223,7 +214,7 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
                   members.map((member) => {
                     // Check if member has expected structure
                     const name = member.user?.name || "Unknown";
-                    const role = member.role || "Team Member";
+                    const role = member.role.name || "Team Member";
 
                     return (
                       <div

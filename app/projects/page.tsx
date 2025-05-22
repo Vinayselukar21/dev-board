@@ -18,7 +18,6 @@ import { Plus, Search, Users } from "lucide-react";
 import Link from "next/link";
 import { useStore } from "zustand";
 import { Log } from "../types";
-import { AddProjectDialog } from "./_components/add-project-dialog";
 import LoadingProjects from "./_components/loading-projects";
 
 export default function Page() {
@@ -46,14 +45,7 @@ if(projectsLoading){
               />
             </div>
           </form>
-          <AddProjectDialog
-            trigger={
-              <Button size="sm" className="h-8 gap-1">
-                <Plus className="h-4 w-4" />
-                New Project
-              </Button>
-            }
-          />
+          
         </div>
       </header>
 
@@ -94,7 +86,7 @@ if(projectsLoading){
                     </Card>
                   </Link>
                 ))}
-                <AddProjectDialog
+                {/* <AddProjectDialog
                   trigger={
                     <Card className="flex h-[180px] flex-col items-center justify-center border-dashed">
                       <div className="flex flex-col items-center gap-1 text-center">
@@ -108,7 +100,7 @@ if(projectsLoading){
                       </div>
                     </Card>
                   }
-                />
+                /> */}
               </div>
             </TabsContent>
             <TabsContent value="activity" className="pt-4">
@@ -176,7 +168,6 @@ if(projectsLoading){
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium">Team Members</h3>
-                  <Button size="sm">Invite Member</Button>
                 </div>
                 <div className="space-y-2">
                   {activeWorkspace.members &&
@@ -192,7 +183,7 @@ if(projectsLoading){
                           </div>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {member?.role?.name.charAt(0).toUpperCase() + member?.role?.name.slice(1)}
+                          {member?.role?.name?.charAt(0).toUpperCase() + member?.role?.name?.slice(1)}
                         </div>
                       </div>
                     ))}

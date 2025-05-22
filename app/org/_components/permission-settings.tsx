@@ -17,8 +17,140 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
+import useGetRoles from "@/hooks/useGetAllRoles";
+import { CreateOrgRoleDialog } from "./create-org-role-dialog";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import rolesStore from "@/store/rolesStore";
+import { useStore } from "zustand";
+
+
+enum OrgPermissionType {
+  OWNER = 'OWNER',
+
+  VIEW_ORG = 'VIEW_ORG',
+  EDIT_ORG = 'EDIT_ORG',
+  DELETE_ORG = 'DELETE_ORG',
+  
+  ONBOARD_USER = 'ONBOARD_USER',
+  REMOVE_USER = 'REMOVE_USER',
+  CHANGE_USER_ROLE = 'CHANGE_USER_ROLE',
+
+  VIEW_WORKSPACE = 'VIEW_WORKSPACE',
+  CREATE_WORKSPACE = 'CREATE_WORKSPACE',
+  EDIT_WORKSPACE = 'EDIT_WORKSPACE',
+  DELETE_WORKSPACE = 'DELETE_WORKSPACE',
+}
+interface PermissionCategory {
+  id: string;
+  name: string;
+  permissions: RolePermission[];
+}
+
+interface RolePermission {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  value: OrgPermissionType;
+}
 
 export default function PermissionSettings() {
+  const organizationRolesData = useStore(rolesStore, (state) => state.organizationRolesData)
+  const [selectedRole, setSelectedRole] = useState<string>("")
+
+const permissionCategories: PermissionCategory[] = [
+    {
+      id: "organization",
+      name: "Organization",
+      permissions: [
+        {
+          id: "organization.view",
+          name: "View Organization",
+          description: "Can view all organization",
+          enabled: true,
+          value: OrgPermissionType.VIEW_ORG
+        },
+        {
+          id: "organization.edit",
+          name: "Edit Organization",
+          description: "Can edit organization details and settings",
+          enabled: false,
+          value: OrgPermissionType.EDIT_ORG
+        },
+        {
+          id: "organization.delete",
+          name: "Delete Organization",
+          description: "Can delete organization",
+          enabled: false,
+          value: OrgPermissionType.DELETE_ORG
+        },
+      ],
+    },
+    {
+      id: "members",
+      name: "Members",
+      permissions: [
+        {
+          id: "organization.onboard",
+          name: "Onboard New Members",
+          description: "Can onboard new members to organization",
+          enabled: false,
+          value: OrgPermissionType.ONBOARD_USER
+        },
+        {
+          id: "organization.removeuser",
+          name: "Remove Members",
+          description: "Can remove members from organization",
+          enabled: false,
+          value: OrgPermissionType.REMOVE_USER
+        },
+        {
+          id: "organization.changeuserrole",
+          name: "Change User Role",
+          description: "Can change user role in organization",
+          enabled: false,
+          value: OrgPermissionType.CHANGE_USER_ROLE
+        },
+      ],
+    },
+    {
+      id: "workspace",
+      name: "Workspace",
+      permissions: [
+        {
+          id: "workspace.view",
+          name: "View Workspace",
+          description: "Can view all workspace",
+          enabled: true,
+          value: OrgPermissionType.VIEW_WORKSPACE
+        },
+        {
+          id: "workspace.create",
+          name: "Create Workspace",
+          description: "Can create new workspace",
+          enabled: false,
+          value: OrgPermissionType.CREATE_WORKSPACE
+        },
+        {
+          id: "workspace.edit",
+          name: "Edit Workspace",
+          description: "Can edit workspace details and settings",
+          enabled: false,
+          value: OrgPermissionType.EDIT_WORKSPACE
+        },
+        {
+          id: "workspace.delete",
+          name: "Delete Workspace",
+          description: "Can delete workspace",
+          enabled: false,
+          value: OrgPermissionType.DELETE_WORKSPACE
+        },
+      ],
+    },
+  ]
+const orgRoleData = organizationRolesData?.find((role) => role.id === selectedRole)?.permissions
+console.log(orgRoleData, "orgRoleData")
   return (
     <Card>
       <CardHeader>
@@ -51,51 +183,29 @@ export default function PermissionSettings() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  <tr>
-                    <td className="px-4 py-3 font-medium">Admin</td>
-                    <td className="px-4 py-3 text-sm">
-                      Full access to all workspace settings and features
-                    </td>
-                    <td className="px-4 py-3 text-sm">2</td>
-                    <td className="px-4 py-3 text-sm">
-                      <Button variant="ghost" size="sm">
-                        Edit
-                      </Button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3 font-medium">Member</td>
-                    <td className="px-4 py-3 text-sm">
-                      Can create and edit content, but cannot modify workspace
-                      settings
-                    </td>
-                    <td className="px-4 py-3 text-sm">5</td>
-                    <td className="px-4 py-3 text-sm">
-                      <Button variant="ghost" size="sm">
-                        Edit
-                      </Button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3 font-medium">Viewer</td>
-                    <td className="px-4 py-3 text-sm">
-                      Read-only access to content
-                    </td>
-                    <td className="px-4 py-3 text-sm">1</td>
-                    <td className="px-4 py-3 text-sm">
-                      <Button variant="ghost" size="sm">
-                        Edit
-                      </Button>
-                    </td>
-                  </tr>
+                  {organizationRolesData?.map((role) => (
+                    <tr key={role.id}>
+                      <td className="px-4 py-3 font-medium">{role.name}</td>
+                      <td className="px-4 py-3 text-sm">
+                        {role.description}
+                      </td>
+                      <td className="px-4 py-3 text-sm">2</td>
+                      <td className="px-4 py-3 text-sm">
+                        <Button variant="ghost" size="sm">
+                          Edit
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
-          <Button variant="outline" size="sm" className="mt-2">
+          {/* <Button variant="outline" size="sm" className="mt-2">
             <Plus className="mr-2 h-4 w-4" />
             Create Custom Role
-          </Button>
+          </Button> */}
+          <CreateOrgRoleDialog/>
         </div>
 
         {/* Permission Settings */}
@@ -109,160 +219,49 @@ export default function PermissionSettings() {
                   Select a role to configure permissions
                 </p>
               </div>
-              <Select defaultValue="member">
+              <Select defaultValue={selectedRole} onValueChange={(value) => setSelectedRole(value)}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
+                  {organizationRolesData?.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-md border">
-                <div className="bg-muted/50 px-4 py-2 font-medium">
-                  Projects
-                </div>
-                <div className="divide-y">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Create Projects</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can create new projects in the workspace
+              {permissionCategories?.map((category) => (
+                 <div className="rounded-md border" key={category.id}>
+                 <div className="bg-muted/50 px-4 py-2 font-medium">
+                   {category.name}
+                 </div>
+                 <div className="divide-y">
+                   {category.permissions?.map((permission) => {
+                    const isChecked = orgRoleData?.find((perm) => perm.type === permission.value)?.type === permission.value
+                    return (
+                      <div className="flex items-center justify-between px-4 py-3" key={permission.id}>
+                      <div>
+                        <div className="font-medium">{permission?.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {permission?.description}
+                        </div>
                       </div>
+                      <Switch checked={isChecked} />
                     </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Edit Projects</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can edit project details and settings
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Delete Projects</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can delete projects from the workspace
-                      </div>
-                    </div>
-                    <Switch />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-md border">
-                <div className="bg-muted/50 px-4 py-2 font-medium">Tasks</div>
-                <div className="divide-y">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Create Tasks</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can create new tasks in projects
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Edit Any Task</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can edit any task, including those created by others
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Delete Tasks</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can delete tasks from projects
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-md border">
-                <div className="bg-muted/50 px-4 py-2 font-medium">
-                  Team Management
-                </div>
-                <div className="divide-y">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Invite Members</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can invite new members to the workspace
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Remove Members</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can remove members from the workspace
-                      </div>
-                    </div>
-                    <Switch />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Change Member Roles</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can change roles of other members
-                      </div>
-                    </div>
-                    <Switch />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-md border">
-                <div className="bg-muted/50 px-4 py-2 font-medium">
-                  Calendar & Events
-                </div>
-                <div className="divide-y">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Create Events</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can create calendar events
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Edit Any Event</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can edit events created by others
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Delete Events</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can delete calendar events
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-              </div>
+                      )
+                   })}
+                   
+                 </div>
+               </div>
+              ))}
             </div>
           </div>
         </div>
-
+       
         {/* Member Role Assignment */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Member Role Assignment</h3>

@@ -3,21 +3,15 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import useGetMyDetails from "@/hooks/useGetMyDetails";
-import workspaceStore from "@/store/workspaceStore";
 import { Search } from "lucide-react";
-import { useStore } from "zustand";
-import BillingSettings from "./_components/billing-settings";
-import GeneralSettings from "./_components/general-settings";
 import LoadingSettings from "./_components/loading-settings";
 import NotificationSettings from "./_components/notification-settings";
-import PermissionSettings from "./_components/permission-settings";
 import ProfileSettings from "./_components/profile-settings";
 import SecuritySettings from "./_components/security-settings";
 
 export default function SettingsPage() {
   const isMobile = useIsMobile();
-  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
-  const { myDataLoading, errorLoadingMyData, myData } = useGetMyDetails();
+  const { myDataLoading, myData } = useGetMyDetails();
 
   if (myDataLoading) {
     return <LoadingSettings />;
@@ -49,29 +43,20 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-6">
               {/* Settings Info */}
               <div className="flex flex-col gap-2">
-                <h2 className="text-2xl font-bold">Workspace Settings</h2>
+                <h2 className="text-2xl font-bold">Settings</h2>
                 <p className="text-muted-foreground">
-                  Manage your workspace preferences and account settings.
+                  Manage your account settings.
                 </p>
               </div>
 
               {/* Settings Tabs */}
-              <Tabs defaultValue="general">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
-                  <TabsTrigger value="general">General</TabsTrigger>
+              <Tabs defaultValue="profile">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-3">
                   <TabsTrigger value="profile">Profile</TabsTrigger>
-                  <TabsTrigger value="permissions">
-                    Permissions & Roles
-                  </TabsTrigger>
                   <TabsTrigger value="notifications">Notifications</TabsTrigger>
                   <TabsTrigger value="security">Security</TabsTrigger>
-                  <TabsTrigger value="billing">Billing</TabsTrigger>
+                  {/* <TabsTrigger value="billing">Billing</TabsTrigger> */}
                 </TabsList>
-
-                {/* General Settings */}
-                <TabsContent value="general" className="pt-4">
-                  <GeneralSettings activeWorkspace={activeWorkspace} />
-                </TabsContent>
 
                 {/* Profile Settings */}
                 <TabsContent value="profile" className="pt-4">
@@ -88,15 +73,10 @@ export default function SettingsPage() {
                   <SecuritySettings />
                 </TabsContent>
 
-                {/* Permissions Settings */}
-                <TabsContent value="permissions" className="pt-4">
-                  <PermissionSettings />
-                </TabsContent>
-
                 {/* Billing Settings */}
-                <TabsContent value="billing" className="pt-4">
+                {/* <TabsContent value="billing" className="pt-4">
                   <BillingSettings />
-                </TabsContent>
+                </TabsContent> */}
               </Tabs>
             </div>
           </div>
@@ -104,12 +84,10 @@ export default function SettingsPage() {
 
         {isMobile && (
           <div className="flex-1 p-2 space-y-2">
-            <GeneralSettings activeWorkspace={activeWorkspace} />
             <ProfileSettings myData={myData} />
             <NotificationSettings />
             <SecuritySettings />
-            <PermissionSettings />
-            <BillingSettings /> 
+            {/* <BillingSettings /> */} 
           </div>
         )}
       </main>

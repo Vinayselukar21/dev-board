@@ -42,17 +42,15 @@ const formSchema = z.object({
   location: z.string().min(2, {
     message: "Location must be at least 2 characters.",
   }),
-  roleId: z.string().min(1, {
-    message: "Please select a role",
-  }),
   designation: z.string().min(2, {
     message: "Designation must be at least 2 characters.",
   }),
+  organizationRoleId: z.string().optional(),
   // workspace
+  roleId: z.string().optional(),
   workspaceId: z.string().optional(),
   department: z.string().optional(),
   jobTitle: z.string().optional(),
-  organizationRoleId: z.string().optional(),
 })
 interface InviteMemberDialogProps {
     trigger?: React.ReactNode;

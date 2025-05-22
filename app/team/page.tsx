@@ -14,7 +14,6 @@ import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
 import workspaceStore from "@/store/workspaceStore";
 import { Mail, Phone, Plus, Search } from "lucide-react";
 import { useStore } from "zustand";
-import { InviteMemberDialog } from "./_components/add-member-dialog";
 import LoadingTeams from "./_components/loading-teams";
 
 export default function TeamPage() {
@@ -43,14 +42,6 @@ export default function TeamPage() {
                 />
               </div>
             </form>
-            <InviteMemberDialog
-              trigger={
-                <Button size="sm" className="h-8 gap-1">
-                  <Plus className="h-4 w-4" />
-                  Add Member
-                </Button>
-              }
-            />
           </div>
         </header>
 
@@ -125,7 +116,7 @@ export default function TeamPage() {
                                       {member?.user?.name}
                                     </div>
                                     <div className="hidden text-xs text-muted-foreground sm:block md:hidden">
-                                      {member.role}
+                                      {member.role.name}
                                     </div>
                                   </div>
                                 </div>
@@ -165,7 +156,7 @@ export default function TeamPage() {
                                 </div>
                               </td>
                               <td className="hidden px-4 py-3 text-sm md:table-cell">
-                                {member.role}
+                                {member.role.name}
                               </td>
                               {/* <td className="px-4 py-3 text-sm">
                                 <Badge
@@ -257,7 +248,7 @@ export default function TeamPage() {
                                           {member?.user?.name}
                                         </div>
                                         <div className="hidden text-xs text-muted-foreground sm:block md:hidden">
-                                          {member.role}
+                                          {member.role.name}
                                         </div>
                                       </div>
                                     </div>
@@ -294,7 +285,7 @@ export default function TeamPage() {
                                     </div>
                                   </td>
                                   <td className="hidden px-4 py-3 text-sm md:table-cell">
-                                    {member.role}
+                                    {member.role.name}
                                   </td>
                                   {/* <td className="px-4 py-3 text-sm">
                                 <Badge

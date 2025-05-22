@@ -33,6 +33,7 @@ const useGetWorkspaceMembers = () => {
         ({
           id,
           role,
+          roleId,
           accepted,
           department,
           invitedAt,
@@ -48,6 +49,7 @@ const useGetWorkspaceMembers = () => {
         }) => ({
           id,
           role,
+          roleId,
           accepted,
           department,
           invitedAt,

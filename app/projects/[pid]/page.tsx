@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { Priority, TaskStage } from "@/app/types";
+import { TaskStage } from "@/app/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ interface Task {
   id: string;
   title: string;
   description: string;
-  priority: Priority;
+  priority: "low" | "medium" | "high";
   assignee?: {
     name: string;
     avatar?: string;
@@ -174,7 +174,7 @@ export default function ProjectPage() {
 }
 };
   // Function to get priority badge color
-  const getPriorityColor = (priority: Priority) => {
+  const getPriorityColor = (priority: "low" | "medium" | "high") => {
     switch (priority) {
       case "low":
         return "bg-green-100 text-green-800 hover:bg-green-100";
@@ -308,7 +308,7 @@ export default function ProjectPage() {
                               <Badge
                                 variant="outline"
                                 className={getPriorityColor(
-                                  task.priority as Priority
+                                  task.priority as "low" | "medium" | "high"
                                 )}
                               >
                                 {task.priority}

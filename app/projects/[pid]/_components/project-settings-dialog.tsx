@@ -6,7 +6,6 @@ import { Project } from "@/app/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -18,27 +17,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import AddMemberToProject from "@/hooks/Functions/AddMemberToProject";
 import AddNewProjectStage from "@/hooks/Functions/AddNewProjectStage";
-import { cn } from "@/lib/utils";
 import workspaceStore from "@/store/workspaceStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { CalendarIcon, Trash2, X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useStore } from "zustand";
-import DatePicker from "@/components/date-picker";
 
 interface ProjectSettingsDialogProps {
   projectId: string;
@@ -183,117 +170,12 @@ export function ProjectSettingsDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs defaultValue="general" className="mt-4">
+          <Tabs defaultValue="team" className="mt-4">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="team">Team</TabsTrigger>
               <TabsTrigger value="columns">Columns</TabsTrigger>
               <TabsTrigger value="danger">Danger Zone</TabsTrigger>
             </TabsList>
-
-            {/* General Settings Tab */}
-            <TabsContent value="general" className="space-y-4 pt-4">
-              <div className="grid gap-2">
-                <Label htmlFor="project-name">Project Name</Label>
-                <Input
-                  id="project-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter project name"
-                  required
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="project-description">Description</Label>
-                <Textarea
-                  id="project-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe the project and its goals"
-                  className="min-h-[100px]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="grid gap-2">
-                  <Label>Created By</Label>
-                  <Input
-                    type="text"
-                    readOnly
-                    disabled
-                    defaultValue={
-                      currentProject?.createdBy?.name ? currentProject?.createdBy?.name : ""
-                    }
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Created On</Label>
-                  <Input
-                    type="text"
-                    readOnly
-                    disabled
-                    defaultValue={
-                      currentProject?.createdAt
-                        ? format(
-                            new Date(currentProject?.createdAt),
-                            "MMM d, yyyy"
-                          )
-                        : ""
-                    }
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <DatePicker Date={dueDate} setDate={setDueDate} label="Due Date" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="grid gap-2">
-                  <Label htmlFor="project-status">Project Status</Label>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger id="project-status" className="w-full">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="planning">Planning</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="on-hold">On Hold</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="project-category">Category</Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger id="project-category" className="w-full">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="marketing">Marketing</SelectItem>
-                      <SelectItem value="design">Design</SelectItem>
-                      <SelectItem value="development">Development</SelectItem>
-                      <SelectItem value="research">Research</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Save Changes</Button>
-              </div>
-            </TabsContent>
 
             {/* Team Tab */}
             <TabsContent value="team" className="space-y-4 pt-4">

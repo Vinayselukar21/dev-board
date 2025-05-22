@@ -68,7 +68,7 @@ export function InviteMemberDialog({ trigger }: InviteMemberDialogProps) {
   const handleAddMember = () => {
     addNewWorkspaceMember.mutate({
       userIds: selectedUsers,
-      role: role as "member" | "admin",
+      roleId: role,
       departmentId: departmentId,
     });
   };
