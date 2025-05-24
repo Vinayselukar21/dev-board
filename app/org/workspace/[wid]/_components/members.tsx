@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Workspace } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { AddMembersDialog } from "./dialogs/add-members-dialog";
-import { InviteMemberDialog } from "./dialogs/add-member-dialog";
 
 // Helper function to get initials from name
 function getInitials(name: string | undefined) {
@@ -36,8 +35,7 @@ export default function Members({
                 <CardTitle>Workspace Members</CardTitle>
                 <CardDescription>Manage members and their roles in this workspace</CardDescription>
               </div>
-              <AddMembersDialog trigger={<Button size="sm">Invite Members</Button>} departments={workspaceData.departments || []} />
-              {/* <InviteMemberDialog trigger={<Button size="sm">Invite Members</Button>}/>  */}
+              <AddMembersDialog workspaceData={workspaceData} trigger={<Button size="sm">Invite Members</Button>} departments={workspaceData.departments || []} />
             </CardHeader>
             <CardContent>
               <div className="space-y-6">

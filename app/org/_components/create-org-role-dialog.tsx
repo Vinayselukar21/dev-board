@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { OrganizationRole } from "@/app/types";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,73 +12,96 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus } from "lucide-react"
-import { useStore } from "zustand"
-import organizationStore from "@/store/organizationStore"
-import { useMutation } from "@tanstack/react-query"
-import AddNewOrgRole from "@/hooks/Functions/AddNewOrgRole"
-import { toast } from "sonner"
-import { useQueryClient } from "@tanstack/react-query"
-import workspaceStore from "@/store/workspaceStore"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import AddNewOrgRole from "@/hooks/Functions/AddNewOrgRole";
+import organizationStore from "@/store/organizationStore";
+import rolesStore from "@/store/rolesStore";
+import workspaceStore from "@/store/workspaceStore";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useStore } from "zustand";
 
 enum OrgPermissionType {
-  OWNER = 'OWNER',
+  OWNER = "OWNER",
 
-  VIEW_ORG = 'VIEW_ORG',
-  EDIT_ORG = 'EDIT_ORG',
-  DELETE_ORG = 'DELETE_ORG',
-  
-  ONBOARD_USER = 'ONBOARD_USER',
-  REMOVE_USER = 'REMOVE_USER',
-  CHANGE_USER_ROLE = 'CHANGE_USER_ROLE',
+  VIEW_ORG = "VIEW_ORG",
+  EDIT_ORG = "EDIT_ORG",
+  DELETE_ORG = "DELETE_ORG",
 
-  VIEW_WORKSPACE = 'VIEW_WORKSPACE',
-  CREATE_WORKSPACE = 'CREATE_WORKSPACE',
-  EDIT_WORKSPACE = 'EDIT_WORKSPACE',
-  DELETE_WORKSPACE = 'DELETE_WORKSPACE',
+  ONBOARD_USER = "ONBOARD_USER",
+  REMOVE_USER = "REMOVE_USER",
+  CHANGE_USER_ROLE = "CHANGE_USER_ROLE",
+
+  VIEW_WORKSPACE = "VIEW_WORKSPACE",
+  CREATE_WORKSPACE = "CREATE_WORKSPACE",
+  EDIT_WORKSPACE = "EDIT_WORKSPACE",
+  DELETE_WORKSPACE = "DELETE_WORKSPACE",
 }
 
 export interface RolePermission {
-  id: string
-  name: string
-  description: string
-  enabled: boolean
-  value: OrgPermissionType
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  value: OrgPermissionType;
 }
 
 export interface PermissionCategory {
-  id: string
-  name: string
-  permissions: RolePermission[]
+  id: string;
+  name: string;
+  permissions: RolePermission[];
 }
 
 export interface CustomRole {
-  name: string,
-    description: string,
-    permissions: {
-      type: string,
-    }[],
-    organizationId: string
+  name: string;
+  description: string;
+  permissions: string[];
+  organizationId: string;
 }
 
+export function CreateOrgRoleDialog({
+  trigger,
+  type,
+  role,
+}: {
+  trigger: React.ReactNode;
+  type: "new" | "edit";
+  role?: OrganizationRole;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(type === "edit" ? role?.name : "");
+  const [description, setDescription] = useState(
+    type === "edit" ? role?.description : ""
+  );
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const orgPermissions = useStore(
+    rolesStore,
+    (state) => state.orgPermissions
+  );
+  useEffect(() => {
+    if (type === "edit" && role?.permissions && open) {
+      console.log(role.permissions, "role.permissions");
+      setPermissions(role.permissions.map((permission) => permission?.permission?.id!));
+    }
+  }, [type, role, open]);
 
+  console.log(permissions, "permissions", role?.permissions);
+  const activeOrganization = useStore(
+    organizationStore,
+    (state) => state.activeOrganization
+  );
+  const activeWorkspace = useStore(
+    workspaceStore,
+    (state) => state.activeWorkspace
+  );
 
-export function CreateOrgRoleDialog() {
-  const [open, setOpen] = useState(false)
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [permissions, setPermissions] = useState<{type: string}[]>([])
-
-  const activeOrganization = useStore(organizationStore, (state) => state.activeOrganization)
-  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace)
-
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   // Permission categories
   const permissionCategories: PermissionCategory[] = [
@@ -87,25 +110,25 @@ export function CreateOrgRoleDialog() {
       name: "Organization",
       permissions: [
         {
-          id: "organization.view",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.VIEW_ORG)?.id!,
           name: "View Organization",
           description: "Can view all organization",
           enabled: true,
-          value: OrgPermissionType.VIEW_ORG
+          value: OrgPermissionType.VIEW_ORG,
         },
         {
-          id: "organization.edit",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.EDIT_ORG)?.id!,
           name: "Edit Organization",
           description: "Can edit organization details and settings",
           enabled: false,
-          value: OrgPermissionType.EDIT_ORG
+          value: OrgPermissionType.EDIT_ORG,
         },
         {
-          id: "organization.delete",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.DELETE_ORG)?.id!,
           name: "Delete Organization",
           description: "Can delete organization",
           enabled: false,
-          value: OrgPermissionType.DELETE_ORG
+          value: OrgPermissionType.DELETE_ORG,
         },
       ],
     },
@@ -114,25 +137,25 @@ export function CreateOrgRoleDialog() {
       name: "Members",
       permissions: [
         {
-          id: "organization.onboard",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.ONBOARD_USER)?.id!,
           name: "Onboard New Members",
           description: "Can onboard new members to organization",
           enabled: false,
-          value: OrgPermissionType.ONBOARD_USER
+          value: OrgPermissionType.ONBOARD_USER,
         },
         {
-          id: "organization.removeuser",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.REMOVE_USER)?.id!,
           name: "Remove Members",
           description: "Can remove members from organization",
           enabled: false,
-          value: OrgPermissionType.REMOVE_USER
+          value: OrgPermissionType.REMOVE_USER,
         },
         {
-          id: "organization.changeuserrole",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.CHANGE_USER_ROLE)?.id!,
           name: "Change User Role",
           description: "Can change user role in organization",
           enabled: false,
-          value: OrgPermissionType.CHANGE_USER_ROLE
+          value: OrgPermissionType.CHANGE_USER_ROLE,
         },
       ],
     },
@@ -141,36 +164,36 @@ export function CreateOrgRoleDialog() {
       name: "Workspace",
       permissions: [
         {
-          id: "workspace.view",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.VIEW_WORKSPACE)?.id!,
           name: "View Workspace",
           description: "Can view all workspace",
           enabled: true,
-          value: OrgPermissionType.VIEW_WORKSPACE
+          value: OrgPermissionType.VIEW_WORKSPACE,
         },
         {
-          id: "workspace.create",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.CREATE_WORKSPACE)?.id!,
           name: "Create Workspace",
           description: "Can create new workspace",
           enabled: false,
-          value: OrgPermissionType.CREATE_WORKSPACE
+          value: OrgPermissionType.CREATE_WORKSPACE,
         },
         {
-          id: "workspace.edit",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.EDIT_WORKSPACE)?.id!,
           name: "Edit Workspace",
           description: "Can edit workspace details and settings",
           enabled: false,
-          value: OrgPermissionType.EDIT_WORKSPACE
+          value: OrgPermissionType.EDIT_WORKSPACE,
         },
         {
-          id: "workspace.delete",
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.DELETE_WORKSPACE)?.id!,
           name: "Delete Workspace",
           description: "Can delete workspace",
           enabled: false,
-          value: OrgPermissionType.DELETE_WORKSPACE
+          value: OrgPermissionType.DELETE_WORKSPACE,
         },
       ],
     },
-  ]
+  ];
 
   // Initialize permissions state
   // useState(() => {
@@ -182,72 +205,67 @@ export function CreateOrgRoleDialog() {
   //   })
   //   setPermissions(initialPermissions)
   // })
-console.log(permissions, " permissions")
+  console.log(permissions, " permissions");
   // Toggle permission
-  const togglePermission = (type: string) => {
-    if (permissions.some((permission) => permission.type === type)) {
+  const togglePermission = (permissionId: string) => {
+    if (permissions.some((permission) => permission === permissionId)) {
       const newPermissions = permissions.filter(
-        (permission) => permission.type !== type
+        (permission) => permission !== permissionId
       );
       setPermissions(newPermissions);
       return;
     }
-    const newPermissions = [...permissions, { type }];
+    const newPermissions = [...permissions, permissionId];
     setPermissions(newPermissions);
   };
 
   // Reset form
   const resetForm = () => {
-    setName("")
-    setDescription("")
-    setPermissions([])
-  }
-
+    setName("");
+    setDescription("");
+    setPermissions([]);
+  };
 
   const addNewRole = useMutation({
     mutationFn: AddNewOrgRole,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["roles", activeOrganization.id, activeWorkspace.id] })
-      toast.success("New role has been added")
-      setOpen(false)
-      resetForm()
-    }
-  })
+      queryClient.invalidateQueries({
+        queryKey: ["roles", activeOrganization.id, activeWorkspace.id],
+      });
+      toast.success("New role has been added");
+      setOpen(false);
+      resetForm();
+    },
+  });
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!name.trim()) {
-      alert("Please enter a role name")
-      return
-    }
+    e.preventDefault();
 
     const newRole: CustomRole = {
-      name,
-      description,
+      name: name!,
+      description: description!,
       permissions,
-      organizationId: activeOrganization?.id
-    }
-console.log(newRole, "payload")
-    addNewRole.mutate(newRole)
-    setOpen(false)
-    resetForm()
-  }
+      organizationId: activeOrganization?.id,
+    };
+    console.log(newRole, "payload");
+    addNewRole.mutate(newRole);
+    setOpen(false);
+    resetForm();
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="mt-2">
-          <Plus className="mr-2 h-4 w-4" />
-          Create Custom Role - Organization
-        </Button>
+       {trigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create Custom Role</DialogTitle>
-            <DialogDescription>Define a new role with custom permissions for your organization.</DialogDescription>
+            <DialogTitle>{type === "edit" ? "Edit Role" : "Create Custom Role"}</DialogTitle>
+            <DialogDescription>
+              {type === "edit" ? "Edit the role with custom permissions for your organization." : "Define a new role with custom permissions for your organization."}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="mt-6 grid gap-6">
@@ -275,7 +293,10 @@ console.log(newRole, "payload")
 
             <div className="grid gap-3">
               <Label>Permissions</Label>
-              <Tabs defaultValue={permissionCategories[0].id} className="w-full">
+              <Tabs
+                defaultValue={permissionCategories[0].id}
+                className="w-full"
+              >
                 <TabsList className="grid w-full grid-cols-2 gap-1 overflow-x-auto md:grid-cols-5">
                   {permissionCategories.map((category) => (
                     <TabsTrigger key={category.id} value={category.id}>
@@ -285,19 +306,37 @@ console.log(newRole, "payload")
                 </TabsList>
 
                 {permissionCategories.map((category) => (
-                  <TabsContent key={category.id} value={category.id} className="mt-4 space-y-4">
+                  <TabsContent
+                    key={category.id}
+                    value={category.id}
+                    className="mt-4 space-y-4"
+                  >
                     <div className="rounded-md border">
-                      <div className="bg-muted/50 px-4 py-2 font-medium">{category.name}</div>
+                      <div className="bg-muted/50 px-4 py-2 font-medium">
+                        {category.name}
+                      </div>
                       <div className="divide-y">
                         {category.permissions.map((permission) => (
-                          <div key={permission.id} className="flex items-center justify-between px-4 py-3">
+                          <div
+                            key={permission.id}
+                            className="flex items-center justify-between px-4 py-3"
+                          >
                             <div>
-                              <div className="font-medium">{permission.name}</div>
-                              <div className="text-sm text-muted-foreground">{permission.description}</div>
+                              <div className="font-medium">
+                                {permission.name}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {permission.description}
+                              </div>
                             </div>
                             <Switch
-                              // checked={permissions[permission.id] || false}
-                              onCheckedChange={() => togglePermission(permission.value)}
+                              checked={permissions.some(
+                                (p) => p === permission.id
+                              )}
+                              onCheckedChange={() =>
+                              {  const permissionId = orgPermissions.find((p) => p.name === permission.value)?.id;
+                                togglePermission(permissionId!)}
+                              }
                             />
                           </div>
                         ))}
@@ -310,7 +349,11 @@ console.log(newRole, "payload")
           </div>
 
           <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
             <Button type="submit">Create Role</Button>
@@ -318,5 +361,5 @@ console.log(newRole, "payload")
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

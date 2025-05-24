@@ -1,23 +1,10 @@
 "use client"
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { WorkspaceMember } from "@/app/types"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { WorkspaceMember } from "@/app/types"
-import { Button } from "@/components/ui/button"
-
-interface Member {
-  id: string
-  role: string
-  jobTitle?: string
-  user: {
-    name: string
-    email: string
-    location?: string
-  }
-  [key: string]: any
-}
 
 interface Department {
   id: string
@@ -26,7 +13,7 @@ interface Department {
 }
 
 interface DepartmentMembersDialogProps {
-  trigger?: React.ReactNode
+  trigger: React.ReactNode
   department: Department
   members: WorkspaceMember[]
 }
@@ -43,7 +30,7 @@ export function DepartmentMembersDialog({trigger, department, members }: Departm
 
   return (
     <Dialog>
-      <DialogTrigger>{trigger || <Button size="sm">View Members</Button>}</DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{department.name} Department Members</DialogTitle>

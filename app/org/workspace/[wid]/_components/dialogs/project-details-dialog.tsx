@@ -45,7 +45,7 @@ export function ProjectDetailsDialog({ trigger, project }: ProjectDetailsDialogP
 
   return (
     <Dialog>
-      <DialogTrigger>{trigger}</DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <div className="flex items-center justify-between">
@@ -71,14 +71,14 @@ export function ProjectDetailsDialog({ trigger, project }: ProjectDetailsDialogP
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Created On</p>
-                    <p className="text-sm font-medium">{formatDate(project.createdAt)}</p>
+                    <p className="text-sm font-medium">{formatDate(project.createdAt!.toString())}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-md border p-3">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Deadline</p>
-                    <p className="text-sm font-medium">{formatDate(project.deadline)}</p>
+                    <p className="text-sm font-medium">{formatDate(project.deadline!.toString() || "")}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-md border p-3">

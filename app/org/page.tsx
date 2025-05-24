@@ -24,6 +24,7 @@ import PermissionSettings from "./_components/permission-settings";
 
 export default function TeamPage() {
   const router = useRouter();
+  // Fetch all roles & permissions in an organization
   const {
     organizationRolesData,
     workspaceRolesData,

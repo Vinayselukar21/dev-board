@@ -1,4 +1,4 @@
-import { OrganizationRole, WorkspaceRole } from "@/app/types";
+import { OrganizationRole, OrgPermission, WorkspacePermission, WorkspaceRole } from "@/app/types";
 import organizationStore from "@/store/organizationStore";
 import rolesStore from "@/store/rolesStore";
 import workspaceStore from "@/store/workspaceStore";
@@ -11,12 +11,14 @@ interface QueryResponse {
   message: string;
   workspaceRoles: WorkspaceRole[];
   organizationRoles: OrganizationRole[];
+  workspacePermissions: WorkspacePermission[];
+  orgPermissions: OrgPermission[];
 }
 
 const useGetRoles = () => {
   const {activeOrganization} = organizationStore.getState();
   const {activeWorkspace} = workspaceStore.getState();
-    const {setWorkspaceRolesData, setOrganizationRolesData} = rolesStore.getState();
+    const {setWorkspaceRolesData, setOrganizationRolesData, setWorkspacePermissions, setOrgPermissions} = rolesStore.getState();
   const {
     data,
     isLoading: rolesLoading,
@@ -35,9 +37,13 @@ const useGetRoles = () => {
 
   const workspaceRolesData: WorkspaceRole[] = data?.workspaceRoles || [];
   const organizationRolesData: OrganizationRole[] = data?.organizationRoles || [];
+  const workspacePermissions: WorkspacePermission[] = data?.workspacePermissions || [];
+  const orgPermissions: OrgPermission[] = data?.orgPermissions || [];
 
   setWorkspaceRolesData(workspaceRolesData);
   setOrganizationRolesData(organizationRolesData);
+  setWorkspacePermissions(workspacePermissions);
+  setOrgPermissions(orgPermissions);
 
   return { workspaceRolesData, organizationRolesData, rolesLoading, errorLoadingRoles };
 };

@@ -3,7 +3,7 @@
 import axios from "@/utils/axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Organization } from "../types";
+import { Organization, WorkspaceMember } from "../types";
 
 interface AuthContextType {
   session: any;
@@ -21,16 +21,6 @@ interface AuthContextType {
   }) => Promise<void>;
   loginWithCredentials: (values: { email: string; password: string }) => Promise<void>;
   logoutUser: () => Promise<void>;
-}
-
-interface WorkspaceMember {
-  id: string;
-  role: "admin" | "member" | "viewer";
-  invitedAt: string;
-  accepted: boolean;
-  userId: string;
-  workspaceId: string;
-  departmentId: string;
 }
 
 export interface AuthResponse {

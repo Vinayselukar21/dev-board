@@ -46,7 +46,7 @@ export default function Projects({
               Manage and track projects in this workspace
             </CardDescription>
           </div>
-          <AddProjectDialog trigger={<Button size="sm">New Project</Button>} />
+          <AddProjectDialog trigger={<Button size="sm">New Project</Button>} workspaceData={workspaceData} />
         </CardHeader>
         <CardContent>
           {workspaceData.projects.length === 0 ? (

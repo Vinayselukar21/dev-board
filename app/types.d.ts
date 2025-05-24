@@ -17,7 +17,6 @@ export interface User {
   email: string;
   name?: string;
   password: string;
-  role: string; 
   createdAt: string;
   updatedAt: string;
   isVerified: boolean;
@@ -280,32 +279,31 @@ export enum OrgPermissionType {
   EDIT_WORKSPACE = 'EDIT_WORKSPACE',
   DELETE_WORKSPACE = 'DELETE_WORKSPACE',
 }
-
-export interface WorkspacePermission {
-  id: string;
-  type: PermissionType;
-  roleId: string;
-  role?: WorkspaceRole;
-}
-
 export interface WorkspaceRole {
   id: string;
   name: string;
   description?: string;
   isDefault: boolean;
-
   workspaceId: string;
   workspace?: Workspace;
-
-  permissions?: WorkspacePermission[];
+  permissions?: WorkspaceRolePermission[];
   members?: WorkspaceMember[];
 }
 
-export interface OrgPermission {
+export interface WorkspacePermission {
   id: string;
-  type: OrgPermissionType;
-  roleId: string;
-  role?: OrganizationRole;
+  name: string;
+  workspaceId?: string;
+  workspace?: Workspace;
+  roles?: WorkspaceRolePermission[];
+}
+
+export interface WorkspaceRolePermission {
+  id: string;
+  workspaceRoleId: string;
+  workspacePermissionId: string;
+  role?: WorkspaceRole;
+  permission?: WorkspacePermission;
 }
 
 export interface OrganizationRole {
@@ -313,10 +311,24 @@ export interface OrganizationRole {
   name: string;
   description?: string;
   isDefault: boolean;
-
   organizationId: string;
   organization?: Organization;
-
-  permissions?: OrgPermission[];
+  permissions?: OrgRolePermission[];
   members?: User[];
+}
+
+export interface OrgPermission {
+  id: string;
+  name: string;
+  organizationId?: string;
+  organization?: Organization;
+  roles?: OrgRolePermission[];
+}
+
+export interface OrgRolePermission {
+  id: string;
+  organizationRoleId: string;
+  orgPermissionId: string;
+  role?: OrganizationRole;
+  permission?: OrgPermission;
 }

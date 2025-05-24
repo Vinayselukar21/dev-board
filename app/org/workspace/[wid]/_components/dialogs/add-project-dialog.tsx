@@ -32,12 +32,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Workspace } from "@/app/types";
 
 interface AddProjectDialogProps {
   trigger?: React.ReactNode;
+  workspaceData: Workspace;
 }
 
-export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
+export function AddProjectDialog({ trigger, workspaceData }: AddProjectDialogProps) {
   const queryClient = useQueryClient();
   const { session } = useAuth();
   const [open, setOpen] = useState(false);
@@ -45,14 +47,10 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
   const [dueDate, setDueDate] = useState<Date | undefined>(new Date()); // task
   const [category, setCategory] = useState<string>("");
 
-  // Get workspace members
-  const { memberData, membersLoading, errorLoadingMembers } =
-    useGetWorkspaceMembers();
-
   // Add new project
 
   // If memberData is undefined or not properly structured, fallback to empty array
-  const members = Array.isArray(memberData) ? memberData : [];
+  const members = Array.isArray(workspaceData?.members) ? workspaceData?.members : [];
 
   const toggleMember = (memberId: string) => {
     setSelectedMembers((prev) =>
@@ -80,7 +78,7 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
       setCategory("");
       setOpen(false);
       // Invalidate projects
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-by-id", workspaceData.id] });
     },
     onError: (error) => {
       toast.error("Failed to create project");
@@ -206,11 +204,7 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
                 )}
               </div>
               <div className="mt-2 max-h-[150px] overflow-y-auto rounded-md border p-2">
-                {membersLoading ? (
-                  <div className="py-2 text-center text-sm text-muted-foreground">
-                    Loading members...
-                  </div>
-                ) : members.length > 0 ? (
+                {members.length > 0 ? (
                   members.map((member) => {
                     // Check if member has expected structure
                     const name = member.user?.name || "Unknown";
@@ -242,9 +236,7 @@ export function AddProjectDialog({ trigger }: AddProjectDialogProps) {
                   })
                 ) : (
                   <div className="py-2 text-center text-sm text-muted-foreground">
-                    {errorLoadingMembers
-                      ? "Error loading members"
-                      : "No members available"}
+                    No members available
                   </div>
                 )}
               </div>

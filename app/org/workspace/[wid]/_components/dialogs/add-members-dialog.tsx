@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { Workspace } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -22,14 +21,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, X } from "lucide-react";
-import { useStore } from "zustand";
-import workspaceStore from "@/store/workspaceStore";
-import organizationStore from "@/store/organizationStore";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import AddUserToWorkspace from "@/hooks/Functions/AddUserToWorkspace";
-import { toast } from "sonner";
+import organizationStore from "@/store/organizationStore";
 import rolesStore from "@/store/rolesStore";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useStore } from "zustand";
 
 interface Department {
   id: string;
@@ -40,31 +39,32 @@ interface Department {
 interface InviteMembersDialogProps {
   trigger: React.ReactNode;
   departments: Department[];
+  workspaceData: Workspace
 }
 
 export function AddMembersDialog({
   trigger,
   departments,
+  workspaceData
 }: InviteMembersDialogProps) {
   const queryClient = useQueryClient();
   const [members, setMembers] = useState<
     { userId: string; roleId: string; departmentId: string }[]
   >([{ userId: "", roleId: "", departmentId: "" }]);
+  const [open, setOpen] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const workspaceRolesData = useStore(rolesStore, (state) => state.workspaceRolesData);
-  const activeWorkspace = useStore(
-    workspaceStore,
-    (state) => state.activeWorkspace
-  );
+  console.log(workspaceData)
+
   const activeOrganization = useStore(
     organizationStore,
     (state) => state.activeOrganization
   );
 
   const workspaceMembers =
-    activeWorkspace?.members &&
-    activeWorkspace?.members?.map((member) => member?.user.id);
+  workspaceData?.members &&
+  workspaceData?.members?.map((member) => member?.user.id);
 
   // const handleAddMember = () => {
   //   setMembers([
@@ -90,8 +90,9 @@ export function AddMembersDialog({
   const addNewWorkspaceMember = useMutation({
     mutationFn: AddUserToWorkspace,
     onSuccess: () => {
+      setOpen(false);
       toast.success("New member has been added to workspace");
-      queryClient.invalidateQueries({ queryKey: ["members", activeWorkspace?.id] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-by-id", workspaceData?.id] });
     },
     onError: (error) => {
       toast.error(error?.message || "Failed to add member to workspace");
@@ -115,7 +116,7 @@ export function AddMembersDialog({
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || <Button size="sm">Invite Members</Button>}
       </DialogTrigger>
@@ -230,11 +231,11 @@ export function AddMembersDialog({
             </Button> */}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => {}}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Sending Invites..." : "Send Invites"}
+              {isSubmitting ? "Adding..." : "Add"}
             </Button>
           </DialogFooter>
         </form>

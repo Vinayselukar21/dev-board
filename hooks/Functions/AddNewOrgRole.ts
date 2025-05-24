@@ -3,7 +3,7 @@ import axios from "@/utils/axios";
 interface Payload {
     name: string,
     description: string,
-    permissions: {type: string}[],
+    permissions: string[],
     organizationId: string
 }
 

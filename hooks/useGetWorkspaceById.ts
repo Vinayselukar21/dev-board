@@ -14,7 +14,7 @@ const useGetWorkspaceById = (workspaceId: string) => {
     error: errorLoadingWorkspace,
     isSuccess: workspaceDataLoadedSuccess
   } = useQuery<QueryResponse, Error>({
-    queryKey: ["workspace", workspaceId],
+    queryKey: ["workspace-by-id", workspaceId],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
         `/workspace/getbyid/${workspaceId}`

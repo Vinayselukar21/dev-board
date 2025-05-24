@@ -27,6 +27,24 @@ interface AddDepartmentDialogProps {
 
 export function AddDepartmentDialog({trigger, workspaceid }: AddDepartmentDialogProps) {
   const [departmentName, setDepartmentName] = useState("")
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
+
+  const AddNewDepartmentMutation = useMutation({
+    mutationFn: AddNewDepartment,
+    onSuccess: () => {
+      // setOpen(false);
+      toast.success("Department added successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-by-id", workspaceid],
+      });
+      setDepartmentName("");
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error("Error adding department");
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,24 +66,6 @@ export function AddDepartmentDialog({trigger, workspaceid }: AddDepartmentDialog
   }
 
 
-  const { session } = useAuth();
-  const queryClient = useQueryClient();
-
-  const AddNewDepartmentMutation = useMutation({
-    mutationFn: AddNewDepartment,
-    onSuccess: () => {
-      // setOpen(false);
-      toast.success("Department added successfully");
-      queryClient.invalidateQueries({
-        queryKey: ["workspaces", session?.id],
-      });
-      setDepartmentName("");
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error("Error adding department");
-    },
-  });
 
 
   return (

@@ -22,6 +22,7 @@ import { MapPin, Phone, User, Building, Briefcase, Clock } from "lucide-react";
 import organizationStore from "@/store/organizationStore";
 import { useStore } from "zustand";
 import { useParams } from "next/navigation";
+import UserRole from "./_components/user-role";
 
 export default function UserProfile() {
   const params = useParams();
@@ -103,11 +104,11 @@ export default function UserProfile() {
                   <div className="mt-1">
                     <Badge
                       variant={
-                        selectedUser.role === "admin" ? "default" : "secondary"
+                        selectedUser.organizationRole?.name === "Owner" ? "default" : "secondary"
                       }
                     >
-                      {selectedUser.role.charAt(0).toUpperCase() +
-                        selectedUser.role.slice(1)}
+                      {selectedUser.organizationRole?.name && selectedUser.organizationRole?.name?.charAt(0).toUpperCase() +
+                        selectedUser.organizationRole?.name?.slice(1)}
                     </Badge>
                     <Badge
                       variant={selectedUser.isVerified ? "default" : "outline"}
@@ -126,6 +127,7 @@ export default function UserProfile() {
               <TabsTrigger value="personal">Personal Info</TabsTrigger>
               <TabsTrigger value="account">Account Details</TabsTrigger>
               <TabsTrigger value="workspace">Workspace</TabsTrigger>
+              <TabsTrigger value="role">Role</TabsTrigger>
             </TabsList>
 
             <TabsContent value="personal" className="mt-4">
@@ -302,7 +304,9 @@ export default function UserProfile() {
               </Card>
             </TabsContent>
 
-            
+            <TabsContent value="role" className="mt-4">
+              <UserRole selectedUser={selectedUser} />
+            </TabsContent>
           </Tabs>
         </div>
       </div>
