@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { WorkspaceRole } from "@/app/types"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -15,16 +15,45 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import AddNewWorkspaceRole from "@/hooks/Functions/AddNewWorkspaceRole"
+import organizationStore from "@/store/organizationStore"
+import rolesStore from "@/store/rolesStore"
+import workspaceStore from "@/store/workspaceStore"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { useStore } from "zustand"
 
+enum PermissionType {
+  VIEW_PROJECT = 'VIEW_PROJECT',
+  ALL_PROJECT = 'ALL_PROJECT',
+  CREATE_PROJECT = 'CREATE_PROJECT',
+  EDIT_PROJECT = 'EDIT_PROJECT',
+  DELETE_PROJECT = 'DELETE_PROJECT',
+
+  VIEW_TASK = 'VIEW_TASK',
+  ALL_TASK = 'ALL_TASK',
+  CREATE_TASK = 'CREATE_TASK',
+  EDIT_ANY_TASK = 'EDIT_ANY_TASK',
+  DELETE_TASK = 'DELETE_TASK',
+
+  ADD_MEMBER = 'ADD_MEMBER',
+  REMOVE_MEMBER = 'REMOVE_MEMBER',
+  CHANGE_MEMBER_ROLE = 'CHANGE_MEMBER_ROLE',
+
+  CREATE_EVENT = 'CREATE_EVENT',
+  EDIT_EVENT = 'EDIT_EVENT',
+  EDIT_ANY_EVENT = 'EDIT_ANY_EVENT',
+  DELETE_EVENT = 'DELETE_EVENT',
+}
 export interface RolePermission {
   id: string
   name: string
   description: string
-  enabled: boolean
 }
 
 export interface PermissionCategory {
@@ -34,19 +63,36 @@ export interface PermissionCategory {
 }
 
 export interface CustomRole {
-  id: string
   name: string
   description: string
-  permissions: Record<string, boolean>
+  permissions: string[]
+  workspaceId: string
 }
 
 
 
-export function CreateWorkspaceRoleDialog() {
+export function CreateWorkspaceRoleDialog({trigger, type, role}: {trigger: React.ReactNode, type: "new" | "edit";
+  role?: WorkspaceRole;}) {
+    const params = useParams();
+    const queryClient = useQueryClient();
   const [open, setOpen] = useState(false)
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [permissions, setPermissions] = useState<Record<string, boolean>>({})
+  const [name, setName] = useState(type === "edit" ? role?.name : "")
+  const [description, setDescription] = useState(type === "edit" ? role?.description : "")
+  const [permissions, setPermissions] = useState<string[]>([])
+
+  const workspacePermissions = useStore(
+      rolesStore,
+      (state) => state.workspacePermissions
+    );
+
+   useEffect(() => {
+      if (type === "edit" && role?.permissions && open) {
+        console.log(role.permissions, "role.permissions");
+        setPermissions(role.permissions.map((permission) => permission?.permission?.id!));
+      }
+    }, [type, role, open]);
+
+  console.log(role)
 
   // Permission categories
   const permissionCategories: PermissionCategory[] = [
@@ -55,28 +101,28 @@ export function CreateWorkspaceRoleDialog() {
       name: "Projects",
       permissions: [
         {
-          id: "projects.create",
+          id: workspacePermissions.find((p) => p.name === PermissionType.CREATE_PROJECT)?.id!,
           name: "Create Projects",
           description: "Can create new projects in the workspace",
-          enabled: true,
+          
         },
         {
-          id: "projects.edit",
+          id: workspacePermissions.find((p) => p.name === PermissionType.EDIT_PROJECT)?.id!,
           name: "Edit Projects",
           description: "Can edit project details and settings",
-          enabled: true,
+          
         },
         {
-          id: "projects.delete",
+          id: workspacePermissions.find((p) => p.name === PermissionType.DELETE_PROJECT)?.id!,
           name: "Delete Projects",
           description: "Can delete projects from the workspace",
-          enabled: false,
+          
         },
         {
-          id: "projects.view",
+          id: workspacePermissions.find((p) => p.name === PermissionType.VIEW_PROJECT)?.id!,
           name: "View Projects",
           description: "Can view all projects in the workspace",
-          enabled: true,
+          
         },
       ],
     },
@@ -85,189 +131,157 @@ export function CreateWorkspaceRoleDialog() {
       name: "Tasks",
       permissions: [
         {
-          id: "tasks.create",
+          id: workspacePermissions.find((p) => p.name === PermissionType.CREATE_TASK)?.id!,
           name: "Create Tasks",
           description: "Can create new tasks in projects",
-          enabled: true,
+          
         },
         {
-          id: "tasks.edit",
+          id: workspacePermissions.find((p) => p.name === PermissionType.EDIT_ANY_TASK)?.id!,
           name: "Edit Any Task",
           description: "Can edit any task, including those created by others",
-          enabled: true,
+          
         },
         {
-          id: "tasks.delete",
+          id: workspacePermissions.find((p) => p.name === PermissionType.DELETE_TASK)?.id!,
           name: "Delete Tasks",
           description: "Can delete tasks from projects",
-          enabled: false,
+          
         },
-        {
-          id: "tasks.assign",
-          name: "Assign Tasks",
-          description: "Can assign tasks to other members",
-          enabled: true,
-        },
+        // {
+        //   id: workspacePermissions.find((p) => p.name === PermissionType.)?.id!,
+        //   name: "Assign Tasks",
+        //   description: "Can assign tasks to other members",
+        //   
+        // },
       ],
     },
     {
       id: "team",
-      name: "Team Management",
+      name: "Team",
       permissions: [
         {
-          id: "team.invite",
+          id: workspacePermissions.find((p) => p.name === PermissionType.ADD_MEMBER)?.id!,
           name: "Invite Members",
           description: "Can invite new members to the workspace",
-          enabled: false,
+          
         },
         {
-          id: "team.remove",
+          id: workspacePermissions.find((p) => p.name === PermissionType.REMOVE_MEMBER)?.id!,
           name: "Remove Members",
           description: "Can remove members from the workspace",
-          enabled: false,
+          
         },
         {
-          id: "team.roles",
+          id: workspacePermissions.find((p) => p.name === PermissionType.CHANGE_MEMBER_ROLE)?.id!,
           name: "Change Member Roles",
           description: "Can change roles of other members",
-          enabled: false,
-        },
-        {
-          id: "team.view",
-          name: "View Team Members",
-          description: "Can view all team members",
-          enabled: true,
+          
         },
       ],
     },
     {
       id: "calendar",
-      name: "Calendar & Events",
+      name: "Calendar",
       permissions: [
         {
-          id: "calendar.create",
+          id: workspacePermissions.find((p) => p.name === PermissionType.CREATE_EVENT)?.id!,
           name: "Create Events",
           description: "Can create calendar events",
-          enabled: true,
+          
         },
         {
-          id: "calendar.edit",
+          id: workspacePermissions.find((p) => p.name === PermissionType.EDIT_ANY_EVENT)?.id!,
           name: "Edit Any Event",
           description: "Can edit events created by others",
-          enabled: false,
+          
         },
         {
-          id: "calendar.delete",
+          id: workspacePermissions.find((p) => p.name === PermissionType.DELETE_EVENT)?.id!,
           name: "Delete Events",
           description: "Can delete calendar events",
-          enabled: false,
+          
         },
-        {
-          id: "calendar.view",
-          name: "View Calendar",
-          description: "Can view the calendar and events",
-          enabled: true,
-        },
+        // {
+        //   id: workspacePermissions.find((p) => p.name === PermissionType.VIEW_EVENT)?.id!,
+        //   name: "View Calendar",
+        //   description: "Can view the calendar and events",
+        //   
+        // },
       ],
-    },
-    {
-      id: "settings",
-      name: "Settings",
-      permissions: [
-        {
-          id: "settings.workspace",
-          name: "Workspace Settings",
-          description: "Can modify workspace settings",
-          enabled: false,
-        },
-        {
-          id: "settings.billing",
-          name: "Billing & Subscription",
-          description: "Can access and modify billing information",
-          enabled: false,
-        },
-        {
-          id: "settings.integrations",
-          name: "Integrations",
-          description: "Can manage workspace integrations",
-          enabled: false,
-        },
-        {
-          id: "settings.view",
-          name: "View Settings",
-          description: "Can view workspace settings",
-          enabled: true,
-        },
-      ],
-    },
+    }
   ]
 
-  // Initialize permissions state
-  useState(() => {
-    const initialPermissions: Record<string, boolean> = {}
-    permissionCategories.forEach((category) => {
-      category.permissions.forEach((permission) => {
-        initialPermissions[permission.id] = permission.enabled
-      })
-    })
-    setPermissions(initialPermissions)
-  })
+  // // Initialize permissions state
+  // useState(() => {
+  //   const initialPermissions: Record<string, boolean> = {}
+  //   permissionCategories.forEach((category) => {
+  //     category.permissions.forEach((permission) => {
+  //       initialPermissions[permission.id] = permission.enabled
+  //     })
+  //   })
+  //   setPermissions(initialPermissions)
+  // })
 
   // Toggle permission
   const togglePermission = (permissionId: string) => {
-    setPermissions((prev) => ({
-      ...prev,
-      [permissionId]: !prev[permissionId],
-    }))
-  }
-
-  // Reset form
-  const resetForm = () => {
-    setName("")
-    setDescription("")
-    const initialPermissions: Record<string, boolean> = {}
-    permissionCategories.forEach((category) => {
-      category.permissions.forEach((permission) => {
-        initialPermissions[permission.id] = permission.enabled
-      })
-    })
-    setPermissions(initialPermissions)
-  }
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!name.trim()) {
-      alert("Please enter a role name")
-      return
+    if (permissions.some((permission) => permission === permissionId)) {
+      const newPermissions = permissions.filter(
+        (permission) => permission !== permissionId
+      );
+      setPermissions(newPermissions);
+      return;
     }
+    const newPermissions = [...permissions, permissionId];
+    setPermissions(newPermissions);
+  };
 
-    const newRole: CustomRole = {
-      id: `role-${Date.now()}`,
-      name,
-      description,
-      permissions,
-    }
 
-    // onRoleCreated(newRole)
-    setOpen(false)
-    resetForm()
-  }
+  const addNewRole = useMutation({
+    mutationFn: AddNewWorkspaceRole,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-by-id", params.wid],
+      });
+      toast.success("New role has been added");
+      setOpen(false);
+      resetForm();
+    },
+  });
+
+ // Reset form
+ const resetForm = () => {
+  setName("");
+  setDescription("");
+  setPermissions([]);
+};
+
+ // Handle form submission
+   const handleSubmit = (e: React.FormEvent) => {
+     e.preventDefault();
+ 
+     const newRole: CustomRole = {
+       name: name!,
+       description: description!,
+       permissions,
+       workspaceId: params.wid as string,
+     };
+     console.log(newRole, "payload");
+     addNewRole.mutate(newRole);
+     setOpen(false);
+     resetForm();
+   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="mt-2">
-          <Plus className="mr-2 h-4 w-4" />
-          Create Custom Role - Workspace
-        </Button>
+        {trigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create Custom Role</DialogTitle>
-            <DialogDescription>Define a new role with custom permissions for your workspace.</DialogDescription>
+            <DialogTitle>{ type === "edit" ? "Edit Role" : "Create Custom Role"}</DialogTitle>
+            <DialogDescription>{ type === "edit" ? "Edit the role with custom permissions for your workspace." : "Define a new role with custom permissions for your workspace."}</DialogDescription>
           </DialogHeader>
 
           <div className="mt-6 grid gap-6">
@@ -316,7 +330,9 @@ export function CreateWorkspaceRoleDialog() {
                               <div className="text-sm text-muted-foreground">{permission.description}</div>
                             </div>
                             <Switch
-                              checked={permissions[permission.id] || false}
+                              checked={permissions.some(
+                                (p) => p === permission.id
+                              )}
                               onCheckedChange={() => togglePermission(permission.id)}
                             />
                           </div>
@@ -333,7 +349,7 @@ export function CreateWorkspaceRoleDialog() {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit">Create Role</Button>
+            <Button type="submit">{ type === "edit" ? "Update Role" : "Create Role"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

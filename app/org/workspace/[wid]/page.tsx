@@ -85,7 +85,7 @@ const {workspaceData, workspaceLoading, errorLoadingWorkspace, workspaceDataLoad
 
         {/* Permissions Tab */}
         <TabsContent value="permissions">
-          <PermissionSettings />
+          <PermissionSettings workspaceData={workspaceData} />
         </TabsContent>
       </Tabs>
     </div>

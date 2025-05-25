@@ -54,13 +54,13 @@ import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
 import { cn } from "@/lib/utils";
 import workspaceStore from "@/store/workspaceStore";
 import { useStore } from "zustand";
-import EventFormConstrains, { EventFormValues } from "./_components/EventFormConstrains";
+import { EventFormConstrains, EventFormValues } from "./_components/EventFormConstrains";
 import LoadingEvent from "./_components/loading-event";
 
 
 export default function EventPage() {
-  const {session} = useAuth();
   const {form} = EventFormConstrains();
+  const {session} = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -124,12 +124,11 @@ export default function EventPage() {
     { value: "23:30", label: "11:30 PM" },
   ];
 
- 
-
   // Watch for form value changes
   const participants = form.watch("participants");
 
   const formInitialized = React.useRef(false);
+
   React.useEffect(() => {
     // Handle date from URL for new events
     const dateParam = searchParams.get("date");
@@ -257,8 +256,19 @@ export default function EventPage() {
     },
   });
 
+  function EditEvent(payload: any){
+    EditCalendarEventMutation.mutate({
+      ...payload,
+      id: eventId!,
+    });
+  }
+
+  function AddEvent(payload: any){
+    AddNewCalendarEventMutation.mutate(payload);
+  }
   
   function onSubmit(data: EventFormValues) {
+    console.log(data, "data");  
     // Create event payload
     const payload: any = {
       title: data.title,
@@ -284,12 +294,9 @@ export default function EventPage() {
     }
 
     if (isEditing) {
-      EditCalendarEventMutation.mutate({
-        ...payload,
-        id: eventId!,
-      });
+      EditEvent(payload);
     } else {
-      AddNewCalendarEventMutation.mutate(payload);
+      AddEvent(payload);
     }
   }
 
@@ -760,7 +767,7 @@ export default function EventPage() {
                   <Button type="button" variant="outline" asChild>
                     <Link href="/calendar">Cancel</Link>
                   </Button>
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                  <Button type="submit" disabled={form.formState.isSubmitting || participants.length === 0}>
                     {isEditing ? "Save Changes" : "Create Event"}
                   </Button>
                 </div>

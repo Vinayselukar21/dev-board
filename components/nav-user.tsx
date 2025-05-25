@@ -133,7 +133,9 @@ const handleLogout = () => {
                 <Users />
                 View Organization
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                router.push("/settings");
+              }}>
                 <Settings />
                 Settings
               </DropdownMenuItem>

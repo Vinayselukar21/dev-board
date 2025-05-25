@@ -4,7 +4,6 @@ import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { WorkspaceMember } from "../app/types";
-import { useStore } from "zustand";
   
 interface QueryResponse {
   message: string;
@@ -12,7 +11,7 @@ interface QueryResponse {
 }
 
 const useGetWorkspaceMembers = () => {
-  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
+  const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
   const {
     data,
     isLoading: membersLoading,

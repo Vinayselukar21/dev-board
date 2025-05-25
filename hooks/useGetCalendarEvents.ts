@@ -3,7 +3,6 @@ import { CalendarEvent } from "@/app/types";
 import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
-import { useStore } from "zustand";
 
 interface QueryResponse {
   message: string;
@@ -11,7 +10,7 @@ interface QueryResponse {
 }
 
 const useGetCalendarEvents = () => {
-  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
+  const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
   const { session } = useAuth();
 
   const workspaceMemberId = session.memberships.find(

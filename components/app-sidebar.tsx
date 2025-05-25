@@ -160,12 +160,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: Users,
         routeName: "team",
       },
-      {
-        name: "Settings",
-        url: "#",
-        icon: Settings,
-        routeName: "settings",
-      },
+      // {
+      //   name: "Settings",
+      //   url: "#",
+      //   icon: Settings,
+      //   routeName: "settings",
+      // },
     ],
   };
   

@@ -1,12 +1,12 @@
 import { createStore } from "zustand/vanilla";
 import { persist } from "zustand/middleware";
-import { OrgPermission, WorkspaceRole, OrganizationRole, WorkspacePermission } from "../app/types";
+import { WorkspaceRole, OrganizationRole, WorkspacePermission, OrgPermission } from "../app/types";
 
 type RolesStoreState = {
   workspaceRolesData: WorkspaceRole[];
   organizationRolesData: OrganizationRole[];
   workspacePermissions: WorkspacePermission[];
-  orgPermissions: OrgPermission[];
+  organizationPermissions: OrgPermission[];
 };
 
 type RolesStoreActions = {
@@ -19,8 +19,8 @@ type RolesStoreActions = {
   setWorkspacePermissions: (
     workspacePermissions: RolesStoreState["workspacePermissions"]
   ) => void;
-  setOrgPermissions: (
-    orgPermissions: RolesStoreState["orgPermissions"]
+  setOrganizationPermissions: (
+    organizationPermissions: RolesStoreState["organizationPermissions"]
   ) => void;
   resetRolesData: () => void;
 };
@@ -33,17 +33,17 @@ const rolesStore = createStore<RolesStore>()(
       workspaceRolesData: [],
       organizationRolesData: [],
       workspacePermissions: [],
-      orgPermissions: [],
+      organizationPermissions: [],
       setWorkspaceRolesData: (workspaceRolesData: RolesStoreState["workspaceRolesData"]) =>
         set({ workspaceRolesData }),
       setOrganizationRolesData: (organizationRolesData: RolesStoreState["organizationRolesData"]) =>
         set({ organizationRolesData }),
       setWorkspacePermissions: (workspacePermissions: RolesStoreState["workspacePermissions"]) =>
         set({ workspacePermissions }),
-      setOrgPermissions: (orgPermissions: RolesStoreState["orgPermissions"]) =>
-        set({ orgPermissions }),
+      setOrganizationPermissions: (organizationPermissions: RolesStoreState["organizationPermissions"]) =>
+        set({ organizationPermissions }),
       resetRolesData: () => {
-        set({ workspaceRolesData: [], organizationRolesData: [], workspacePermissions: [], orgPermissions: [] });
+        set({ workspaceRolesData: [], organizationRolesData: [], workspacePermissions: [], organizationPermissions: [] });
       },
     }),
     { name: "roles-storage" }

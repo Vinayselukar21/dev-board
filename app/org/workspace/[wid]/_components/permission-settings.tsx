@@ -1,5 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Workspace } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,28 +7,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
-import useGetRoles from "@/hooks/useGetAllRoles";
 import { CreateWorkspaceRoleDialog } from "./dialogs/create-workspace-role-dialog";
 
-export default function PermissionSettings() {
-  const { organizationRolesData } = useGetRoles();
-console.log(organizationRolesData)
+export default function PermissionSettings({workspaceData}: {workspaceData: Workspace}) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Permissions & Roles</CardTitle>
+      <CardHeader className="flex items-center justify-between">
+       <div>
+       <CardTitle>Permissions & Roles</CardTitle>
         <CardDescription>
           Manage workspace roles and permissions for team members.
         </CardDescription>
+       </div>
+        <CreateWorkspaceRoleDialog type="new" trigger={<Button variant="outline" size="sm" className="mt-2">
+            <Plus className="mr-2 h-4 w-4" />
+            Create Custom Role - Workspace
+          </Button>}/>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Role Management */}
@@ -55,17 +49,17 @@ console.log(organizationRolesData)
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {organizationRolesData?.map((role) => (
+                  {workspaceData?.roles?.map((role) => (
                     <tr key={role.id}>
                       <td className="px-4 py-3 font-medium">{role.name}</td>
                       <td className="px-4 py-3 text-sm">
                         {role.description}
                       </td>
-                      <td className="px-4 py-3 text-sm">2</td>
+                      <td className="px-4 py-3 text-sm">{role?.members?.length || 0}</td>
                       <td className="px-4 py-3 text-sm">
-                        <Button variant="ghost" size="sm">
+                        <CreateWorkspaceRoleDialog type="edit" role={role} trigger={<Button variant="ghost" size="sm">
                           Edit
-                        </Button>
+                        </Button>}/>
                       </td>
                     </tr>
                   ))}
@@ -73,312 +67,7 @@ console.log(organizationRolesData)
               </table>
             </div>
           </div>
-          {/* <Button variant="outline" size="sm" className="mt-2">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Custom Role
-          </Button> */}
-          <CreateWorkspaceRoleDialog/>
         </div>
-
-        {/* Permission Settings */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Permission Settings</h3>
-          <div className="rounded-md border p-4">
-            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h4 className="font-medium">Role to Configure</h4>
-                <p className="text-sm text-muted-foreground">
-                  Select a role to configure permissions
-                </p>
-              </div>
-              <Select defaultValue="member">
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-md border">
-                <div className="bg-muted/50 px-4 py-2 font-medium">
-                  Projects
-                </div>
-                <div className="divide-y">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Create Projects</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can create new projects in the workspace
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Edit Projects</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can edit project details and settings
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Delete Projects</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can delete projects from the workspace
-                      </div>
-                    </div>
-                    <Switch />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-md border">
-                <div className="bg-muted/50 px-4 py-2 font-medium">Tasks</div>
-                <div className="divide-y">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Create Tasks</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can create new tasks in projects
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Edit Any Task</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can edit any task, including those created by others
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Delete Tasks</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can delete tasks from projects
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-md border">
-                <div className="bg-muted/50 px-4 py-2 font-medium">
-                  Team Management
-                </div>
-                <div className="divide-y">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Invite Members</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can invite new members to the workspace
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Remove Members</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can remove members from the workspace
-                      </div>
-                    </div>
-                    <Switch />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Change Member Roles</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can change roles of other members
-                      </div>
-                    </div>
-                    <Switch />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-md border">
-                <div className="bg-muted/50 px-4 py-2 font-medium">
-                  Calendar & Events
-                </div>
-                <div className="divide-y">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Create Events</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can create calendar events
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Edit Any Event</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can edit events created by others
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-medium">Delete Events</div>
-                      <div className="text-sm text-muted-foreground">
-                        Can delete calendar events
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Member Role Assignment */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Member Role Assignment</h3>
-          <div className="overflow-hidden rounded-lg border">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      Member
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      Email
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      Current Role
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  <tr>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>AK</AvatarFallback>
-                        </Avatar>
-                        <span>Alex Kim</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">alex@example.com</td>
-                    <td className="px-4 py-3 text-sm">
-                      <Badge>Admin</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <Select defaultValue="admin">
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="member">Member</SelectItem>
-                          <SelectItem value="viewer">Viewer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>SJ</AvatarFallback>
-                        </Avatar>
-                        <span>Sarah Johnson</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">sarah@example.com</td>
-                    <td className="px-4 py-3 text-sm">
-                      <Badge variant="outline">Member</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <Select defaultValue="member">
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="member">Member</SelectItem>
-                          <SelectItem value="viewer">Viewer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>MC</AvatarFallback>
-                        </Avatar>
-                        <span>Michael Chen</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">michael@example.com</td>
-                    <td className="px-4 py-3 text-sm">
-                      <Badge variant="outline">Member</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <Select defaultValue="member">
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="member">Member</SelectItem>
-                          <SelectItem value="viewer">Viewer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>JT</AvatarFallback>
-                        </Avatar>
-                        <span>Jessica Taylor</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">jessica@example.com</td>
-                    <td className="px-4 py-3 text-sm">
-                      <Badge variant="secondary">Viewer</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <Select defaultValue="viewer">
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="member">Member</SelectItem>
-                          <SelectItem value="viewer">Viewer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <Button>Save Changes</Button>
       </CardContent>
     </Card>
   );

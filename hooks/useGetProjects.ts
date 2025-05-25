@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import sidebarStore from "@/store/sidebarStore";
 import { Project } from "@/app/types";
 import workspaceStore from "@/store/workspaceStore";
-import { useStore } from "zustand";
 
 interface QueryResponse {
   message: string;
@@ -11,9 +10,8 @@ interface QueryResponse {
 }
 
 const useGetProjects = () => {
-  const sidebar = useStore(sidebarStore, (state) => state.sidebar);
-  const setSidebar = useStore(sidebarStore, (state) => state.setSidebar);
-  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
+  const {sidebar , setSidebar} = sidebarStore.getState()
+  const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
   const {
     data,
     isLoading: projectsLoading,

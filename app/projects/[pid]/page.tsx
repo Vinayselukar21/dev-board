@@ -37,7 +37,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ChangeTaskStage from "@/hooks/Functions/ChangeTaskStage";
 import { toast } from "sonner";
 import DeleteTask from "@/hooks/Functions/DeleteTask";
-import { ProjectSettingsDialog } from "./_components/project-settings-dialog";
 import { format } from "date-fns";
 import LoadingTasks from "./_components/loading-tasks";
 
@@ -229,10 +228,6 @@ export default function ProjectPage() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">{projectTaskData?.name}</h2>
-                {projectTaskData && <ProjectSettingsDialog trigger={<Button variant="outline" size="sm">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Project Settings
-                </Button>} projectId={params.pid as string} projectTaskData={projectTaskData} />}
               </div>
               <div className="flex items-center gap-4">
                 {/* <div className="flex -space-x-2">

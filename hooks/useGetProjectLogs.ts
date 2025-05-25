@@ -2,15 +2,13 @@ import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { Log } from "@/app/types";
 import workspaceStore from "@/store/workspaceStore";
-import { useStore } from "zustand";
-
 interface QueryResponse {
   message: string;
   logs: Log[];
 }
 
 const useGetProjectLogs = () => {
-  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
+  const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
   const {
     data,
     isLoading: projectLogsLoading,

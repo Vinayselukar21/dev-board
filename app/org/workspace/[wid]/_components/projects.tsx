@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { AddProjectDialog } from "./dialogs/add-project-dialog";
 import { ProjectDetailsDialog } from "./dialogs/project-details-dialog";
 import { ManageProjectTeamDialog } from "./dialogs/manage-project-team-dialog";
+import { ManageProjectKanbanBoardColumns } from "./dialogs/manage-project-kanban-board-columns";
 
 // Helper function to get initials from name
 function getInitials(name: string | undefined) {
@@ -46,7 +47,10 @@ export default function Projects({
               Manage and track projects in this workspace
             </CardDescription>
           </div>
-          <AddProjectDialog trigger={<Button size="sm">New Project</Button>} workspaceData={workspaceData} />
+          <AddProjectDialog
+            trigger={<Button size="sm">New Project</Button>}
+            workspaceData={workspaceData}
+          />
         </CardHeader>
         <CardContent>
           {workspaceData.projects.length === 0 ? (
@@ -106,7 +110,17 @@ export default function Projects({
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-between">
-                    <ProjectDetailsDialog trigger={<Button size="sm">View Details</Button>} project={project} />
+                    <ProjectDetailsDialog
+                      trigger={<Button size="sm">View Details</Button>}
+                      project={project}
+                    />
+
+                    <ManageProjectKanbanBoardColumns
+                      projectId={project.id}
+                      projectTaskData={project}
+                      trigger={<Button variant="outline" size="sm">Manage Kanban Columns</Button>}
+                    />
+
                     <ManageProjectTeamDialog
                       project={project}
                       allMembers={workspaceData.members}

@@ -4,8 +4,6 @@ import { useAuth } from "@/app/providers/AuthProvider";
 import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
-import { useStore } from "zustand";
-
 interface QueryResponse {
   message: string;
   workspaceMember: any;
@@ -13,7 +11,7 @@ interface QueryResponse {
 
 const useGetMyDetails = () => {
   const { session } = useAuth();
-  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
+  const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
   const workspaceMemberId = session.memberships.find(
     (m: any) => m.workspaceId === activeWorkspace.id
   )?.id;

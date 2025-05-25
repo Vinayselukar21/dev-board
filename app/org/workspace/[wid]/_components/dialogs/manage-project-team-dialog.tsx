@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,20 +9,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
-import { Project, WorkspaceMember } from "@/app/types"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import { Project, WorkspaceMember } from "@/app/types";
+import AddMemberToProject from "@/hooks/Functions/AddMemberToProject";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ManageProjectTeamDialogProps {
-  trigger: React.ReactNode
-  project: Project
-  allMembers: WorkspaceMember[]
+  trigger: React.ReactNode;
+  project: Project;
+  allMembers: WorkspaceMember[];
 }
 
 export function ManageProjectTeamDialog({
@@ -30,17 +34,18 @@ export function ManageProjectTeamDialog({
   project,
   allMembers,
 }: ManageProjectTeamDialogProps) {
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const queryClient = useQueryClient();
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  console.log(selectedMembers, "selectedMembers");
   // Initialize selected members from project
   useEffect(() => {
     if (project) {
-      const currentMemberIds = project?.members?.map((pm) => pm.member.id)
-      setSelectedMembers(currentMemberIds || [])
+      const currentMemberIds = project?.members?.map((pm) => pm.member.id);
+      setSelectedMembers(currentMemberIds || []);
     }
-  }, [project])
+  }, [project]);
 
   // Helper function to get initials from name
   function getInitials(name: string) {
@@ -48,29 +53,52 @@ export function ManageProjectTeamDialog({
       .split(" ")
       .map((part) => part[0])
       .join("")
-      .toUpperCase()
+      .toUpperCase();
   }
 
   // Filter members based on search query
   const filteredMembers = allMembers.filter((member) => {
-    const lowerCaseQuery = searchQuery.toLowerCase()
+    const lowerCaseQuery = searchQuery.toLowerCase();
     return (
       member.user?.name?.toLowerCase().includes(lowerCaseQuery) ||
       member.user?.email?.toLowerCase().includes(lowerCaseQuery)
-    )
-  })
+    );
+  });
+
+  const addMemberToProject = useMutation({
+    mutationFn: AddMemberToProject,
+    onSuccess: () => {
+      // Invalidate and refetch
+      toast.success("New member has been added to project");
+      queryClient.invalidateQueries({ queryKey: ["workspace-by-id"] });
+    },
+    onError: (error) => {
+      toast.error("Failed to add member to project");
+      console.error("Error adding member to project:", error);
+    },
+  });
 
   // Toggle member selection
   const toggleMember = (memberId: string) => {
-    setSelectedMembers((prev) => (prev.includes(memberId) ? prev.filter((id) => id !== memberId) : [...prev, memberId]))
-  }
+    if (selectedMembers.includes(memberId)) {
+      setSelectedMembers(selectedMembers.filter((id) => id !== memberId));
+    } else {
+      setSelectedMembers([...selectedMembers, memberId]);
+      addMemberToProject.mutate({
+        projectId: project.id,
+        memberId: memberId,
+      });
+    }
+  };
 
   // Handle save changes
   const handleSaveChanges = () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     // onUpdateTeam(selectedMembers)
-    setIsSubmitting(false)
-  }
+    setIsSubmitting(false);
+  };
+
+  
 
   return (
     <Dialog>
@@ -78,7 +106,9 @@ export function ManageProjectTeamDialog({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Manage Project Team</DialogTitle>
-          <DialogDescription>Add or remove team members for {project.name}</DialogDescription>
+          <DialogDescription>
+            Add or remove team members for {project.name}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="relative mb-4">
@@ -94,8 +124,10 @@ export function ManageProjectTeamDialog({
         <ScrollArea className="max-h-[400px] pr-4">
           <div className="space-y-2">
             {filteredMembers.map((member) => {
-              const isSelected = selectedMembers.includes(member.id)
-              const isCurrentMember = project?.members?.some((pm) => pm.member.id === member.id)
+              const isSelected = selectedMembers.includes(member.id);
+              const isCurrentMember = project?.members?.some(
+                (pm) => pm.member.id === member.id
+              );
 
               return (
                 <div
@@ -111,26 +143,43 @@ export function ManageProjectTeamDialog({
                       id={`member-${member.id}`}
                     />
                     <Avatar>
-                      <AvatarFallback>{getInitials(member.user?.name!)}</AvatarFallback>
+                      <AvatarFallback>
+                        {getInitials(member.user?.name!)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
-                      <label htmlFor={`member-${member.id}`} className="cursor-pointer font-medium">
+                      <label
+                        htmlFor={`member-${member.id}`}
+                        className="cursor-pointer font-medium"
+                      >
                         {member.user?.name}
                       </label>
-                      <p className="text-sm text-muted-foreground">No job title</p>
+                      <p className="text-sm text-muted-foreground">
+                        No job title
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={member.role.name === "Owner" ? "default" : "outline"}>{member.role.name}</Badge>
-                    {isCurrentMember && <Badge variant="secondary">Current</Badge>}
+                    <Badge
+                      variant={
+                        member.role.name === "Owner" ? "default" : "outline"
+                      }
+                    >
+                      {member.role.name}
+                    </Badge>
+                    {isCurrentMember && (
+                      <Badge variant="secondary">Current</Badge>
+                    )}
                   </div>
                 </div>
-              )
+              );
             })}
 
             {filteredMembers.length === 0 && (
               <div className="flex h-20 items-center justify-center rounded-lg border border-dashed">
-                <p className="text-center text-muted-foreground">No members found matching your search.</p>
+                <p className="text-center text-muted-foreground">
+                  No members found matching your search.
+                </p>
               </div>
             )}
           </div>
@@ -138,7 +187,8 @@ export function ManageProjectTeamDialog({
 
         <DialogFooter className="mt-4">
           <div className="mr-auto text-sm text-muted-foreground">
-            {selectedMembers.length} {selectedMembers.length === 1 ? "member" : "members"} selected
+            {selectedMembers.length}{" "}
+            {selectedMembers.length === 1 ? "member" : "members"} selected
           </div>
           <Button variant="outline" onClick={() => {}}>
             Cancel
@@ -149,5 +199,5 @@ export function ManageProjectTeamDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

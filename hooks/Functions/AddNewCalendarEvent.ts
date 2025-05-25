@@ -2,7 +2,6 @@
 
 import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
-import { useStore } from "zustand";
 
 export interface Payload {
   title: string;
@@ -25,7 +24,7 @@ export interface Payload {
 
 
 const AddNewCalendarEvent = async (payload: Payload) => {
-  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace); // subscribes to changes
+  const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
   const response = await axios.post(
     `/workspace/${activeWorkspace?.id}/newevent`,
     payload
