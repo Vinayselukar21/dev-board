@@ -31,6 +31,8 @@ const useGetCalendarEvents = () => {
     },
     retry: 1,
     enabled: !!activeWorkspace.id && !!workspaceMemberId,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const eventsData: CalendarEvent[] = data?.calendarEvents || [];

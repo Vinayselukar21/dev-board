@@ -86,7 +86,7 @@ export function MonthView({ currentDate, events, onEventClick, onDateClick }: Mo
           return (
             <div
               key={index}
-              className={`min-h-[120px] border-b border-r p-1 cursor-pointer ${day ? "" : "bg-muted/20"} ${
+              className={`min-h-[120px] border-b border-r p-1  ${day ? "" : "bg-muted/20"} ${
                 isToday ? "bg-primary/5" : ""
               }`}
             
@@ -95,7 +95,7 @@ export function MonthView({ currentDate, events, onEventClick, onDateClick }: Mo
                 <>
                   <div className="flex justify-between p-1">
                     <Button variant="ghost" size="icon"
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-full text-sm cursor-pointer ${
                         isToday ? "bg-primary text-primary-foreground" : ""
                       }`}
                         onClick={() => handleDayClick(day)}
@@ -108,7 +108,7 @@ export function MonthView({ currentDate, events, onEventClick, onDateClick }: Mo
                       )}`}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                      <Button variant="ghost" size="icon" className="h-6 w-6 cursor-pointer">
                         <Plus className="h-3 w-3" />
                       </Button>
                     </Link>

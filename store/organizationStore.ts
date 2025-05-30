@@ -48,7 +48,7 @@ const organizationStore = createStore<OrganizationStore>()(
         activeOrganization: OrganizationStoreState["activeOrganization"]
       ) => set({ activeOrganization }),
       resetActiveOrganization: () => {
-        set({ activeOrganization: { id: "", name: "", type: "", createdAt: "", updatedAt: "", ownerId: "", owner: { id: "", email: "", name: "", password: "", role: "", createdAt: "", updatedAt: "", isVerified: false, lastLogin: "", contactNo: "", location: "", memberships: [], jobTitle: "", designation: "" }, users: [], workspaces: [] } });
+        set({ activeOrganization: { id: "", name: "", type: "", createdAt: "", updatedAt: "", ownerId: "", owner: { id: "", email: "", name: "", password: "", createdAt: "", updatedAt: "", isVerified: false, lastLogin: "", contactNo: "", location: "", memberships: [], jobTitle: "", designation: "" }, users: [], workspaces: [] } });
       },
     }),
     { name: "organization-storage" }

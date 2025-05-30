@@ -29,6 +29,8 @@ const useGetMyDetails = () => {
     },
     retry: 1,
     enabled: !!activeWorkspace.id,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const myData = data?.workspaceMember;

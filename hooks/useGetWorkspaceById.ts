@@ -23,6 +23,8 @@ const useGetWorkspaceById = (workspaceId: string) => {
     },
     retry: 1,
     enabled: !!workspaceId,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const workspaceData: Workspace | null = data?.workspace || null;

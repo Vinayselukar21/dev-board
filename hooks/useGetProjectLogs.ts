@@ -23,6 +23,8 @@ const useGetProjectLogs = () => {
     },
     retry: 1,
     enabled: !!activeWorkspace.id,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const projectLogsData: Array<Log> = Array.isArray(data?.logs)

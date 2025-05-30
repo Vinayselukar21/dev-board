@@ -22,6 +22,8 @@ const useGetMyOrgData = () => {
       return res.data;
     },
     retry: 1,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const myOrgData = data?.organization;

@@ -25,6 +25,8 @@ const useGetProjectTasks = (projectId: string) => {
     },
     retry: 1,
     enabled: !!projectId,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const projectTaskData: Project | null = data?.project ? data.project : null;

@@ -6,7 +6,7 @@ type RolesStoreState = {
   workspaceRolesData: WorkspaceRole[];
   organizationRolesData: OrganizationRole[];
   workspacePermissions: WorkspacePermission[];
-  organizationPermissions: OrgPermission[];
+  orgPermissions: OrgPermission[];
 };
 
 type RolesStoreActions = {
@@ -19,8 +19,8 @@ type RolesStoreActions = {
   setWorkspacePermissions: (
     workspacePermissions: RolesStoreState["workspacePermissions"]
   ) => void;
-  setOrganizationPermissions: (
-    organizationPermissions: RolesStoreState["organizationPermissions"]
+  setOrgPermissions: (
+    orgPermissions: RolesStoreState["orgPermissions"]
   ) => void;
   resetRolesData: () => void;
 };
@@ -33,17 +33,17 @@ const rolesStore = createStore<RolesStore>()(
       workspaceRolesData: [],
       organizationRolesData: [],
       workspacePermissions: [],
-      organizationPermissions: [],
+      orgPermissions: [],
       setWorkspaceRolesData: (workspaceRolesData: RolesStoreState["workspaceRolesData"]) =>
         set({ workspaceRolesData }),
       setOrganizationRolesData: (organizationRolesData: RolesStoreState["organizationRolesData"]) =>
         set({ organizationRolesData }),
       setWorkspacePermissions: (workspacePermissions: RolesStoreState["workspacePermissions"]) =>
         set({ workspacePermissions }),
-      setOrganizationPermissions: (organizationPermissions: RolesStoreState["organizationPermissions"]) =>
-        set({ organizationPermissions }),
+      setOrgPermissions: (orgPermissions: RolesStoreState["orgPermissions"]) =>
+        set({ orgPermissions }),
       resetRolesData: () => {
-        set({ workspaceRolesData: [], organizationRolesData: [], workspacePermissions: [], organizationPermissions: [] });
+        set({ workspaceRolesData: [], organizationRolesData: [], workspacePermissions: [], orgPermissions: [] });
       },
     }),
     { name: "roles-storage" }

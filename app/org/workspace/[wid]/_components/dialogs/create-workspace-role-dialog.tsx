@@ -79,7 +79,7 @@ export function CreateWorkspaceRoleDialog({trigger, type, role}: {trigger: React
   const [name, setName] = useState(type === "edit" ? role?.name : "")
   const [description, setDescription] = useState(type === "edit" ? role?.description : "")
   const [permissions, setPermissions] = useState<string[]>([])
-
+console.log(permissions, "permissions")
   const workspacePermissions = useStore(
       rolesStore,
       (state) => state.workspacePermissions

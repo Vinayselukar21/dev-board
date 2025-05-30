@@ -26,6 +26,8 @@ const useGetWorkspaceMembers = () => {
     },
     retry: 1,
     enabled: !!activeWorkspace.id,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
   const memberData: Array<WorkspaceMember> = Array.isArray(data?.members)
     ? data?.members.map(

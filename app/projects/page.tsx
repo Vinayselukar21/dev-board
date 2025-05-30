@@ -19,13 +19,18 @@ import Link from "next/link";
 import { useStore } from "zustand";
 import { Log } from "../types";
 import LoadingProjects from "./_components/loading-projects";
+import useGetProjectStats from "@/hooks/useGetProjectStats";
+import { Badge } from "@/components/ui/badge";
 
 export default function Page() {
   const { projectData, projectsLoading, errorLoadingProjects } =
     useGetProjects();
+
+    const {projectStatsData, projectStatsLoading, errorLoadingProjectStats} = useGetProjectStats();
+    console.log(projectStatsData, "projectStatsData");
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
 const {projectLogsData, projectLogsLoading, errorLoadingProjectLogs} = useGetProjectLogs();
-
+console.log(projectData, "projectData");
 if(projectsLoading){
   return <LoadingProjects/>
 }
@@ -58,7 +63,6 @@ if(projectsLoading){
               <TabsTrigger value="projects">Projects</TabsTrigger>
               <TabsTrigger value="activity">Activity</TabsTrigger>
               <TabsTrigger value="members">Members</TabsTrigger>
-              {/* <TabsTrigger value="settings">Settings</TabsTrigger> */}
             </TabsList>
             <TabsContent value="projects" className="pt-4">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -71,36 +75,23 @@ if(projectsLoading){
                   >
                     <Card className="transition-all hover:border-primary/50 hover:shadow-sm">
                       <CardHeader>
-                        <CardTitle>{project.name}</CardTitle>
+                        <CardTitle className="flex items-center gap-2 justify-between">{project.name} {projectStatsData[project.id] && <Badge className={projectStatsData[project.id].projectStatus === "active" ? "border-green-500 text-green-500 bg-green-100" : "border-red-500 text-red-500 bg-red-100"}>{projectStatsData[project.id].projectStatus}</Badge>}</CardTitle>
                         <CardDescription>{project.description}</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-sm text-muted-foreground">
-                          <p>8 tasks in progress</p>
-                          <p>3 tasks completed</p>
-                        </div>
+                        <p className="text-sm font-medium text-muted-foreground">Tasks</p>
+                        {projectStatsLoading ? <div className="text-sm text-muted-foreground">
+                          <p>Loading...</p>
+                        </div> : <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                          {projectStatsData[project.id].taskStages.length === 0 ? <p>No tasks found</p> : projectStatsData[project.id].taskStages?.map((stage) => <p className="flex items-center gap-2">{stage.name}: {stage.tasksCount}</p>)} 
+                        </div>}
                       </CardContent>
                       <CardFooter className="text-xs text-muted-foreground">
-                        Updated 2 hours ago
+                        {projectStatsData[project.id] && projectStatsData[project.id].membersCount} members
                       </CardFooter>
                     </Card>
                   </Link>
                 ))}
-                {/* <AddProjectDialog
-                  trigger={
-                    <Card className="flex h-[180px] flex-col items-center justify-center border-dashed">
-                      <div className="flex flex-col items-center gap-1 text-center">
-                        <div className="rounded-full bg-background p-2.5 text-muted-foreground">
-                          <Plus className="h-5 w-5" />
-                        </div>
-                        <h3 className="font-medium">Create New Project</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Add a new project to this workspace
-                        </p>
-                      </div>
-                    </Card>
-                  }
-                /> */}
               </div>
             </TabsContent>
             <TabsContent value="activity" className="pt-4">
@@ -121,47 +112,6 @@ if(projectsLoading){
                     </div>
                   </div>
                 ))}
-                <div className="space-y-4">
-                  {/* <div className="flex gap-4 rounded-lg border p-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <Users className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Alex Kim added 2 new team members
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        2 hours ago
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 rounded-lg border p-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <FolderKanban className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Sarah created "Social Media Campaign" project
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Yesterday at 4:30 PM
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 rounded-lg border p-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <Settings className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Workspace settings updated
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        3 days ago
-                      </p>
-                    </div>
-                  </div> */}
-                </div>
               </div>
             </TabsContent>
             <TabsContent value="members" className="pt-4">
@@ -190,38 +140,6 @@ if(projectsLoading){
                 </div>
               </div>
             </TabsContent>
-            {/* <TabsContent value="settings" className="pt-4">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Workspace Settings</h3>
-                <div className="space-y-4">
-                  <div className="grid gap-2">
-                    <label
-                      htmlFor="workspace-name"
-                      className="text-sm font-medium"
-                    >
-                      Workspace Name
-                    </label>
-                    <Input
-                      id="workspace-name"
-                      defaultValue="Marketing Team Workspace"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label
-                      htmlFor="workspace-description"
-                      className="text-sm font-medium"
-                    >
-                      Description
-                    </label>
-                    <Input
-                      id="workspace-description"
-                      defaultValue="Collaborative workspace for all marketing projects and campaigns."
-                    />
-                  </div>
-                  <Button>Save Changes</Button>
-                </div>
-              </div>
-            </TabsContent> */}
           </Tabs>
         </div>
       </div>

@@ -12,13 +12,13 @@ interface QueryResponse {
   workspaceRoles: WorkspaceRole[];
   organizationRoles: OrganizationRole[];
   workspacePermissions: WorkspacePermission[];
-  organizationPermissions: OrgPermission[];
+  orgPermissions: OrgPermission[];
 }
 
 const useGetRoles = () => {
   const {activeOrganization} = organizationStore.getState();
   const {activeWorkspace} = workspaceStore.getState();
-    const {setWorkspaceRolesData, setOrganizationRolesData, setWorkspacePermissions, setOrganizationPermissions} = rolesStore.getState();
+    const {setWorkspaceRolesData, setOrganizationRolesData, setWorkspacePermissions, setOrgPermissions} = rolesStore.getState();
   const {
     data,
     isLoading: rolesLoading,
@@ -33,17 +33,19 @@ const useGetRoles = () => {
     },
     retry: 1,
     enabled: !!activeOrganization.id && !!activeWorkspace.id,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const workspaceRolesData: WorkspaceRole[] = data?.workspaceRoles || [];
   const organizationRolesData: OrganizationRole[] = data?.organizationRoles || [];
   const workspacePermissions: WorkspacePermission[] = data?.workspacePermissions || [];
-  const organizationPermissions: OrgPermission[] = data?.organizationPermissions || [];
+  const orgPermissions: OrgPermission[] = data?.orgPermissions || [];
 
   setWorkspaceRolesData(workspaceRolesData);
   setOrganizationRolesData(organizationRolesData);
   setWorkspacePermissions(workspacePermissions);
-  setOrganizationPermissions(organizationPermissions);
+  setOrgPermissions(orgPermissions);
 
   return { workspaceRolesData, organizationRolesData, rolesLoading, errorLoadingRoles };
 };

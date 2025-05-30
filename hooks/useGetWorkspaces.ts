@@ -25,6 +25,8 @@ const useGetWorkspaces = () => {
     },
     retry: 1,
     enabled: !!session?.id,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const workspaceData: Array<Workspace> = Array.isArray(data?.workspaces)

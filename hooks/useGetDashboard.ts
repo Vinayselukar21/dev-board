@@ -23,6 +23,8 @@ const useGetDashboard = () => {
     },
     retry: 1,
     enabled: !!activeWorkspace.id,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const dashboardData = data?.dashboard;

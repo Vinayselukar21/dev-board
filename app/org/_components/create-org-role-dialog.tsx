@@ -26,6 +26,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useStore } from "zustand";
+import { permission } from "process";
+import UpdateOrgRole from "@/hooks/Functions/UpdateOrgRole";
 
 enum OrgPermissionType {
   OWNER = "OWNER",
@@ -195,17 +197,6 @@ export function CreateOrgRoleDialog({
     },
   ];
 
-  // Initialize permissions state
-  // useState(() => {
-  //   const initialPermissions: Record<string, boolean> = {}
-  //   permissionCategories.forEach((category) => {
-  //     category.permissions.forEach((permission) => {
-  //       initialPermissions[permission.id] = permission.enabled
-  //     })
-  //   })
-  //   setPermissions(initialPermissions)
-  // })
-  console.log(permissions, " permissions");
   // Toggle permission
   const togglePermission = (permissionId: string) => {
     if (permissions.some((permission) => permission === permissionId)) {
@@ -238,6 +229,18 @@ export function CreateOrgRoleDialog({
     },
   });
 
+  const updateRole = useMutation({
+    mutationFn: UpdateOrgRole,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["roles", activeOrganization.id, activeWorkspace.id],
+      });
+      toast.success("Role has been updated");
+      setOpen(false);
+      resetForm();
+    },
+  });
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,13 +257,27 @@ export function CreateOrgRoleDialog({
     resetForm();
   };
 
+  const handleUpdateRole = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const updatedRole = {
+      name: name!,
+      description: description!,
+      permissions,
+      organizationId: activeOrganization?.id,
+      roleId: role?.id!,
+    };
+    console.log(updatedRole, "payload");
+    updateRole.mutate(updatedRole);
+    setOpen(false);
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
        {trigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px]">
-        <form onSubmit={handleSubmit}>
+       <form onSubmit={type === "edit" ? handleUpdateRole : handleSubmit}>
           <DialogHeader>
             <DialogTitle>{type === "edit" ? "Edit Role" : "Create Custom Role"}</DialogTitle>
             <DialogDescription>
@@ -316,7 +333,7 @@ export function CreateOrgRoleDialog({
                         {category.name}
                       </div>
                       <div className="divide-y">
-                        {category.permissions.map((permission) => (
+                        {category.permissions && category.permissions.map((permission) => (
                           <div
                             key={permission.id}
                             className="flex items-center justify-between px-4 py-3"
@@ -356,7 +373,7 @@ export function CreateOrgRoleDialog({
             >
               Cancel
             </Button>
-            <Button type="submit">Create Role</Button>
+            <Button type="submit">{type === "edit" ? "Update Role" : "Create Role"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

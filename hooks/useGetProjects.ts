@@ -20,13 +20,15 @@ const useGetProjects = () => {
     queryKey: ["projects", activeWorkspace.id],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/workspace/${activeWorkspace.id}/getall`
+        `/workspace/${activeWorkspace.id}/projects/getall`
       );
       setSidebar({ ...sidebar, projects: res.data.projects });
       return res.data;
     },
     retry: 1,
     enabled: !!activeWorkspace.id,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const projectData: Array<Project> = Array.isArray(data?.projects)
