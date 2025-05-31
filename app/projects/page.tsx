@@ -26,14 +26,14 @@ export default function Page() {
   const { projectData, projectsLoading, errorLoadingProjects } =
     useGetProjects();
 
-    const {projectStatsData, projectStatsLoading, errorLoadingProjectStats} = useGetProjectStats();
-    console.log(projectStatsData, "projectStatsData");
+  const { projectStatsData, projectStatsLoading, errorLoadingProjectStats } = useGetProjectStats();
+  console.log(projectStatsData, "projectStatsData");
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
-const {projectLogsData, projectLogsLoading, errorLoadingProjectLogs} = useGetProjectLogs();
-console.log(projectData, "projectData");
-if(projectsLoading){
-  return <LoadingProjects/>
-}
+  const { projectLogsData, projectLogsLoading, errorLoadingProjectLogs } = useGetProjectLogs();
+  console.log(projectData, "projectData");
+  if (projectsLoading) {
+    return <LoadingProjects />
+  }
   return (
     <main className="flex flex-1 flex-col">
       {/* Header */}
@@ -50,7 +50,7 @@ if(projectsLoading){
               />
             </div>
           </form>
-          
+
         </div>
       </header>
 
@@ -83,7 +83,7 @@ if(projectsLoading){
                         {projectStatsLoading ? <div className="text-sm text-muted-foreground">
                           <p>Loading...</p>
                         </div> : <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                          {projectStatsData[project.id].taskStages.length === 0 ? <p>No tasks found</p> : projectStatsData[project.id].taskStages?.map((stage) => <p className="flex items-center gap-2">{stage.name}: {stage.tasksCount}</p>)} 
+                          {projectStatsData[project.id].taskStages.length === 0 ? <p>No tasks found</p> : projectStatsData[project.id].taskStages?.map((stage) => <p className="flex items-center gap-2" key={stage.id}>{stage.name}: {stage.tasksCount}</p>)}
                         </div>}
                       </CardContent>
                       <CardFooter className="text-xs text-muted-foreground">
@@ -97,14 +97,14 @@ if(projectsLoading){
             <TabsContent value="activity" className="pt-4">
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Recent Activity</h3>
-                {projectLogsData?.map((log : Log) => (
+                {projectLogsData?.map((log: Log) => (
                   <div className="flex gap-4 rounded-lg border p-4" key={log.id}>
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                       <Users className="h-4 w-4" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">
-                       {log.message}
+                        {log.message}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {format(log.createdAt!, "dd MMM yyyy - hh:mm")}

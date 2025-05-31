@@ -1,6 +1,7 @@
 import axios from "@/utils/axios";
 
 interface Payload {
+    taskId: string;
   title: string;
   description: string;
   status: string;
@@ -8,13 +9,12 @@ interface Payload {
   dueDate: string;
   projectId: string;
   stageId: string;
-  createdById: string; // should not go from frontend - task
   assignees: string[];
 }
 
-const AddNewTask = async (payload: Payload) => {
-  const response = await axios.post(`/projects/newtask`, payload);
+const EditTask = async (payload: Payload) => {
+  const response = await axios.put(`/projects/updatetask`, payload);
   return response.data;
 };
 
-export default AddNewTask;
+export default EditTask;

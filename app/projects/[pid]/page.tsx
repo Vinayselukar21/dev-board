@@ -26,6 +26,7 @@ import {
   ArrowLeft,
   CalendarDays,
   MoreHorizontal,
+  Plus,
   Search,
   Settings,
 } from "lucide-react";
@@ -39,6 +40,7 @@ import { toast } from "sonner";
 import DeleteTask from "@/hooks/Functions/DeleteTask";
 import { format } from "date-fns";
 import LoadingTasks from "./_components/loading-tasks";
+import { type } from "os";
 
 // Define types for our Kanban board
 
@@ -83,35 +85,34 @@ export default function ProjectPage() {
     }
   }, [projectTaskData?.taskStages]);
 
+  const ChangeTaskStageMutation = useMutation({
+    mutationFn: ChangeTaskStage,
+    onSuccess: () => {
+      // Invalidate and refetch
+      toast.success("Task has been moved");
 
-   const ChangeTaskStageMutation = useMutation({
-      mutationFn: ChangeTaskStage,
-      onSuccess: () => {
-        // Invalidate and refetch
-        toast.success("Task has been moved");
-       
-        // Invalidate projects
-        queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
-      },
-      onError: (error) => {
-        toast.error("Failed to move project");
-        console.error("Error moving project:", error);
-      },
-    });
-    const DeleteTaskMutation = useMutation({
-      mutationFn: DeleteTask,
-      onSuccess: () => {
-        // Invalidate and refetch
-        toast.success("Task has been deleted");
-       
-        // Invalidate projects
-        queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
-      },
-      onError: (error) => {
-        toast.error("Failed to delete project");
-        console.error("Error deleting project:", error);
-      },
-    });
+      // Invalidate projects
+      queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
+    },
+    onError: (error) => {
+      toast.error("Failed to move project");
+      console.error("Error moving project:", error);
+    },
+  });
+  const DeleteTaskMutation = useMutation({
+    mutationFn: DeleteTask,
+    onSuccess: () => {
+      // Invalidate and refetch
+      toast.success("Task has been deleted");
+
+      // Invalidate projects
+      queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
+    },
+    onError: (error) => {
+      toast.error("Failed to delete project");
+      console.error("Error deleting project:", error);
+    },
+  });
 
   // Function to handle drag start
   const handleDragStart = (
@@ -144,7 +145,7 @@ export default function ProjectPage() {
     const sourceColumnIndex = newColumns.findIndex(
       (col) => col.id === sourceColumnId
     );
-    if (newColumns !== undefined  && sourceColumnIndex !== -1 && newColumns[sourceColumnIndex]?.tasks !== undefined) {
+    if (newColumns !== undefined && sourceColumnIndex !== -1 && newColumns[sourceColumnIndex]?.tasks !== undefined) {
       // Find the task in the source column
       const taskIndex = newColumns[sourceColumnIndex]?.tasks.findIndex(
         (task) => task.id === taskId
@@ -159,7 +160,7 @@ export default function ProjectPage() {
         (col) => col.id === targetColumnId
       );
 
-      if(newColumns[targetColumnIndex].tasks !== undefined) {
+      if (newColumns[targetColumnIndex].tasks !== undefined) {
         // Add the task to the target column
         newColumns[targetColumnIndex].tasks.push(task);
         // Update the state
@@ -170,8 +171,8 @@ export default function ProjectPage() {
           stageId: targetColumnId,
         });
       }
-}
-};
+    }
+  };
   // Function to get priority badge color
   const getPriorityColor = (priority: "low" | "medium" | "high") => {
     switch (priority) {
@@ -185,8 +186,8 @@ export default function ProjectPage() {
         return "bg-gray-100 text-gray-800 hover:bg-gray-100";
     }
   };
-  if(tasksLoading){
-    return <LoadingTasks/>
+  if (tasksLoading) {
+    return <LoadingTasks />
   }
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -212,9 +213,14 @@ export default function ProjectPage() {
               </div>
             </form>
             <AddTaskDialog
+              type="add"
               projectId={params.pid as string}
               taskStages={taskStages}
               defaultStatus={taskStages?.[0]?.id as string}
+              trigger={<Button size="sm" className="h-8 gap-1">
+                <Plus className="h-4 w-4" />
+                Add Task
+              </Button>}
               // project members
               projectMembers={projectMembers}
             />
@@ -273,9 +279,20 @@ export default function ProjectPage() {
                       >
                         <CardHeader className="p-3 pb-0">
                           <div className="flex items-start justify-between">
-                            <CardTitle className="text-sm">
-                              {task.title}
-                            </CardTitle>
+                            <AddTaskDialog
+                              type="edit"
+                              projectId={params.pid as string}
+                              taskStages={taskStages}
+                              defaultStatus={task.status}
+                              trigger={
+                                <CardTitle className="text-sm cursor-pointer hover:underline">
+                                  {task.title}
+                                </CardTitle>
+                              }
+                              taskData={task}
+                              // project members
+                              projectMembers={projectMembers}
+                            />
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
@@ -287,8 +304,6 @@ export default function ProjectPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                <DropdownMenuItem>Duplicate</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => DeleteTaskMutation.mutate(task.id)}>Delete</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>

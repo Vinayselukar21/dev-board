@@ -2,7 +2,9 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useAuth } from "@/app/providers/AuthProvider";
+import DatePicker from "@/components/date-picker";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,8 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -24,20 +24,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarIcon, Plus } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Textarea } from "@/components/ui/textarea";
 import AddNewTask from "@/hooks/Functions/AddNewTask";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { useParams } from "next/navigation";
-import { useAuth } from "@/app/providers/AuthProvider";
-import DatePicker from "@/components/date-picker";
+import { Task } from "@/app/types";
+import EditTask from "@/hooks/Functions/EditTask";
+import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
+import { cn } from "@/lib/utils";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
 
 interface AddTaskDialogProps {
-  trigger?: React.ReactNode;
+  trigger: React.ReactNode;
+  type: "add" | "edit";
+  taskData?: Task;
   projectId?: string;
   taskStages?: { id: string; title: string }[];
   defaultStatus: string;
@@ -46,6 +49,8 @@ interface AddTaskDialogProps {
 
 export function AddTaskDialog({
   trigger,
+  type,
+  taskData,
   projectId,
   taskStages = [],
   defaultStatus,
@@ -54,21 +59,30 @@ export function AddTaskDialog({
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
-  const [assignee, setAssignee] = useState("");
-  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
-  const [stage, setStage] = useState<string>(defaultStatus);
+  const [dueDate, setDueDate] = useState<Date | undefined>(taskData?.dueDate ? new Date(taskData?.dueDate) : new Date());
+  const [priority, setPriority] = useState<"low" | "medium" | "high">(taskData?.priority || "medium");
+  const [stage, setStage] = useState<string>(taskData?.stageId || defaultStatus);
+  const [title, setTitle] = useState(taskData?.title || "");
+  const [description, setDescription] = useState(taskData?.description || "");
+
+  const [assignees, setAssignees] = useState(taskData?.assignees?.map((assignee) => assignee.id) || []);
+
+  useEffect(() => {
+    if (taskData?.assignees) {
+      setAssignees(taskData.assignees.map((assignee) => assignee.id));
+    }
+  }, [taskData?.assignees]);
 
   const AddNewTaskMutation = useMutation({
     mutationFn: AddNewTask,
     onSuccess: () => {
       // Invalidate and refetch
-  toast.success("Task has been created");
+      toast.success("Task has been created");
       // Handle task creation logic here
       setOpen(false);
       // Reset form
       setDueDate(undefined);
-      setAssignee("");
+      setAssignees([]);
       setPriority("medium");
       setStage(defaultStatus);
       // Invalidate projects
@@ -80,20 +94,35 @@ export function AddTaskDialog({
     },
   });
 
+  const EditTaskMutation = useMutation({
+    mutationFn: EditTask,
+    onSuccess: () => {
+      // Invalidate and refetch
+      toast.success("Task has been updated");
+      // Handle task creation logic here
+      setOpen(false);
+      // Reset form
+      setDueDate(undefined);
+      setAssignees([]);
+      setPriority("medium");
+      setStage(defaultStatus);
+      // Invalidate projects
+      queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
+    },
+    onError: (error) => {
+      toast.error("Failed to update project");
+      console.error("Error updating project:", error);
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    const title = formData.get("task-title") as string;
-    const description = formData.get("task-description") as string;
 
     const payload = {
       title,
       description,
       dueDate: dueDate?.toISOString() || "",
-      assignee,
+      assignees,
       priority,
       status: "",
       projectId: projectId as string,
@@ -101,25 +130,55 @@ export function AddTaskDialog({
       createdById: session?.id,
     };
 
+    console.log(payload, "payload");
     AddNewTaskMutation.mutate(payload);
   };
 
+  const handleEdit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const payload = {
+      title,
+      description,
+      dueDate: dueDate?.toISOString() || "",
+      assignees,
+      priority,
+      status: "",
+      projectId: projectId as string,
+      stageId: stage,
+      taskId: taskData?.id!,
+    };
+
+    EditTaskMutation.mutate(payload);
+  };
+
+  // Toggle participant selection
+  const toggleParticipant = (memberId: string) => {
+    const currentParticipants = [...assignees];
+
+    if (currentParticipants.includes(memberId)) {
+      // Remove participant
+      setAssignees(
+        currentParticipants.filter((id) => id !== memberId)
+      );
+    } else {
+      // Add participant
+      setAssignees([...currentParticipants, memberId]);
+    }
+  };
+
+  console.log(taskData, "taskData")
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || (
-          <Button size="sm" className="h-8 gap-1">
-            <Plus className="h-4 w-4" />
-            Add Task
-          </Button>
-        )}
+        {trigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[550px]">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={type === "add" ? handleSubmit : handleEdit}>
           <DialogHeader>
-            <DialogTitle>Add New Task</DialogTitle>
+            <DialogTitle>{type === "add" ? "Add New Task" : "Edit Task"}</DialogTitle>
             <DialogDescription>
-              Create a new task for your project.
+              {type === "add" ? "Create a new task for your project." : "Edit the task details."}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -130,6 +189,8 @@ export function AddTaskDialog({
                 name="task-title"
                 placeholder="Enter task title"
                 required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -139,6 +200,8 @@ export function AddTaskDialog({
                 name="task-description"
                 placeholder="Describe the task and its requirements"
                 className="min-h-[100px]"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -180,27 +243,12 @@ export function AddTaskDialog({
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="task-assignee">Assignee</Label>
-                <Select value={assignee} onValueChange={setAssignee}>
-                  <SelectTrigger id="task-assignee">
-                    <SelectValue placeholder="Select assignee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {projectMembers && projectMembers?.map((member) => (
-                      <SelectItem key={member?.id} value={member?.id}>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback>{member.name}</AvatarFallback>
-                          </Avatar>
-                          <span>{member.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {projectId && (
+                <div className="grid gap-2">
+                  <Label htmlFor="task-project">Project</Label>
+                  <Input id="task-project" value={projectId} disabled />
+                </div>
+              )}
               <div className="grid gap-2">
                 <DatePicker
                   Date={dueDate}
@@ -209,12 +257,101 @@ export function AddTaskDialog({
                 />
               </div>
             </div>
-            {projectId && (
-              <div className="grid gap-2">
-                <Label htmlFor="task-project">Project</Label>
-                <Input id="task-project" value={projectId} disabled />
+            <div className="grid gap-2">
+            <Label htmlFor="task-assignees">Assignees</Label>
+            <div className="flex flex-col">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className={cn(
+                      "w-full justify-between",
+                      // !field.value?.length && "text-muted-foreground"
+                    )}
+                  >
+                    {assignees?.length > 0
+                      ? `${assignees.length} assignee${assignees.length > 1 ? "s" : ""
+                      } selected`
+                      : "Select assignees"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search participants..." />
+                  <CommandEmpty>No participants found.</CommandEmpty>
+                  <CommandGroup className="max-h-64 overflow-auto">
+                    {projectMembers?.map((member) => (
+                      <CommandItem
+                        key={member.id}
+                        value={member.name}
+                        onSelect={() => {
+                          toggleParticipant(member.id);
+                        }}
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback>
+                              {member?.name
+                                ?.charAt(0)
+                                .toUpperCase() ?? "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{member.name}</span>
+                          <Check
+                            className={cn(
+                              "ml-auto h-4 w-4",
+                              assignees.includes(member.id)
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            {/* Selected participants display */}
+            {assignees && assignees?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {assignees?.map((assignee) => {
+                  const member = projectMembers?.find((member) => member.id === assignee);
+                  return (
+                    <Badge
+                      key={assignee}
+                      className="flex items-center gap-1 px-2 py-1 text-sm"
+                      variant="secondary"
+                    >
+                      <Avatar className="h-4 w-4 mr-1">
+                        <AvatarFallback className="text-xs">
+                          {member?.name
+                            ?.charAt(0)
+                            .toUpperCase() ?? "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="max-w-[150px] truncate">
+                        {member?.name ?? "Unknown"}
+                      </span>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-4 w-4 p-0 ml-1 hover:bg-destructive/10"
+                      onClick={() => toggleParticipant(assignee)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  );
+                })}
               </div>
             )}
+            </div>
+          </div>
           </div>
           <DialogFooter>
             <Button
@@ -224,7 +361,7 @@ export function AddTaskDialog({
             >
               Cancel
             </Button>
-            <Button type="submit">Create Task</Button>
+            <Button type="submit">{type === "add" ? "Create Task" : "Update Task"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
