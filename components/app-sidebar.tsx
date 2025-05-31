@@ -180,7 +180,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, [workspaceDataLoadedSuccess]);
 
-  console.log(activeWorkspace , " in app sidebar")
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>

@@ -10,14 +10,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { User } from "@/app/types";
 
 export default function ProfileSettings({
   myData,
 }: {
-  myData: WorkspaceMember;
+  myData: User;
 }) {
-    
-    const myInfo = myData?.user
+    console.log(myData)
+    const myInfo = myData
   return (
     <Card>
       <CardHeader>
@@ -43,21 +44,21 @@ export default function ProfileSettings({
           <div className="grid flex-1 gap-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="first-name">First Name</Label>
-                <Input id="first-name" defaultValue={myInfo?.name} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="last-name">Last Name</Label>
-                <Input id="last-name" defaultValue="Kim" />
+                <Label htmlFor="name">Name</Label>
+                <Input id="name" defaultValue={myInfo?.name} />
               </div>
             </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" defaultValue={myInfo?.email} />
             </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="job-title">Job Title</Label>
-              <Input id="job-title" defaultValue={myData?.jobTitle} />
+              <Input id="job-title" defaultValue={myInfo?.jobTitle} />
+            </div>
             </div>
           </div>
         </div>

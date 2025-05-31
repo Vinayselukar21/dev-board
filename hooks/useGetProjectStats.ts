@@ -1,7 +1,7 @@
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import workspaceStore from "@/store/workspaceStore";
-
+import { activeWorkspaceDetails } from "@/utils/activeWorkspaceMemberId";
 
 interface TaskStage {
   id: string
@@ -31,6 +31,7 @@ interface QueryResponse {
 
 const useGetProjectStats = () => {
   const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
+  const {WorkspaceMemberId} = activeWorkspaceDetails()
   const {
     data,
     isLoading: projectStatsLoading,
@@ -39,12 +40,12 @@ const useGetProjectStats = () => {
     queryKey: ["project-stats", activeWorkspace.id],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/workspace/${activeWorkspace.id}/projects/getall/stats`
+        `/workspace/${activeWorkspace.id}/${WorkspaceMemberId}/projects/getall/stats`
       );
       return res.data;
     },
     retry: 1,
-    enabled: !!activeWorkspace.id,
+    enabled: !!activeWorkspace.id && !!WorkspaceMemberId,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });

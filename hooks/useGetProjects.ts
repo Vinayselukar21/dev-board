@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import sidebarStore from "@/store/sidebarStore";
 import { Project } from "@/app/types";
 import workspaceStore from "@/store/workspaceStore";
+import { activeWorkspaceDetails } from "@/utils/activeWorkspaceMemberId";
 
 interface QueryResponse {
   message: string;
@@ -12,6 +13,7 @@ interface QueryResponse {
 const useGetProjects = () => {
   const {sidebar , setSidebar} = sidebarStore.getState()
   const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
+  const {WorkspaceMemberId} = activeWorkspaceDetails()
   const {
     data,
     isLoading: projectsLoading,
@@ -20,13 +22,13 @@ const useGetProjects = () => {
     queryKey: ["projects", activeWorkspace.id],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/workspace/${activeWorkspace.id}/projects/getall`
+        `/workspace/${activeWorkspace.id}/${WorkspaceMemberId}/projects/getall`
       );
       setSidebar({ ...sidebar, projects: res.data.projects });
       return res.data;
     },
     retry: 1,
-    enabled: !!activeWorkspace.id,
+    enabled: !!activeWorkspace.id && !!WorkspaceMemberId,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });

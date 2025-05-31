@@ -8,12 +8,13 @@ import LoadingSettings from "./_components/loading-settings";
 import NotificationSettings from "./_components/notification-settings";
 import ProfileSettings from "./_components/profile-settings";
 import SecuritySettings from "./_components/security-settings";
+import {WorkspaceCard} from "./_components/workspace-card";
 
 export default function SettingsPage() {
   const isMobile = useIsMobile();
-  const { myDataLoading, myData } = useGetMyDetails();
-
-  if (myDataLoading) {
+  const { accountDetailsLoading, accountDetails } = useGetMyDetails();
+console.log(accountDetails);
+  if (accountDetailsLoading) {
     return <LoadingSettings />;
   }
   return (
@@ -22,7 +23,7 @@ export default function SettingsPage() {
       <main className="flex flex-1 flex-col">
         {/* Header */}
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
-          <h1 className="text-lg font-semibold">Settings</h1>
+          <h1 className="text-lg font-semibold">Account Settings</h1>
           <div className="ml-auto flex items-center gap-2">
             <form className="hidden sm:flex">
               <div className="relative">
@@ -43,7 +44,7 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-6">
               {/* Settings Info */}
               <div className="flex flex-col gap-2">
-                <h2 className="text-2xl font-bold">Settings</h2>
+                <h2 className="text-2xl font-bold">Account Settings</h2>
                 <p className="text-muted-foreground">
                   Manage your account settings.
                 </p>
@@ -59,14 +60,15 @@ export default function SettingsPage() {
                 </TabsList>
 
                 {/* Profile Settings */}
-                <TabsContent value="profile" className="pt-4">
-                  <ProfileSettings myData={myData} />
+                <TabsContent value="profile" className="pt-4 space-y-4">
+                  <ProfileSettings myData={accountDetails} />
+                  <WorkspaceCard workspace={accountDetails?.memberships || []} />
                 </TabsContent>
 
                 {/* Notifications Settings */}
-                <TabsContent value="notifications" className="pt-4">
+                {/* <TabsContent value="notifications" className="pt-4">
                   <NotificationSettings />
-                </TabsContent>
+                </TabsContent> */}
 
                 {/* Security Settings */}
                 <TabsContent value="security" className="pt-4">
@@ -84,8 +86,9 @@ export default function SettingsPage() {
 
         {isMobile && (
           <div className="flex-1 p-2 space-y-2">
-            <ProfileSettings myData={myData} />
-            <NotificationSettings />
+            <ProfileSettings myData={accountDetails} />
+            <WorkspaceCard workspace={accountDetails?.memberships || []} />
+            {/* <NotificationSettings /> */}
             <SecuritySettings />
             {/* <BillingSettings /> */} 
           </div>

@@ -13,8 +13,15 @@ import { Switch } from "@/components/ui/switch";
 import { Shield } from "lucide-react";
 import { Globe } from "lucide-react";
 import { Lock } from "lucide-react";
+import { useState } from "react";
 
 export default function SecuritySettings() {
+  const [password, setPassword] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -29,21 +36,36 @@ export default function SecuritySettings() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="grid gap-2">
               <Label htmlFor="current-password">Current Password</Label>
-              <Input id="current-password" type="password" />
+              <Input
+                id="current-password"
+                type="password"
+                name="currentPassword"
+                onChange={(e) => setPassword({ ...password, currentPassword: e.target.value })}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="new-password">New Password</Label>
-              <Input id="new-password" type="password" />
+              <Input
+                id="new-password"
+                type="password"
+                name="newPassword"
+                onChange={(e) => setPassword({ ...password, newPassword: e.target.value })}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input id="confirm-password" type="password" />
+              <Input
+                id="confirm-password"
+                type="password"
+                name="confirmPassword"
+                onChange={(e) => setPassword({ ...password, confirmPassword: e.target.value })}
+              />
             </div>
           </div>
-          <Button className="w-fit">Change Password</Button>
+          <Button className="w-fit" onClick={() => console.log(password)}>Change Password</Button>
         </div>
 
-        <div className="space-y-4">
+        {/* <div className="space-y-4">
           <h3 className="text-lg font-medium">Two-Factor Authentication</h3>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
@@ -98,7 +120,7 @@ export default function SecuritySettings() {
             <Lock className="mr-2 h-4 w-4" />
             Log Out of All Sessions
           </Button>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );

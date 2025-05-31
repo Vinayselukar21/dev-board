@@ -1,40 +1,37 @@
 // /:workspaceId/member/:memberId
 
 import { useAuth } from "@/app/providers/AuthProvider";
-import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
+import { activeWorkspaceDetails } from "@/utils/activeWorkspaceMemberId";
 interface QueryResponse {
   message: string;
-  workspaceMember: any;
+  user: any;
 }
 
 const useGetMyDetails = () => {
   const { session } = useAuth();
-  const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
-  const workspaceMemberId = session.memberships.find(
-    (m: any) => m.workspaceId === activeWorkspace.id
-  )?.id;
+  const {WorkspaceMemberId} = activeWorkspaceDetails()
   const {
     data,
-    isLoading: myDataLoading,
-    error: errorLoadingMyData,
+    isLoading: accountDetailsLoading,
+    error: errorLoadingAccountDetails,
   } = useQuery<QueryResponse, Error>({
-    queryKey: ["mydetails", activeWorkspace.id],
+    queryKey: ["account-details"],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/workspace/${activeWorkspace.id}/member/${workspaceMemberId}`
+        `/auth/me/${WorkspaceMemberId}/all`
       );
       return res.data;
     },
     retry: 1,
-    enabled: !!activeWorkspace.id,
+    enabled: !!session.id && !!WorkspaceMemberId,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
 
-  const myData = data?.workspaceMember;
+  const accountDetails = data?.user;
 
-  return { myData, myDataLoading, errorLoadingMyData };
+  return { accountDetails, accountDetailsLoading, errorLoadingAccountDetails };
 };
 export default useGetMyDetails;

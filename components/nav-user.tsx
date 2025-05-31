@@ -115,18 +115,6 @@ const handleLogout = () => {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {
                 router.push("/org");
               }}>
@@ -136,8 +124,8 @@ const handleLogout = () => {
               <DropdownMenuItem onClick={() => {
                 router.push("/settings");
               }}>
-                <Settings />
-                Settings
+                <BadgeCheck />
+                Account Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
