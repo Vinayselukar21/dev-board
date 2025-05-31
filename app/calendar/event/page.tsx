@@ -5,6 +5,8 @@ import {
   ArrowLeft,
   Check,
   ChevronsUpDown,
+  Divide,
+  Repeat,
   Trash2,
   X
 } from "lucide-react";
@@ -56,17 +58,36 @@ import workspaceStore from "@/store/workspaceStore";
 import { useStore } from "zustand";
 import { EventFormConstrains, EventFormValues } from "./_components/EventFormConstrains";
 import LoadingEvent from "./_components/loading-event";
+import { OccurenceDialog } from "./_components/occurence-dialog";
 
 
 export default function EventPage() {
-  const {form} = EventFormConstrains();
-  const {session} = useAuth();
+  const { form } = EventFormConstrains();
+  const { session } = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { eventsData, eventsLoading } = useGetCalendarEvents();
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
   const [eventStatus, setEventStatus] = useState("active");
+
+  // Occurence States
+   const [endDate, setEndDate] = React.useState<Date | undefined>(undefined);
+      const [endDateOpen, setEndDateOpen] = React.useState(false);
+      const [repeatEvery, setRepeatEvery] = React.useState<number>(2);
+      const [repeatFor, setRepeatFor] = React.useState<"days" | "weeks" | "months" | "years">("days");
+const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const weekday = weekdays[form.getValues("date")?.getDay()];
+const [selectedDays, setSelectedDays] = React.useState<string[]>([weekday]);
+
+const date = form.watch("date");
+React.useEffect(() => {
+    if(date){
+        setSelectedDays([weekdays[date?.getDay()]])
+    }
+}, [date])
+
+
 
   // Check if we're editing an existing event
   const eventId = searchParams.get("id");
@@ -162,10 +183,7 @@ export default function EventPage() {
         );
         form.setValue(
           "occurrence",
-          (event.occurrence as
-            | "single"
-            | "recurring-month"
-            | "recurring-week") || "single"
+          (event.occurrence as "single" | "recurring") || "single"
         );
         form.setValue("projectId", event.projectId || "");
         form.setValue("location", event.location || "");
@@ -197,7 +215,7 @@ export default function EventPage() {
 
       // Only reset form if we're not editing
       // if (!isEditing) {
-        form.reset();
+      form.reset();
       // }
 
       // Navigate back to calendar
@@ -256,19 +274,19 @@ export default function EventPage() {
     },
   });
 
-  function EditEvent(payload: any){
+  function EditEvent(payload: any) {
     EditCalendarEventMutation.mutate({
       ...payload,
       id: eventId!,
     });
   }
 
-  function AddEvent(payload: any){
+  function AddEvent(payload: any) {
     AddNewCalendarEventMutation.mutate(payload);
   }
-  
+
   function onSubmit(data: EventFormValues) {
-    console.log(data, "data");  
+    console.log(data, "data");
     // Create event payload
     const payload: any = {
       title: data.title,
@@ -277,12 +295,15 @@ export default function EventPage() {
       time: data.startTime,
       endTime: data.endTime,
       type: data.eventType,
-      occurrence: data.occurrence,
       location: data.location,
       participants: data.participants,
       workspaceId: activeWorkspace?.id!,
       status: data.status,
       createdById: session?.memberships.find((m: any) => m.workspaceId === activeWorkspace?.id)?.id!,
+
+      occurrence: data.occurrence,
+      // Occurrence - recurring 
+
     };
     if (data.projectId && data.projectId !== "none") {
       payload.projectId = data.projectId;
@@ -370,9 +391,8 @@ export default function EventPage() {
 
   // Don't render the form until we've loaded any existing event data
   if (isEditing && eventsLoading) {
-    return <LoadingEvent/>
+    return <LoadingEvent />
   }
-
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -427,11 +447,11 @@ export default function EventPage() {
                 )}
               />
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex gap-4 flex-wrap">
                 <FormField
                   control={form.control}
                   name="date"
-                 
+
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <DatePicker
@@ -446,53 +466,17 @@ export default function EventPage() {
 
                 <FormField
                   control={form.control}
-                  name="occurrence"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Occurrence</FormLabel>
-                      <Select
-                       key={field.value}
-                       value={field.value}
-                       onValueChange={(value) => {
-                         field.onChange(value);
-                        }}
-                        disabled={eventStatus === "cancelled"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select occurrence"  />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="single">Single Event</SelectItem>
-                          <SelectItem value="recurring-month">
-                            Monthly
-                          </SelectItem>
-                          <SelectItem value="recurring-week">Weekly</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-             
-
-                <FormField
-                  control={form.control}
                   name="startTime"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Start Time</FormLabel>
-                      <Select 
-                       key={field.value}
-                       value={field.value}
-                       onValueChange={(value) => {
-                           field.onChange(value);
-                       }}
-                       disabled={eventStatus === "cancelled"}
+                      <Select
+                        key={field.value}
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                        }}
+                        disabled={eventStatus === "cancelled"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -512,7 +496,7 @@ export default function EventPage() {
                   )}
                 />
 
-             
+
                 <FormField
                   control={form.control}
                   name="endTime"
@@ -524,7 +508,7 @@ export default function EventPage() {
                         disabled={eventStatus === "cancelled"}
                         value={field.value}
                         onValueChange={(value) => {
-                            field.onChange(value);
+                          field.onChange(value);
                         }}
                       >
                         <FormControl>
@@ -544,9 +528,51 @@ export default function EventPage() {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="occurrence"
+                  render={({ field }) => (
+
+                    <FormItem>
+                      <FormLabel>Occurrence</FormLabel>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={field.value}
+                          readOnly
+                        />
+                        <OccurenceDialog
+                          date={form.getValues("date")}
+                          setDate={(date) => {
+                            form.setValue("date", date || new Date());
+                          }}
+                          endDate={endDate}
+                          setEndDate={setEndDate}
+                          endDateOpen={endDateOpen}
+                          setEndDateOpen={setEndDateOpen}
+                          repeatEvery={repeatEvery}
+                          repeatFor={repeatFor}
+                          setRepeatEvery={setRepeatEvery}
+                          setRepeatFor={setRepeatFor}
+                          selectedDays={selectedDays}
+                          setSelectedDays={setSelectedDays}
+                          trigger={
+                            <Button
+                              variant="ghost"
+                              type="button"
+                            >
+                              <Repeat /> Make Recurring
+                            </Button>
+                          }
+                        /></div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex gap-4">
                 <FormField
                   control={form.control}
                   name="eventType"
@@ -558,7 +584,7 @@ export default function EventPage() {
                         value={field.value}
                         disabled={eventStatus === "cancelled"}
                         onValueChange={(value) => {
-                            field.onChange(value);
+                          field.onChange(value);
                         }}
                       >
                         <FormControl>
@@ -588,7 +614,7 @@ export default function EventPage() {
                         value={field.value}
                         disabled={eventStatus === "cancelled"}
                         onValueChange={(value) => {
-                            field.onChange(value);
+                          field.onChange(value);
                         }}
                       >
                         <FormControl>
@@ -634,12 +660,12 @@ export default function EventPage() {
               <FormField
                 control={form.control}
                 name="participants"
-               
+
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Participants</FormLabel>
                     <Popover>
-                      <PopoverTrigger asChild  disabled={eventStatus === "cancelled"}>
+                      <PopoverTrigger asChild disabled={eventStatus === "cancelled"}>
                         <FormControl>
                           <Button
                             variant="outline"
@@ -650,9 +676,8 @@ export default function EventPage() {
                             )}
                           >
                             {field.value?.length > 0
-                              ? `${field.value.length} participant${
-                                  field.value.length > 1 ? "s" : ""
-                                } selected`
+                              ? `${field.value.length} participant${field.value.length > 1 ? "s" : ""
+                              } selected`
                               : "Select participants"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>

@@ -13,7 +13,7 @@ const eventFormSchema = z.object({
   eventType: z.enum(["meeting", "event"], {
     required_error: "Please select an event type",
   }),
-  occurrence: z.enum(["single", "recurring-month", "recurring-week"], {
+  occurrence: z.enum(["single", "recurring"], {
     required_error: "Please select occurrence type",
   }),
   status: z.enum(["active", "cancelled"], {
