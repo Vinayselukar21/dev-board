@@ -45,19 +45,19 @@ export default function ProfileSettings({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" defaultValue={myInfo?.name} />
+                <Input id="name" defaultValue={myInfo?.name} readOnly />
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue={myInfo?.email} />
+              <Input id="email" type="email" defaultValue={myInfo?.email} readOnly />
             </div>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="job-title">Job Title</Label>
-              <Input id="job-title" defaultValue={myInfo?.jobTitle} />
+              <Input id="job-title" defaultValue={myInfo?.jobTitle} readOnly />
             </div>
             </div>
           </div>
@@ -68,16 +68,14 @@ export default function ProfileSettings({
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" type="tel" defaultValue={myInfo?.contactNo} />
+              <Input id="phone" type="tel" defaultValue={myInfo?.contactNo} readOnly/>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="location">Location</Label>
-              <Input id="location" defaultValue={myInfo?.location} />
+              <Input id="location" defaultValue={myInfo?.location} readOnly/>
             </div>
           </div>
         </div>
-
-        <Button>Update Profile</Button>
       </CardContent>
     </Card>
   );

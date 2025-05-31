@@ -52,9 +52,8 @@ console.log(accountDetails);
 
               {/* Settings Tabs */}
               <Tabs defaultValue="profile">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-3">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="profile">Profile</TabsTrigger>
-                  <TabsTrigger value="notifications">Notifications</TabsTrigger>
                   <TabsTrigger value="security">Security</TabsTrigger>
                   {/* <TabsTrigger value="billing">Billing</TabsTrigger> */}
                 </TabsList>

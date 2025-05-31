@@ -14,6 +14,9 @@ import { Shield } from "lucide-react";
 import { Globe } from "lucide-react";
 import { Lock } from "lucide-react";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import UpdatePassword from "@/hooks/Functions/UpdatePassword";
 
 export default function SecuritySettings() {
   const [password, setPassword] = useState({
@@ -21,6 +24,34 @@ export default function SecuritySettings() {
     newPassword: "",
     confirmPassword: "",
   });
+
+  const updatePasswordMutation = useMutation({
+    mutationFn: UpdatePassword,
+    onSuccess: () => {
+      setPassword({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      })
+      toast.success("Password updated successfully");
+    },
+    onError: (error: {response: {data: {message: string}}}) => {
+      console.log(error)
+      toast.error(error?.response?.data?.message || "Failed to update password");
+    },
+  })
+
+  const updatePassword = () => {
+    if (password.newPassword !== password.confirmPassword) {
+      toast.error("New password and confirm password do not match");
+      return;
+    }
+    const payload = {
+      currentPassword: password.currentPassword,
+      newPassword: password.newPassword,
+    }
+    updatePasswordMutation.mutate(payload)
+  }
 
   return (
     <Card>
@@ -62,7 +93,7 @@ export default function SecuritySettings() {
               />
             </div>
           </div>
-          <Button className="w-fit" onClick={() => console.log(password)}>Change Password</Button>
+          <Button className="w-fit" onClick={updatePassword}>Change Password</Button>
         </div>
 
         {/* <div className="space-y-4">
