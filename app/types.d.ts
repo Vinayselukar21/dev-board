@@ -213,6 +213,9 @@ export interface CalendarEvent {
   createdById: string;
   createdBy: WorkspaceMember;
 
+  series?: CalendarEventSeries;
+  seriesId?: string;
+
   // Relations
   projectId?: string;
   project?: Project;
@@ -237,6 +240,11 @@ export interface CalendarEventParticipant {
   workspaceMember?: WorkspaceMember;
 }
 
+export interface CalendarEventSeries {
+  id: string;
+  seriesTitle?: string;
+  seriesDescription?: string;
+}
 
 // Roles and permissions
 

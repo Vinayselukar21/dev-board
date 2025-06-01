@@ -212,23 +212,23 @@ export function OccurenceDialog({
 
     function GenerateText(repeatFor: "days" | "weeks" | "months" | "years") {
         let string = ""
-        if (repeatFor === "days") {
+        if (repeatFor === "days" && open) {
             string = `Occurs  ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "every other" : `every ${repeatEvery}`} ${selectedDays.length === 7 ? "every day" : selectedDays.join(", ")} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
 
             setSeriesTitle("Daily")
             setSeriesDescription(string)
         }
-        else if (repeatFor === "weeks") {
+        else if (repeatFor === "weeks" && open) {
             string = `Occurs  ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "every other" : `every ${repeatEvery}`} ${selectedDays.length > 1 ? repeatFor.split("s")[0] + " on" : ""}  ${selectedDays.join(", ")} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
             setSeriesTitle("Weekly")
             setSeriesDescription(string)
         }
-        else if (repeatFor === "months") {
+        else if (repeatFor === "months" && open) {
             string = `Occurs ${"on day " + startDate?.getDate() || ""} ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "of every other" : "of every " + repeatEvery} ${repeatFor} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
             setSeriesTitle("Monthly")
             setSeriesDescription(string)
         }
-        else if (repeatFor === "years") {
+        else if (repeatFor === "years" && open) {
             string = `Occurs ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "of every other" : "of every " + repeatEvery} ${repeatFor} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
             setSeriesTitle("Yearly")
             setSeriesDescription(string)

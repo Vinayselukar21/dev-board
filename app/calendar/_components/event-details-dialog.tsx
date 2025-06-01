@@ -18,6 +18,7 @@ import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
 import workspaceStore from "@/store/workspaceStore";
 import { format } from "date-fns";
 import {
+  Calendar,
   Clock,
   Folder,
   MapPin,
@@ -52,7 +53,11 @@ export function EventDetailsDialog({
   const [projectId, setProjectId] = useState("");
   const [location, setLocation] = useState("");
   const [participants, setParticipants] = useState<string[]>([]);
-  const { eventsData, eventsLoading } = useGetCalendarEvents();
+  const [series, setSeries] = useState<{seriesTitle?: string , seriesDescription?: string} | null>(null)
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  const { eventsData, eventsLoading } = useGetCalendarEvents(currentMonth, currentYear);
   // Initialize form with event data when event changes
   useEffect(() => {
     const selectedEvent: CalendarEvent | undefined = eventsData.find(
@@ -71,6 +76,12 @@ export function EventDetailsDialog({
       setParticipants(
         selectedEvent.participants?.map((p: any) => p.workspaceMemberId) || []
       );
+      if (selectedEvent.series) {
+        setSeries({
+          seriesTitle: selectedEvent.series.seriesTitle,
+          seriesDescription: selectedEvent.series.seriesDescription,
+        });
+      }
     }
   }, [event]);
 
@@ -87,7 +98,6 @@ export function EventDetailsDialog({
   };
 
   if (!event) return null;
-
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -154,6 +164,18 @@ export function EventDetailsDialog({
                    )?.name
                  }
                </span>
+             </div>
+           )}
+
+           {series?.seriesTitle && (
+             <div>
+                 <div className="flex items-center gap-2 mb-2">
+               <Calendar className="h-4 w-4 text-muted-foreground" />
+               <p className="text-sm font-semibold">
+                 {series.seriesTitle}
+               </p>
+               </div>
+               <p className="text-xs text-muted-foreground">{series.seriesDescription && ` - ${series.seriesDescription}`}</p>
              </div>
            )}
  
