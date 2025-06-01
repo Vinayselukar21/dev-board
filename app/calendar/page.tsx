@@ -24,6 +24,7 @@ import { ListView } from "./_components/list-view"
 import { CalendarEvent } from "../types"
 import useGetCalendarEvents from "@/hooks/useGetCalendarEvents"
 import LoadingCalendar from "./_components/loading-calendar"
+import { getMonth, getYear } from "date-fns"
 
 // Calendar view type
 type CalendarViewType = "month" | "week" | "day" | "list"
@@ -36,7 +37,7 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [viewType, setViewType] = useState<CalendarViewType>("month")
 
-const { eventsData, eventsLoading, errorLoadingEvents } = useGetCalendarEvents();
+const { eventsData, eventsLoading, errorLoadingEvents } = useGetCalendarEvents(getMonth(currentDate), getYear(currentDate));
 console.log(eventsData, eventsLoading, errorLoadingEvents, "eventsData")
 
 

@@ -48,7 +48,7 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import AddNewCalendarEvent from "@/hooks/Functions/AddNewCalendarEvent";
+import AddNewCalendarEvent, { CalendarEventPayload } from "@/hooks/Functions/AddNewCalendarEvent";
 import CancelCalendarEvent from "@/hooks/Functions/CancelCalendarEvent";
 import DeleteCalendarEvent from "@/hooks/Functions/DeleteCalendarEvent";
 import EditCalendarEvent from "@/hooks/Functions/EditCalendarEvent";
@@ -59,7 +59,8 @@ import { useStore } from "zustand";
 import { EventFormConstrains, EventFormValues } from "./_components/EventFormConstrains";
 import LoadingEvent from "./_components/loading-event";
 import { OccurenceDialog } from "./_components/occurence-dialog";
-
+import AddNewCalendarEventSeries, { CalendarEventSeriesPayload } from "@/hooks/Functions/AddNewCalendarEventSeries";
+import { getMonth } from "date-fns";
 
 export default function EventPage() {
   const { form } = EventFormConstrains();
@@ -67,7 +68,10 @@ export default function EventPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { eventsData, eventsLoading } = useGetCalendarEvents();
+  const currentDate = new Date();
+  const currentMonth = getMonth(currentDate);
+  const currentYear = currentDate.getFullYear();
+  const { eventsData, eventsLoading } = useGetCalendarEvents(currentMonth, currentYear);
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
   const [eventStatus, setEventStatus] = useState("active");
 
@@ -79,6 +83,10 @@ export default function EventPage() {
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const weekday = weekdays[form.getValues("date")?.getDay()];
 const [selectedDays, setSelectedDays] = React.useState<string[]>([weekday]);
+const [seriesTitle, setSeriesTitle] = React.useState<string>("");
+const [seriesDescription, setSeriesDescription] = React.useState<string>("");
+
+const [allOccurences, setAllOccurences] = React.useState<{ dateObj: Date; date: number; day: string; month: number; year: number; monthDesc: string }[]>([]);
 
 const date = form.watch("date");
 React.useEffect(() => {
@@ -199,16 +207,12 @@ React.useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, isEditing, eventId, eventsData]); // Dependencies remain the same
 
-  console.log(form.getValues(), "form.getValues()");
+  // console.log(form.getValues(), "form.getValues()");
   // Handle form submission
   const AddNewCalendarEventMutation = useMutation({
     mutationFn: AddNewCalendarEvent,
     onSuccess: () => {
-      toast.success(
-        isEditing
-          ? "Event updated successfully"
-          : "Calendar event added successfully"
-      );
+      toast.success("Calendar event added successfully");
       queryClient.invalidateQueries({
         queryKey: ["calendar-events", activeWorkspace?.id],
       });
@@ -216,16 +220,39 @@ React.useEffect(() => {
       // Only reset form if we're not editing
       // if (!isEditing) {
       form.reset();
+      setAllOccurences([]);
       // }
 
       // Navigate back to calendar
       router.push("/calendar");
     },
     onError: (error) => {
-      toast.error(
-        isEditing ? "Error updating event" : "Error adding calendar event"
-      );
+      toast.error("Error adding calendar event");
       console.error("Error with calendar event:", error);
+    },
+  });
+
+  // Add event series mutation 
+  const AddNewCalendarEventSeriesMutation = useMutation({
+    mutationFn: AddNewCalendarEventSeries,
+    onSuccess: () => {
+      toast.success("Calendar event series added successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["calendar-events", activeWorkspace?.id],
+      });
+
+      // Only reset form if we're not editing
+      // if (!isEditing) {
+      form.reset();
+      setAllOccurences([]);
+      // }
+
+      // Navigate back to calendar
+      router.push("/calendar");
+    },
+    onError: (error) => {
+      toast.error("Error adding calendar event series");
+      console.error("Error with calendar event series:", error);
     },
   });
 
@@ -241,6 +268,7 @@ React.useEffect(() => {
       // Only reset form if we're not editing
       if (!isEditing) {
         form.reset();
+        setAllOccurences([]);
       }
 
       // Navigate back to calendar
@@ -263,6 +291,7 @@ React.useEffect(() => {
       // Only reset form if we're not editing
       if (!isEditing) {
         form.reset();
+        setAllOccurences([]);
       }
 
       // Navigate back to calendar
@@ -285,26 +314,52 @@ React.useEffect(() => {
     AddNewCalendarEventMutation.mutate(payload);
   }
 
+  function AddEventSeries(payload: any) {
+    AddNewCalendarEventSeriesMutation.mutate(payload);
+  }
+
   function onSubmit(data: EventFormValues) {
     console.log(data, "data");
+
+    const createdById = session?.memberships.find((m: any) => m.workspaceId === activeWorkspace?.id)?.id!;
     // Create event payload
-    const payload: any = {
+    const payload: CalendarEventPayload = {
       title: data.title,
-      description: data.description,
+      description: data.description || "",
       date: data.date,
       time: data.startTime,
-      endTime: data.endTime,
+      endTime: data.endTime!,
       type: data.eventType,
-      location: data.location,
+      location: data.location!,
       participants: data.participants,
       workspaceId: activeWorkspace?.id!,
       status: data.status,
-      createdById: session?.memberships.find((m: any) => m.workspaceId === activeWorkspace?.id)?.id!,
-
+      createdById: createdById,
       occurrence: data.occurrence,
-      // Occurrence - recurring 
-
     };
+
+    const newOccurences = allOccurences.map((occurence) => {
+      return {
+        title: data.title,
+        description: data.description || "",
+        date: occurence.dateObj,
+        time: data.startTime,
+        endTime: data.endTime!,
+        type: data.eventType,
+        location: data.location!,
+        workspaceId: activeWorkspace?.id!,
+        status: data.status,
+        createdById: createdById,
+        occurrence: data.occurrence,
+      }
+    })
+
+    const eventSeriesPayload: CalendarEventSeriesPayload = {
+      occurrence: newOccurences,
+      participants: data.participants,
+      seriesTitle,
+      seriesDescription
+    }
     if (data.projectId && data.projectId !== "none") {
       payload.projectId = data.projectId;
     }
@@ -317,7 +372,12 @@ React.useEffect(() => {
     if (isEditing) {
       EditEvent(payload);
     } else {
-      AddEvent(payload);
+      if (data.occurrence === "recurring") {
+        AddEventSeries(eventSeriesPayload);
+        // console.log(eventSeriesPayload, "eventSeriesPayload");
+      } else {
+        AddEvent(payload);
+      }
     }
   }
 
@@ -347,6 +407,7 @@ React.useEffect(() => {
       // Only reset form if we're not editing
       if (!isEditing) {
         form.reset();
+        setAllOccurences([]);
       }
 
       // Navigate back to calendar
@@ -388,6 +449,8 @@ React.useEffect(() => {
       });
     }
   };
+
+  console.log(allOccurences , " all event occurences ")
 
   // Don't render the form until we've loaded any existing event data
   if (isEditing && eventsLoading) {
@@ -543,7 +606,7 @@ React.useEffect(() => {
                           readOnly
                         />
                         <OccurenceDialog
-                          date={form.getValues("date")}
+                          date={date}
                           setDate={(date) => {
                             form.setValue("date", date || new Date());
                           }}
@@ -557,6 +620,14 @@ React.useEffect(() => {
                           setRepeatFor={setRepeatFor}
                           selectedDays={selectedDays}
                           setSelectedDays={setSelectedDays}
+                          setAllOccurences={(occurences) => {
+                            setAllOccurences(occurences);
+                            form.setValue("occurrence", "recurring");
+                          }}
+                          seriesTitle={seriesTitle}
+                          setSeriesTitle={setSeriesTitle}
+                          seriesDescription={seriesDescription}
+                          setSeriesDescription={setSeriesDescription}
                           trigger={
                             <Button
                               variant="ghost"

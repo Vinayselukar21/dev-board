@@ -9,7 +9,7 @@ interface QueryResponse {
   calendarEvents: CalendarEvent[];
 }
 
-const useGetCalendarEvents = () => {
+const useGetCalendarEvents = ( month: number, year: number ) => {
   const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
   const { session } = useAuth();
 
@@ -25,12 +25,12 @@ const useGetCalendarEvents = () => {
     queryKey: ["calendar-events", activeWorkspace.id],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(
-        `/workspace/${activeWorkspace.id}/${workspaceMemberId}/events/getall`
+        `/workspace/${activeWorkspace.id}/${workspaceMemberId}/events/getall/${month}/${year}`
       );
       return res.data;
     },
     retry: 1,
-    enabled: !!activeWorkspace.id && !!workspaceMemberId,
+    enabled: !!activeWorkspace.id && !!workspaceMemberId && !!month && !!year,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });

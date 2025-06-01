@@ -21,7 +21,11 @@ import {
 } from "@/components/ui/select"
 import React, { useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { differenceInDays, differenceInMonths, differenceInYears, getMonth, getWeek, intervalToDuration } from "date-fns"
+import { array } from "zod"
 
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 export function OccurenceDialog({
     date,
     setDate,
@@ -35,6 +39,11 @@ export function OccurenceDialog({
     setRepeatFor,
     selectedDays,
     setSelectedDays,
+    setAllOccurences,
+    seriesTitle,
+    setSeriesTitle,
+    seriesDescription,
+    setSeriesDescription,
     trigger,
 }: {
     date: Date | undefined;
@@ -49,10 +58,16 @@ export function OccurenceDialog({
     setRepeatFor: (repeatFor: "days" | "weeks" | "months" | "years") => void;
     selectedDays: string[];
     setSelectedDays: (selectedDays: string[]) => void;
+    setAllOccurences: (occurences: { dateObj: Date; date: number; day: string; month: number; year: number; monthDesc: string }[]) => void;
+    seriesTitle: string;
+    setSeriesTitle: (seriesTitle: string) => void;
+    seriesDescription: string;
+    setSeriesDescription: (seriesDescription: string) => void;
     trigger: React.ReactNode;
 }) {
+    const [open, setOpen] = React.useState(false);
     const [startDate, setStartDate] = React.useState<Date | undefined>(date);
-   
+
 
     useEffect(() => {
         if (startDate) {
@@ -61,20 +76,160 @@ export function OccurenceDialog({
     }, [startDate]);
 
     const numbers = Array.from({ length: 99 }, (_, i) => i + 1);
-    const handleOccurenceChange = () => {
-        console.log({
-            date,
-            endDate,
-            endDateOpen,
-            repeatEvery,
-            repeatFor,
-            selectedDays,
-        })
+    const getAllOccurences = () => {
+        const sd = new Date(date!);
+        const ed = new Date(endDate!);
+        const dates: { dateObj: Date; date: number; day: string; month: number; year: number; monthDesc: string }[] = [];
+
+        let currentDate = new Date(sd);
+
+        while (currentDate <= ed) {
+
+            const dateObj = {
+                dateObj: new Date(currentDate),
+                date: currentDate.getDate(),
+                day: weekdays[currentDate.getDay()],
+                month: currentDate.getMonth(),
+                year: currentDate.getFullYear(),
+                week: getWeek(currentDate),
+                monthDesc: months[currentDate.getMonth()],
+            }
+
+            //   Day Difference Logic
+            const lastDate = dates.length > 0 ? dates[dates.length - 1] : {
+                dateObj: sd,
+                date: sd.getDate(),
+                day: weekdays[sd.getDay()],
+                month: sd.getMonth(),
+                year: sd.getFullYear(),
+                week: getWeek(sd),
+                monthDesc: months[sd.getMonth()],
+            };
+            const dateString = `${lastDate?.monthDesc} ${lastDate?.date}, ${lastDate?.year}`;
+            const lastDateObj = new Date(dateString);
+            const dayDiff = differenceInDays(currentDate, lastDateObj);
+
+            //   Week Difference Logic
+            const lastWeekDate = dates.length > 1 ? dates[dates.length - 1] : {
+                dateObj: sd,
+                date: sd.getDate(),
+                day: weekdays[sd.getDay()],
+                month: sd.getMonth(),
+                year: sd.getFullYear(),
+                week: getWeek(sd),
+                monthDesc: months[sd.getMonth()],
+            };
+            const lastWeekDateString = `${lastWeekDate?.monthDesc} ${lastWeekDate?.date}, ${lastWeekDate?.year}`;
+            const lastWeekDateObj = new Date(lastWeekDateString);
+            const weekDiff = getWeek(currentDate) - getWeek(lastWeekDateObj);
+
+            // Month Difference Logic
+            const lastMonthDate = dates.length > 1 ? dates[dates.length - 1] : {
+                dateObj: sd,
+                date: sd.getDate(),
+                day: weekdays[sd.getDay()],
+                month: sd.getMonth(),
+                year: sd.getFullYear(),
+                week: getWeek(sd),
+                monthDesc: months[sd.getMonth()],
+            };
+            const lastMonthDateString = `${lastMonthDate?.monthDesc} ${lastMonthDate?.date}, ${lastMonthDate?.year}`;
+            const lastMonthDateObj = new Date(lastMonthDateString);
+            const monthDiff = differenceInMonths(currentDate, lastMonthDateObj);
+
+            // Year Difference Logic
+            const lastYearDate = dates.length > 1 ? dates[dates.length - 1] : {
+                dateObj: sd,
+                date: sd.getDate(),
+                day: weekdays[sd.getDay()],
+                month: getMonth(sd),
+                year: sd.getFullYear(),
+                week: getWeek(sd),
+                monthDesc: months[sd.getMonth()],
+            };
+            const lastYearDateString = `${lastYearDate?.monthDesc} ${lastYearDate?.date}, ${lastYearDate?.year}`;
+            const lastYearDateObj = new Date(lastYearDateString);
+            const yearDiff = differenceInYears(currentDate, lastYearDateObj);
+
+            if (repeatEvery === 1 && repeatFor === "days" && selectedDays.includes(dateObj.day)) {
+                dates.push(dateObj);
+            }
+
+            if (repeatEvery > 1 && repeatFor === "days") {
+                if (dates.length === 0) {
+                    dates.push(dateObj);
+                }
+                else if (dayDiff === repeatEvery) {
+                    dates.push(dateObj);
+                }
+
+            }
+
+            if (repeatEvery === 1 && repeatFor === "weeks" && selectedDays.includes(dateObj.day)) {
+                dates.push(dateObj);
+            }
+
+            if (repeatEvery > 1 && repeatFor === "weeks" && selectedDays.includes(dateObj.day)) {
+                if (dates.length === 0) {
+                    dates.push(dateObj);
+                }
+                else if (weekDiff === repeatEvery || weekDiff === 0) {
+                    dates.push(dateObj);
+                }
+            }
+
+            if (repeatEvery === 1 && repeatFor === "months" && dateObj.date === sd.getDate()) {
+                dates.push(dateObj);
+            }
+
+            if (repeatEvery > 1 && repeatFor === "months" && dateObj.date === sd.getDate()) {
+                if (dates.length === 0) {
+                    dates.push(dateObj);
+                }
+                else if (monthDiff === repeatEvery) {
+                    dates.push(dateObj);
+                }
+            }
+
+            if (repeatEvery === 1 && repeatFor === "years" && dateObj.date === sd.getDate() && dateObj.month === sd.getMonth()) {
+                dates.push(dateObj);
+            }
+
+            if (repeatEvery > 1 && repeatFor === "years" && dateObj.date === sd.getDate() && dateObj.month === sd.getMonth() && dateObj.year === sd.getFullYear()) {
+                if (dates.length === 0) {
+                    dates.push(dateObj);
+                }
+                else if (yearDiff === repeatEvery) {
+                    dates.push(dateObj);
+                }
+            }
+
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        // console.log(dates, "all dates")
+        return dates;
     }
 
-    console.log(selectedDays)
+    function GenerateText(repeatFor: "days" | "weeks" | "months" | "years") {
+        let string = ""
+        if (repeatFor === "days") {
+            string = `Occurs  ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "every other" : `every ${repeatEvery}`} ${selectedDays.length === 7 ? "every day" : selectedDays.join(", ")} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
+        }
+        else if (repeatFor === "weeks") {
+            string = `Occurs  ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "every other" : `every ${repeatEvery}`} ${selectedDays.length > 1 ? repeatFor.split("s")[0] + " on" : ""}  ${selectedDays.join(", ")} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
+        }
+        else if (repeatFor === "months") {
+            string = `Occurs ${"on day " + startDate?.getDate() || ""} ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "of every other" : "of every " + repeatEvery} ${repeatFor} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
+        }
+        else if (repeatFor === "years") {
+            string = `Occurs ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "of every other" : "of every " + repeatEvery} ${repeatFor} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
+        }
+        return string
+    }
+
+
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {trigger}
             </DialogTrigger>
@@ -155,8 +310,25 @@ export function OccurenceDialog({
                                 ))}
 
                             </div>}
+                            {repeatFor === "days" &&
+                                <div className="flex gap-2 flex-wrap items-center text-sm text-muted-foreground">
+                                    <p>{GenerateText(repeatFor)}</p>
+
+                                    {endDate === undefined && !endDateOpen && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => setEndDateOpen(!endDateOpen)}>
+                                        Select end date
+                                    </Button>}
+
+                                    {endDate !== undefined &&
+                                        <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => {
+                                            setEndDate(undefined);
+                                            setEndDateOpen(false);
+                                        }}>
+                                            Remove end date
+                                        </Button>}
+                                </div>}
+
                             {repeatFor === "weeks" && <div className="flex gap-2 flex-wrap items-center text-sm text-muted-foreground">
-                                <p>Occurs  {repeatEvery === 1 ? "every" : repeatEvery === 2 ? "every other" : `every ${repeatEvery}`} {selectedDays.length > 1 ? repeatFor.split("s")[0] + " on" : ""}  {selectedDays.join(", ")} {endDate !== undefined ? `until ${endDate.toDateString()}` : ""}</p> {endDate === undefined && !endDateOpen && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => setEndDateOpen(!endDateOpen)}>
+                                <p>{GenerateText(repeatFor)}</p> {endDate === undefined && !endDateOpen && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => setEndDateOpen(!endDateOpen)}>
                                     Select end date
                                 </Button>}
                                 {endDate !== undefined && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => {
@@ -167,48 +339,57 @@ export function OccurenceDialog({
                                 </Button>}
                             </div>}
 
-                            {repeatFor === "days" && <div className="flex gap-2 flex-wrap items-center text-sm text-muted-foreground">
-                                <p>Occurs  {repeatEvery === 1 ? "every" : repeatEvery === 2 ? "every other" : `every ${repeatEvery}`} {selectedDays.length === 7 ? "every day" : selectedDays.join(", ")} {endDate !== undefined ? `until ${endDate.toDateString()}` : ""}</p> {endDate === undefined && !endDateOpen && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => setEndDateOpen(!endDateOpen)}>
-                                    Select end date
-                                </Button>}
-                                {endDate !== undefined && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => {
-                                    setEndDate(undefined);
-                                    setEndDateOpen(false);
-                                }}>
-                                    Remove end date
-                                </Button>}
-                            </div>}
                         </div>
 
                     }
                     {
                         repeatFor === "months" &&
                         <div className="flex gap-2 flex-wrap items-center text-sm text-muted-foreground">
-                            <p>Occurs {"on day " + startDate?.getDate() || ""} {repeatEvery === 1 ? "every" : repeatEvery === 2 ? "of every other" : `of every ${repeatEvery}`} {repeatFor} {endDate !== undefined ? `until ${endDate.toDateString()}` : ""}</p> {endDate === undefined && !endDateOpen && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => setEndDateOpen(!endDateOpen)}>
+                            <p>{GenerateText(repeatFor)}</p> {endDate === undefined && !endDateOpen && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => setEndDateOpen(!endDateOpen)}>
                                 Select end date
                             </Button>}
                             {endDate !== undefined && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => {
                                 setEndDate(undefined);
                                 setEndDateOpen(false);
-                        }}>
-                            Remove end date
-                        </Button>}
-                    </div>
+                            }}>
+                                Remove end date
+                            </Button>}
+                        </div>
+                    }
+                    {
+                        repeatFor === "years" &&
+                        <div className="flex gap-2 flex-wrap items-center text-sm text-muted-foreground">
+                            <p>{GenerateText(repeatFor)}</p> {endDate === undefined && !endDateOpen && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => setEndDateOpen(!endDateOpen)}>
+                                Select end date
+                            </Button>}
+                            {endDate !== undefined && <Button variant="link" className="p-0 text-muted-foreground cursor-pointer hover:text-black hover:underline" onClick={() => {
+                                setEndDate(undefined);
+                                setEndDateOpen(false);
+                            }}>
+                                Remove end date
+                            </Button>}
+                        </div>
                     }
                     {endDateOpen && endDate === undefined && <div className="grid gap-2">
-                                <DatePicker
-                                    Date={endDate}
-                                    setDate={setEndDate}
-                                    label="End"
-                                />
-                            </div>}
+                        <DatePicker
+                            Date={endDate}
+                            setDate={setEndDate}
+                            label="End"
+                        />
+                    </div>}
 
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" onClick={() => {
+                            setAllOccurences([]);
+                            setOpen(false);
+                        }}>Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleOccurenceChange}>Save changes</Button>
+                    <Button type="submit" disabled={endDate === undefined} onClick={() => {
+                        setAllOccurences(getAllOccurences())
+                        setOpen(false);
+                    }}>Save changes</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
