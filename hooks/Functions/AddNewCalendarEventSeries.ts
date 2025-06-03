@@ -8,6 +8,10 @@ export interface CalendarEventSeriesPayload {
   participants: string[];
   seriesTitle: string;
   seriesDescription: string;
+  repeatEvery: number;
+  repeatFor: "days" | "weeks" | "months" | "years";
+  seriesStartDate: Date;
+  seriesEndDate: Date | undefined;
 }
 
 

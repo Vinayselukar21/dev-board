@@ -5,14 +5,14 @@ import {
   ArrowLeft,
   Check,
   ChevronsUpDown,
-  Divide,
   Repeat,
+  Trash,
   Trash2,
   X
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 // UI Components
@@ -40,6 +40,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover
 
 // Utilities and hooks
 import { useAuth } from "@/app/providers/AuthProvider";
+import { WorkspaceMember } from "@/app/types";
 import DatePicker from "@/components/date-picker";
 import {
   Command,
@@ -49,18 +50,18 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import AddNewCalendarEvent, { CalendarEventPayload } from "@/hooks/Functions/AddNewCalendarEvent";
+import AddNewCalendarEventSeries, { CalendarEventSeriesPayload } from "@/hooks/Functions/AddNewCalendarEventSeries";
 import CancelCalendarEvent from "@/hooks/Functions/CancelCalendarEvent";
 import DeleteCalendarEvent from "@/hooks/Functions/DeleteCalendarEvent";
 import EditCalendarEvent from "@/hooks/Functions/EditCalendarEvent";
 import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
 import { cn } from "@/lib/utils";
 import workspaceStore from "@/store/workspaceStore";
+import { getMonth, setDate } from "date-fns";
 import { useStore } from "zustand";
 import { EventFormConstrains, EventFormValues } from "./_components/EventFormConstrains";
 import LoadingEvent from "./_components/loading-event";
-import { OccurenceDialog } from "./_components/occurence-dialog";
-import AddNewCalendarEventSeries, { CalendarEventSeriesPayload } from "@/hooks/Functions/AddNewCalendarEventSeries";
-import { getMonth } from "date-fns";
+import { OccurrenceDialog } from "./_components/occurrence-dialog";
 
 export default function EventPage() {
   const { form } = EventFormConstrains();
@@ -75,25 +76,25 @@ export default function EventPage() {
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
   const [eventStatus, setEventStatus] = useState("active");
 
-  // Occurence States
-   const [endDate, setEndDate] = React.useState<Date | undefined>(undefined);
-      const [endDateOpen, setEndDateOpen] = React.useState(false);
-      const [repeatEvery, setRepeatEvery] = React.useState<number>(2);
-      const [repeatFor, setRepeatFor] = React.useState<"days" | "weeks" | "months" | "years">("days");
-const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const weekday = weekdays[form.getValues("date")?.getDay()];
-const [selectedDays, setSelectedDays] = React.useState<string[]>([weekday]);
-const [seriesTitle, setSeriesTitle] = React.useState<string>("");
-const [seriesDescription, setSeriesDescription] = React.useState<string>("");
+  // Occurrence States
+  const [endDate, setEndDate] = React.useState<Date | undefined>(undefined);
+  const [endDateOpen, setEndDateOpen] = React.useState(false);
+  const [repeatEvery, setRepeatEvery] = React.useState<number>(2);
+  const [repeatFor, setRepeatFor] = React.useState<"days" | "weeks" | "months" | "years">("days");
+  const weekdays = useMemo(() => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], []);
+  const weekday = weekdays[form.getValues("date")?.getDay()];
+  const [selectedDays, setSelectedDays] = React.useState<string[]>([weekday]);
+  const [seriesTitle, setSeriesTitle] = React.useState<string>("");
+  const [seriesDescription, setSeriesDescription] = React.useState<string>("");
 
-const [allOccurences, setAllOccurences] = React.useState<{ dateObj: Date; date: number; day: string; month: number; year: number; monthDesc: string }[]>([]);
+  const [allOccurences, setAllOccurences] = React.useState<{ dateObj: Date; date: number; day: string; month: number; year: number; monthDesc: string }[]>([]);
 
-const date = form.watch("date");
-React.useEffect(() => {
-    if(date){
-        setSelectedDays([weekdays[date?.getDay()]])
-    }
-}, [date])
+  const date = form.watch("date");
+  // React.useEffect(() => {
+  //   if (date) {
+  //     setSelectedDays([weekdays[date?.getDay()]])
+  //   }
+  // }, [date, weekdays])
 
 
 
@@ -200,7 +201,17 @@ React.useEffect(() => {
           event.participants?.map((p: any) => p.workspaceMemberId) || []
         );
         form.setValue("status", event.status || "active");
+        form.setValue("occurrence", event.occurrence || "single");
         setEventStatus(event.status || "active");
+
+        // occurrence dialog default values
+        setEndDate(event.series?.seriesEndDate ? new Date(event.series?.seriesEndDate) : undefined);
+        setEndDateOpen(false);
+        setRepeatEvery(event.series?.repeatEvery || 2);
+        setRepeatFor(event.series?.repeatFor || "days");
+        setSelectedDays([]);
+        setSeriesTitle(event.series?.seriesTitle || "");
+        setSeriesDescription(event.series?.seriesDescription || "");
       }
     }
 
@@ -303,25 +314,32 @@ React.useEffect(() => {
     },
   });
 
-  function EditEvent(payload: any) {
+  function EditEvent(payload: CalendarEventPayload) {
     EditCalendarEventMutation.mutate({
       ...payload,
       id: eventId!,
     });
   }
 
-  function AddEvent(payload: any) {
+  function AddEvent(payload: CalendarEventPayload) {
     AddNewCalendarEventMutation.mutate(payload);
   }
 
-  function AddEventSeries(payload: any) {
+  function AddEventSeries(payload: CalendarEventSeriesPayload) {
     AddNewCalendarEventSeriesMutation.mutate(payload);
+  }
+
+  function EditEventSeries(payload: CalendarEventSeriesPayload) {
+    // EditCalendarEventSeriesMutation.mutate({
+    //   ...payload,
+    //   id: eventId!,
+    // });
   }
 
   function onSubmit(data: EventFormValues) {
     console.log(data, "data");
 
-    const createdById = session?.memberships.find((m: any) => m.workspaceId === activeWorkspace?.id)?.id!;
+    const createdById = session.memberships.find((m: WorkspaceMember) => m.workspaceId === activeWorkspace.id).id!;
     // Create event payload
     const payload: CalendarEventPayload = {
       title: data.title,
@@ -332,22 +350,22 @@ React.useEffect(() => {
       type: data.eventType,
       location: data.location!,
       participants: data.participants,
-      workspaceId: activeWorkspace?.id!,
+      workspaceId: activeWorkspace.id!,
       status: data.status,
       createdById: createdById,
       occurrence: data.occurrence,
     };
 
-    const newOccurences = allOccurences.map((occurence) => {
+    const newOccurences = allOccurences.map((occurrence) => {
       return {
         title: data.title,
         description: data.description || "",
-        date: occurence.dateObj,
+        date: occurrence.dateObj,
         time: data.startTime,
         endTime: data.endTime!,
         type: data.eventType,
         location: data.location!,
-        workspaceId: activeWorkspace?.id!,
+        workspaceId: activeWorkspace.id!,
         status: data.status,
         createdById: createdById,
         occurrence: data.occurrence,
@@ -358,7 +376,12 @@ React.useEffect(() => {
       occurrence: newOccurences,
       participants: data.participants,
       seriesTitle,
-      seriesDescription
+      seriesDescription,
+      repeatEvery,
+      repeatFor,
+      seriesStartDate: date,
+      seriesEndDate: endDate,
+
     }
     if (data.projectId && data.projectId !== "none") {
       payload.projectId = data.projectId;
@@ -370,11 +393,15 @@ React.useEffect(() => {
     }
 
     if (isEditing) {
-      EditEvent(payload);
+      if (data.occurrence === "recurring") {
+        EditEventSeries(eventSeriesPayload);
+      } else {
+        EditEvent(payload);
+      }
     } else {
       if (data.occurrence === "recurring") {
         AddEventSeries(eventSeriesPayload);
-        // console.log(eventSeriesPayload, "eventSeriesPayload");
+        console.log(eventSeriesPayload, "eventSeriesPayload");
       } else {
         AddEvent(payload);
       }
@@ -450,12 +477,32 @@ React.useEffect(() => {
     }
   };
 
-  console.log(allOccurences , " all event occurences ")
+  console.log(allOccurences, " all event occurences ")
 
   // Don't render the form until we've loaded any existing event data
   if (isEditing && eventsLoading) {
     return <LoadingEvent />
   }
+
+  const event = eventsData.find((e) => e.id === eventId);
+  console.log(event, "event")
+
+  function GenerateText(repeatFor: "days" | "weeks" | "months" | "years", repeatEvery: number, startDate: Date, endDate: Date) {
+    let string = ""
+    if (repeatFor === "days") {
+        string = `Occurs  ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "every other" : `every ${repeatEvery}`} ${selectedDays.length === 7 ? "every day" : selectedDays.join(", ")} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
+    }
+    else if (repeatFor === "weeks") {
+        string = `Occurs  ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "every other" : `every ${repeatEvery}`} ${selectedDays.length > 1 ? repeatFor.split("s")[0] + " on" : ""}  ${selectedDays.join(", ")} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
+    }
+    else if (repeatFor === "months") {
+        string = `Occurs ${"on day " + startDate.getDate() || ""} ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "of every other" : "of every " + repeatEvery} ${repeatFor} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
+    }
+    else if (repeatFor === "years") {
+        string = `Occurs ${repeatEvery === 1 ? "every" : repeatEvery === 2 ? "of every other" : "of every " + repeatEvery} ${repeatFor} ${endDate !== undefined ? `until ${endDate.toDateString()}` : ""}`
+    }
+    return string
+}
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -599,13 +646,20 @@ React.useEffect(() => {
 
                     <FormItem>
                       <FormLabel>Occurrence</FormLabel>
-                      <div className="flex gap-2">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
                         <Input
                           type="text"
                           value={field.value}
                           readOnly
                         />
-                        <OccurenceDialog
+                        {
+                          form.getValues("occurrence") === "recurring" && (
+                            <p className="text-sm text-muted-foreground mt-2">{GenerateText(repeatFor, repeatEvery, date!, endDate!)}</p>
+                          )
+                        }
+                        </div>
+                        <OccurrenceDialog
                           date={date}
                           setDate={(date) => {
                             form.setValue("date", date || new Date());
@@ -624,19 +678,37 @@ React.useEffect(() => {
                             setAllOccurences(occurences);
                             form.setValue("occurrence", "recurring");
                           }}
-                          seriesTitle={seriesTitle}
                           setSeriesTitle={setSeriesTitle}
-                          seriesDescription={seriesDescription}
                           setSeriesDescription={setSeriesDescription}
-                          trigger={
+                          trigger={form.getValues("occurrence") === "recurring" ? (
                             <Button
                               variant="ghost"
                               type="button"
                             >
+                              <Repeat /> Edit Occurrence
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              type="button"
+                             
+                            >
                               <Repeat /> Make Recurring
                             </Button>
-                          }
-                        /></div>
+                          )}
+                        />
+                        <Button
+                          variant="ghost"
+                          type="button"
+                          onClick={() => {
+                            form.setValue("occurrence", "single");
+                            setAllOccurences([]);
+                          }}
+                        >
+                          <Trash
+                           /> Clear Occurrence
+                        </Button>
+                        </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -863,6 +935,9 @@ React.useEffect(() => {
                   <Button type="button" variant="outline" asChild>
                     <Link href="/calendar">Cancel</Link>
                   </Button>
+                  {form.getValues("occurrence") === "recurring" && <Button type="submit" disabled={form.formState.isSubmitting || participants.length === 0}>
+                    Update Series
+                  </Button>}
                   <Button type="submit" disabled={form.formState.isSubmitting || participants.length === 0}>
                     {isEditing ? "Save Changes" : "Create Event"}
                   </Button>

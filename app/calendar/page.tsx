@@ -1,30 +1,22 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import useGetCalendarEvents from "@/hooks/useGetCalendarEvents"
+import { getMonth, getYear } from "date-fns"
 import {
   ArrowLeft,
   ArrowRight,
-  CalendarDays,
-  ChevronDown,
-  FolderKanban,
-  LayoutDashboard,
-  Plus,
-  Search,
-  Settings,
-  Users,
+  ChevronDown
 } from "lucide-react"
-import { WeekView } from "./_components/week-view"
-import { MonthView } from "./_components/month-view"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { CalendarEvent } from "../types"
 import { DayView } from "./_components/day-view"
 import { ListView } from "./_components/list-view"
-import { CalendarEvent } from "../types"
-import useGetCalendarEvents from "@/hooks/useGetCalendarEvents"
 import LoadingCalendar from "./_components/loading-calendar"
-import { getMonth, getYear } from "date-fns"
+import { MonthView } from "./_components/month-view"
+import { WeekView } from "./_components/week-view"
 
 // Calendar view type
 type CalendarViewType = "month" | "week" | "day" | "list"

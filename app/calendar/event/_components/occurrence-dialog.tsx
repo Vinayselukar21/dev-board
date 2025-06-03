@@ -1,3 +1,4 @@
+import DatePicker from "@/components/date-picker"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -9,9 +10,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import DatePicker from "@/components/date-picker"
 import {
     Select,
     SelectContent,
@@ -19,14 +18,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import React, { useEffect } from "react"
 import { cn } from "@/lib/utils"
-import { differenceInDays, differenceInMonths, differenceInYears, getMonth, getWeek, intervalToDuration } from "date-fns"
-import { array } from "zod"
+import { differenceInDays, differenceInMonths, differenceInYears, getMonth, getWeek } from "date-fns"
+import React, { useEffect } from "react"
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-export function OccurenceDialog({
+export function OccurrenceDialog({
     date,
     setDate,
     endDate,
@@ -40,9 +38,7 @@ export function OccurenceDialog({
     selectedDays,
     setSelectedDays,
     setAllOccurences,
-    seriesTitle,
     setSeriesTitle,
-    seriesDescription,
     setSeriesDescription,
     trigger,
 }: {
@@ -59,9 +55,7 @@ export function OccurenceDialog({
     selectedDays: string[];
     setSelectedDays: (selectedDays: string[]) => void;
     setAllOccurences: (occurences: { dateObj: Date; date: number; day: string; month: number; year: number; monthDesc: string }[]) => void;
-    seriesTitle: string;
     setSeriesTitle: (seriesTitle: string) => void;
-    seriesDescription: string;
     setSeriesDescription: (seriesDescription: string) => void;
     trigger: React.ReactNode;
 }) {
@@ -81,7 +75,7 @@ export function OccurenceDialog({
         const ed = new Date(endDate!);
         const dates: { dateObj: Date; date: number; day: string; month: number; year: number; monthDesc: string }[] = [];
 
-        let currentDate = new Date(sd);
+        const currentDate = new Date(sd);
 
         while (currentDate <= ed) {
 
@@ -307,9 +301,9 @@ export function OccurenceDialog({
                                         "flex items-center justify-center border rounded-full p-2 hover:bg-gray-100 hover:text-black cursor-pointer text-sm font-medium transition-colors",
                                         selectedDays.includes(day) && "bg-black text-white hover:bg-black hover:text-white"
                                     )} key={day} onClick={() => {
-                                        if (selectedDays.includes(day)) {
-                                            selectedDays.length > 1 ?
-                                                setSelectedDays(selectedDays.filter((d) => d !== day)) : null;
+                                        if (selectedDays.includes(day) && selectedDays.length > 1) {
+
+                                            setSelectedDays(selectedDays.filter((d) => d !== day))
                                         } else {
                                             setSelectedDays([...selectedDays, day]);
                                         }

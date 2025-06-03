@@ -83,7 +83,7 @@ export function EventDetailsDialog({
         });
       }
     }
-  }, [event]);
+  }, [event, eventsData]);
 
   // Get event type badge color
   const getEventTypeColor = (type: "meeting" | "event" ) => {

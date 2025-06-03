@@ -180,7 +180,7 @@ export interface Department {
 
 export interface Log {
   id: string;
-  type: "workspace" | "project" | "task"; // assuming these are the only valid types
+  type: "workspace" | "project" | "task" | "user" | "setting" | "calendarEvent"; // assuming these are the only valid types
   action: string;
   message: string;
 
@@ -205,7 +205,7 @@ export interface CalendarEvent {
   date: string;
   time: string;
   endTime: string;
-  occurrence: 'single' | 'recurring-weekly' | 'recurring-monthly';
+  occurrence: 'single' | 'recurring';
   type: 'event' | 'meeting';
   location?: string;
   status: 'active' | 'cancelled';
@@ -244,6 +244,10 @@ export interface CalendarEventSeries {
   id: string;
   seriesTitle?: string;
   seriesDescription?: string;
+  repeatEvery?: number;
+  repeatFor?: "days" | "weeks" | "months" | "years";
+  seriesStartDate?: Date;
+  seriesEndDate?: Date;
 }
 
 // Roles and permissions

@@ -27,11 +27,12 @@ import LoadingDashboard from "./_components/loading-dashboard";
 
 export default function Page() {
   const { session } = useAuth();
-  const { dashboardData, dashboardLoading, errorLoadingDashboard } =
+  const { dashboardData, dashboardLoading } =
     useGetDashboard();
     if(dashboardLoading){
       return <LoadingDashboard/>
     }
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       <main className="flex flex-1 flex-col">
@@ -61,7 +62,7 @@ export default function Page() {
                 Good morning, {session?.name}
               </h2>
               <p className="text-muted-foreground">
-                Here's what's happening in your workspace today.
+                Here&apos;s what&apos;s happening in your workspace today.
               </p>
             </div>
 
