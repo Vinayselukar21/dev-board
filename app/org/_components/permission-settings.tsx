@@ -66,7 +66,7 @@ export default function PermissionSettings() {
                       </td>
                       <td className="px-4 py-3 text-sm">{role.members?.length}</td>
                       <td className="px-4 py-3 text-sm">
-                        <CreateOrgRoleDialog type="edit" role={role} trigger={<Button variant="ghost" size="sm">
+                        <CreateOrgRoleDialog type="edit" role={role} trigger={role.name !== "Owner" && <Button variant="ghost" size="sm">
                           Edit 
                         </Button>} />
                       </td>

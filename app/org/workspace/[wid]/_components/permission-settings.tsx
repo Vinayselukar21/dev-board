@@ -57,7 +57,7 @@ export default function PermissionSettings({workspaceData}: {workspaceData: Work
                       </td>
                       <td className="px-4 py-3 text-sm">{role?.members?.length || 0}</td>
                       <td className="px-4 py-3 text-sm">
-                        <CreateWorkspaceRoleDialog type="edit" role={role} trigger={<Button variant="ghost" size="sm">
+                        <CreateWorkspaceRoleDialog type="edit" role={role} trigger={ role.name !== "Owner" && <Button variant="ghost" size="sm">
                           Edit
                         </Button>}/>
                       </td>

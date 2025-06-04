@@ -185,6 +185,12 @@ console.log(permissions, "permissions")
       name: "Calendar",
       permissions: [
         {
+          id: workspacePermissions.find((p) => p.name === PermissionType.VIEW_EVENT)?.id!,
+          name: "View Calendar",
+          description: "Can view the calendar and events",
+          
+        },
+        {
           id: workspacePermissions.find((p) => p.name === PermissionType.CREATE_EVENT)?.id!,
           name: "Create Events",
           description: "Can create calendar events",
@@ -197,17 +203,16 @@ console.log(permissions, "permissions")
           
         },
         {
+          id: workspacePermissions.find((p) => p.name === PermissionType.CANCEL_EVENT)?.id!,
+          name: "Cancel Events",
+          description: "Can cancel events created by others",         
+        },
+        {
           id: workspacePermissions.find((p) => p.name === PermissionType.DELETE_EVENT)?.id!,
           name: "Delete Events",
           description: "Can delete calendar events",
           
         },
-        // {
-        //   id: workspacePermissions.find((p) => p.name === PermissionType.VIEW_EVENT)?.id!,
-        //   name: "View Calendar",
-        //   description: "Can view the calendar and events",
-        //   
-        // },
       ],
     }
   ]

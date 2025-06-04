@@ -44,6 +44,10 @@ enum OrgPermissionType {
   CREATE_WORKSPACE = "CREATE_WORKSPACE",
   EDIT_WORKSPACE = "EDIT_WORKSPACE",
   DELETE_WORKSPACE = "DELETE_WORKSPACE",
+
+  CREATE_CUSTOM_ORG_ROLE = "CREATE_CUSTOM_ORG_ROLE",
+  EDIT_CUSTOM_ORG_ROLE = "EDIT_CUSTOM_ORG_ROLE",
+  DELETE_CUSTOM_ORG_ROLE = "DELETE_CUSTOM_ORG_ROLE",
 }
 
 export interface RolePermission {
@@ -193,6 +197,33 @@ export function CreateOrgRoleDialog({
           enabled: false,
           value: OrgPermissionType.DELETE_WORKSPACE,
         },
+      ],
+    },
+    {
+      id: "roles",
+      name: "Roles",
+      permissions: [
+        {
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.CREATE_CUSTOM_ORG_ROLE)?.id!,
+          name: "Create Custom Role",
+          description: "Can create custom role",
+          enabled: true,
+          value: OrgPermissionType.CREATE_CUSTOM_ORG_ROLE,
+        },
+        {
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.EDIT_CUSTOM_ORG_ROLE)?.id!,
+          name: "Edit Custom Role",
+          description: "Can edit custom role",
+          enabled: false,
+          value: OrgPermissionType.EDIT_CUSTOM_ORG_ROLE,
+        },
+        {
+          id: orgPermissions.find((p) => p.name === OrgPermissionType.DELETE_CUSTOM_ORG_ROLE)?.id!,
+          name: "Delete Custom Role",
+          description: "Can delete custom role",
+          enabled: false,
+          value: OrgPermissionType.DELETE_CUSTOM_ORG_ROLE,
+        }
       ],
     },
   ];

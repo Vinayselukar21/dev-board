@@ -1,4 +1,7 @@
 "use client";
+import { CreateWorkspaceDialog } from "@/components/create-workspace-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,28 +11,20 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import workspaceStore from "@/store/workspaceStore";
-import { Mail, Pencil, Phone, Plus, Search, Trash } from "lucide-react";
-import { useStore } from "zustand";
-import { useAuth } from "../providers/AuthProvider";
-import { Project, User, Workspace } from "../types";
-import { Button } from "@/components/ui/button";
-import organizationStore from "@/store/organizationStore";
-import { Badge } from "@/components/ui/badge";
-import { useRouter } from "next/navigation";
-import RegisterUserDialog from "./_components/register-new-user-dialog";
-import { CreateWorkspaceDialog } from "@/components/create-workspace-dialog";
 import useGetRoles from "@/hooks/useGetAllRoles";
+import organizationStore from "@/store/organizationStore";
+import { Mail, Pencil, Phone, Plus, Search, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useStore } from "zustand";
+import { User, Workspace } from "../types";
 import PermissionSettings from "./_components/permission-settings";
+import RegisterUserDialog from "./_components/register-new-user-dialog";
 
 export default function TeamPage() {
   const router = useRouter();
   // Fetch all roles & permissions in an organization
   const {
-    organizationRolesData,
-    workspaceRolesData,
-    rolesLoading,
-    errorLoadingRoles,
+    organizationRolesData
   } = useGetRoles();
 
   const activeOrganization = useStore(

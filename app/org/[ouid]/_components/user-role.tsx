@@ -27,9 +27,9 @@ export default function UserRole({ selectedUser }: { selectedUser: User }) {
                                 <th className="px-4 py-3 text-left text-sm font-medium">
                                     Current Role
                                 </th>
-                                <th className="px-4 py-3 text-left text-sm font-medium">
+                                {selectedUser.organizationRole?.name!="Owner" && <th className="px-4 py-3 text-left text-sm font-medium">
                                     Action
-                                </th>
+                                </th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y">
@@ -46,7 +46,7 @@ export default function UserRole({ selectedUser }: { selectedUser: User }) {
                                     <Badge>{selectedUser.organizationRole?.name}</Badge>
                                 </td>
                                 <td className="px-4 py-3 text-sm">
-                                    <Select defaultValue={selectedUser.organizationRole?.name}>
+                                    {selectedUser.organizationRole?.name!="Owner" && <Select defaultValue={selectedUser.organizationRole?.name}>
                                         <SelectTrigger className="w-[120px]">
                                             <SelectValue placeholder="Select role" />
                                         </SelectTrigger>
@@ -57,7 +57,7 @@ export default function UserRole({ selectedUser }: { selectedUser: User }) {
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
-                                    </Select>
+                                    </Select>}
                                 </td>
                             </tr>
                         </tbody>
