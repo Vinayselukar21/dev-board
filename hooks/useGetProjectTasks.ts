@@ -3,7 +3,7 @@
 import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
-import { Project, TaskStage } from "../app/types";
+import { Project } from "../app/types";
 
 interface QueryResponse {
   message: string;
@@ -18,8 +18,9 @@ const useGetProjectTasks = (projectId: string) => {
   } = useQuery<QueryResponse, Error>({
     queryKey: ["projectTasks", projectId],
     queryFn: async () => {
+      const {activeWorkspace} = workspaceStore.getState()
       const res = await axios.get<QueryResponse>(
-        `/projects/getbyid/${projectId}`
+        `/projects/${activeWorkspace?.id}/getbyid/${projectId}`
       );
       return res.data;
     },

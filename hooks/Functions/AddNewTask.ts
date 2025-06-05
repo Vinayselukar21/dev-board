@@ -1,5 +1,5 @@
 import axios from "@/utils/axios";
-
+import workspaceStore from "@/store/workspaceStore";
 interface Payload {
   title: string;
   description: string;
@@ -13,7 +13,8 @@ interface Payload {
 }
 
 const AddNewTask = async (payload: Payload) => {
-  const response = await axios.post(`/projects/newtask`, payload);
+  const {activeWorkspace} = workspaceStore.getState()
+  const response = await axios.post(`/projects/${activeWorkspace?.id}/newtask`, payload);
   return response.data;
 };
 
