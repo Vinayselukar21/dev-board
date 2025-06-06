@@ -3,9 +3,12 @@
 import type React from "react";
 
 import { useAuth } from "@/app/providers/AuthProvider";
+import { Task } from "@/app/types";
 import DatePicker from "@/components/date-picker";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -26,16 +29,13 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import AddNewTask from "@/hooks/Functions/AddNewTask";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { Task } from "@/app/types";
 import EditTask from "@/hooks/Functions/EditTask";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
 import { cn } from "@/lib/utils";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from   "@radix-ui/react-popover";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Check, ChevronsUpDown, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface AddTaskDialogProps {
   trigger: React.ReactNode;
@@ -146,7 +146,7 @@ export function AddTaskDialog({
       status: "",
       projectId: projectId as string,
       stageId: stage,
-      taskId: taskData?.id!,
+      taskId: taskData && taskData.id!,
     };
 
     EditTaskMutation.mutate(payload);
