@@ -4,7 +4,7 @@ import { Workspace } from "../app/types";
 
 interface QueryResponse {
   message: string;
-  workspace: Workspace;
+  data: Workspace;
 }
 
 const useGetWorkspaceById = (workspaceId: string) => {
@@ -27,7 +27,7 @@ const useGetWorkspaceById = (workspaceId: string) => {
     refetchOnMount: false,
   });
 
-  const workspaceData: Workspace | null = data?.workspace || null;
+  const workspaceData: Workspace | null = data?.data || null;
 
   return { workspaceData, workspaceLoading, errorLoadingWorkspace, workspaceDataLoadedSuccess };
 };

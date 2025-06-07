@@ -40,7 +40,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover
 
 // Utilities and hooks
 import { useAuth } from "@/app/providers/AuthProvider";
-import { WorkspaceMember } from "@/app/types";
+import { CalendarEvent, WorkspaceMember } from "@/app/types";
 import DatePicker from "@/components/date-picker";
 import {
   Command,
@@ -57,7 +57,7 @@ import EditCalendarEvent from "@/hooks/Functions/EditCalendarEvent";
 import useGetCalendarEvents from "@/hooks/useGetCalendarEvents";
 import { cn } from "@/lib/utils";
 import workspaceStore from "@/store/workspaceStore";
-import { getMonth, setDate } from "date-fns";
+import { getMonth } from "date-fns";
 import { useStore } from "zustand";
 import { EventFormConstrains, EventFormValues } from "./_components/EventFormConstrains";
 import LoadingEvent from "./_components/loading-event";
@@ -222,8 +222,8 @@ export default function EventPage() {
   // Handle form submission
   const AddNewCalendarEventMutation = useMutation({
     mutationFn: AddNewCalendarEvent,
-    onSuccess: () => {
-      toast.success("Calendar event added successfully");
+    onSuccess: (response) => {
+      toast.success(response.message);
       queryClient.invalidateQueries({
         queryKey: ["calendar-events", activeWorkspace?.id],
       });
@@ -330,6 +330,7 @@ export default function EventPage() {
   }
 
   function EditEventSeries(payload: CalendarEventSeriesPayload) {
+    console.log(payload, "payload");
     // EditCalendarEventSeriesMutation.mutate({
     //   ...payload,
     //   id: eventId!,

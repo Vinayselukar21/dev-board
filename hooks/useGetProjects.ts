@@ -7,7 +7,7 @@ import { activeWorkspaceDetails } from "@/utils/activeWorkspaceMemberId";
 
 interface QueryResponse {
   message: string;
-  projects: Project[];
+  data: Project[];
 }
 
 const useGetProjects = () => {
@@ -24,7 +24,7 @@ const useGetProjects = () => {
       const res = await axios.get<QueryResponse>(
         `/workspace/${activeWorkspace.id}/${WorkspaceMemberId}/projects/getall`
       );
-      setSidebar({ ...sidebar, projects: res.data.projects });
+      setSidebar({ ...sidebar, projects: res.data.data });
       return res.data;
     },
     retry: 1,
@@ -33,8 +33,8 @@ const useGetProjects = () => {
     refetchOnMount: false,
   });
 
-  const projectData: Array<Project> = Array.isArray(data?.projects)
-    ? data.projects.map((project) => ({
+  const projectData: Array<Project> = Array.isArray(data?.data)
+    ? data.data.map((project) => ({
         ...project,
       }))
     : [];

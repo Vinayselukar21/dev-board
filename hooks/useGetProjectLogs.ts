@@ -4,7 +4,7 @@ import { Log } from "@/app/types";
 import workspaceStore from "@/store/workspaceStore";
 interface QueryResponse {
   message: string;
-  logs: Log[];
+  data: Log[];
 }
 
 const useGetProjectLogs = () => {
@@ -27,8 +27,8 @@ const useGetProjectLogs = () => {
     refetchOnMount: false,
   });
 
-  const projectLogsData: Array<Log> = Array.isArray(data?.logs)
-    ? data.logs.map((log) => ({
+  const projectLogsData: Array<Log> = Array.isArray(data?.data)
+    ? data.data.map((log) => ({
         ...log,
       }))
     : [];

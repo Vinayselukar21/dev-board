@@ -9,10 +9,10 @@ import { useQuery } from "@tanstack/react-query";
 
 interface QueryResponse {
   message: string;
-  workspaceRoles: WorkspaceRole[];
+  data:{workspaceRoles: WorkspaceRole[];
   organizationRoles: OrganizationRole[];
   workspacePermissions: WorkspacePermission[];
-  orgPermissions: OrgPermission[];
+  orgPermissions: OrgPermission[];}
 }
 
 const useGetRoles = () => {
@@ -37,10 +37,10 @@ const useGetRoles = () => {
     refetchOnMount: false,
   });
 
-  const workspaceRolesData: WorkspaceRole[] = data?.workspaceRoles || [];
-  const organizationRolesData: OrganizationRole[] = data?.organizationRoles || [];
-  const workspacePermissions: WorkspacePermission[] = data?.workspacePermissions || [];
-  const orgPermissions: OrgPermission[] = data?.orgPermissions || [];
+  const workspaceRolesData: WorkspaceRole[] = data?.data?.workspaceRoles || [];
+  const organizationRolesData: OrganizationRole[] = data?.data?.organizationRoles || [];
+  const workspacePermissions: WorkspacePermission[] = data?.data?.workspacePermissions || [];
+  const orgPermissions: OrgPermission[] = data?.data?.orgPermissions || [];
 
   setWorkspaceRolesData(workspaceRolesData);
   setOrganizationRolesData(organizationRolesData);

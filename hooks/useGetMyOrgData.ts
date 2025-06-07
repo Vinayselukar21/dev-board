@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 interface QueryResponse {
   message: string;
-  organization: any;
+  data: any;
 }
 
 const useGetMyOrgData = () => {
@@ -18,7 +18,7 @@ const useGetMyOrgData = () => {
     queryKey: ["my-org"],
     queryFn: async () => {
       const res = await axios.get<QueryResponse>(`/organization/myorg`);
-      setActiveOrganization(res.data.organization);
+      setActiveOrganization(res.data.data);
       return res.data;
     },
     retry: 1,
@@ -26,7 +26,7 @@ const useGetMyOrgData = () => {
     refetchOnMount: false,
   });
 
-  const myOrgData = data?.organization;
+  const myOrgData = data?.data;
 
   return { myOrgData, myOrgLoading, errorLoadingMyOrg };
 };

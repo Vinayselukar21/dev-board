@@ -7,7 +7,7 @@ import { Project } from "../app/types";
 
 interface QueryResponse {
   message: string;
-  project: Project;
+  data: Project;
 }
 
 const useGetProjectTasks = (projectId: string) => {
@@ -30,7 +30,7 @@ const useGetProjectTasks = (projectId: string) => {
     refetchOnMount: false,
   });
 
-  const projectTaskData: Project | null = data?.project ? data.project : null;
+  const projectTaskData: Project | null = data?.data ? data.data : null;
   return { projectTaskData, tasksLoading, errorLoadingTasks };
 };
 export default useGetProjectTasks;

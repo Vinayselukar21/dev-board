@@ -5,7 +5,7 @@ import { Workspace } from "../app/types";
 
 interface QueryResponse {
   message: string;
-  workspaces: Workspace[];
+  data: Workspace[];
 }
 
 const useGetWorkspaces = () => {
@@ -29,8 +29,8 @@ const useGetWorkspaces = () => {
     refetchOnMount: false,
   });
 
-  const workspaceData: Array<Workspace> = Array.isArray(data?.workspaces)
-    ? data?.workspaces.map(
+  const workspaceData: Array<Workspace> = Array.isArray(data?.data)
+    ? data?.data.map(
         ({
           icon,
           name,

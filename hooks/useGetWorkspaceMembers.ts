@@ -7,7 +7,7 @@ import { WorkspaceMember } from "../app/types";
   
 interface QueryResponse {
   message: string;
-  members: WorkspaceMember[];
+  data: WorkspaceMember[];
 }
 
 const useGetWorkspaceMembers = () => {
@@ -29,8 +29,8 @@ const useGetWorkspaceMembers = () => {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
-  const memberData: Array<WorkspaceMember> = Array.isArray(data?.members)
-    ? data?.members.map(
+  const memberData: Array<WorkspaceMember> = Array.isArray(data?.data)
+    ? data?.data.map(
         ({
           id,
           role,

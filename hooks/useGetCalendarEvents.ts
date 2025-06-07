@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 interface QueryResponse {
   message: string;
-  calendarEvents: CalendarEvent[];
+  data: CalendarEvent[];
 }
 
 const useGetCalendarEvents = ( month: number, year: number ) => {
@@ -35,7 +35,7 @@ const useGetCalendarEvents = ( month: number, year: number ) => {
     refetchOnMount: false,
   });
 
-  const eventsData: CalendarEvent[] = data?.calendarEvents || [];
+  const eventsData: CalendarEvent[] = data?.data || [];
 
   return { eventsData, eventsLoading, errorLoadingEvents };
 };

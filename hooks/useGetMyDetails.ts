@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { activeWorkspaceDetails } from "@/utils/activeWorkspaceMemberId";
 interface QueryResponse {
   message: string;
-  user: any;
+  data: any;
 }
 
 const useGetMyDetails = () => {
@@ -30,7 +30,7 @@ const useGetMyDetails = () => {
     refetchOnMount: false,
   });
 
-  const accountDetails = data?.user;
+  const accountDetails = data?.data;
 
   return { accountDetails, accountDetailsLoading, errorLoadingAccountDetails };
 };

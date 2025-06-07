@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -12,28 +12,29 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useGetProjectLogs from "@/hooks/useGetProjectLogs";
 import useGetProjects from "@/hooks/useGetProjects";
+import useGetProjectStats from "@/hooks/useGetProjectStats";
 import workspaceStore from "@/store/workspaceStore";
 import { format } from "date-fns";
-import { Plus, Search, Users } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import Link from "next/link";
 import { useStore } from "zustand";
 import { Log } from "../types";
 import LoadingProjects from "./_components/loading-projects";
-import useGetProjectStats from "@/hooks/useGetProjectStats";
-import { Badge } from "@/components/ui/badge";
 
 export default function Page() {
-  const { projectData, projectsLoading, errorLoadingProjects } =
+  const { projectData, projectsLoading } =
     useGetProjects();
 
-  const { projectStatsData, projectStatsLoading, errorLoadingProjectStats } = useGetProjectStats();
+  const { projectStatsData, projectStatsLoading } = useGetProjectStats();
   console.log(projectStatsData, "projectStatsData");
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
-  const { projectLogsData, projectLogsLoading, errorLoadingProjectLogs } = useGetProjectLogs();
+  const { projectLogsData } = useGetProjectLogs();
   console.log(projectData, "projectData");
   if (projectsLoading) {
     return <LoadingProjects />
   }
+
+  console.log(projectData, "projectData");
   return (
     <main className="flex flex-1 flex-col">
       {/* Header */}

@@ -24,7 +24,7 @@ interface StatsMap {
 
 interface QueryResponse {
   message: string;
-  statsMap: StatsMap;
+  data: StatsMap;
 }
 
 
@@ -50,7 +50,7 @@ const useGetProjectStats = () => {
     refetchOnMount: false,
   });
 
-  const projectStatsData: StatsMap = data?.statsMap || {};
+  const projectStatsData: StatsMap = data?.data || {};
 
   return { projectStatsData, projectStatsLoading, errorLoadingProjectStats };
 };
