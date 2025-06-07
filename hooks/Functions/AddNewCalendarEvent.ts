@@ -26,20 +26,19 @@ export interface CalendarEventPayload {
   createdById?: string; // workspace member id
 }
 
+interface ApiResponse {
+  data: CalendarEvent;
+  message: string;
+  error: string;
+}
 
-const AddNewCalendarEvent = async (payload: CalendarEventPayload): Promise<{
-  message: string,
-  calendarEvent: CalendarEvent
-}> => {
+const AddNewCalendarEvent = async (payload: CalendarEventPayload): Promise<ApiResponse> => {
   const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
   const response = await axios.post(
     `/workspace/${activeWorkspace?.id}/newevent`,
     payload
   );
-  return response.data as {
-    message: string,
-    calendarEvent: CalendarEvent
-  };
+  return response.data as ApiResponse;
 };
 
 export default AddNewCalendarEvent;

@@ -1,3 +1,4 @@
+import { OrganizationRole } from "@/app/types";
 import axios from "@/utils/axios";
 
 interface Payload {
@@ -7,12 +8,18 @@ interface Payload {
     organizationId: string
 }
 
-const AddNewOrgRole = async (payload: Payload) => {
+interface ApiResponse {
+  data: OrganizationRole;
+  message: string;
+  error: string;
+}
+
+const AddNewOrgRole = async (payload: Payload): Promise<ApiResponse> => {
   const response = await axios.post(
     `/organization/new/customrole`,
     payload
   );
-  return response.data;
+  return response.data as ApiResponse;
 };
 
-export default AddNewOrgRole;   
+export default AddNewOrgRole;

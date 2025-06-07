@@ -1,3 +1,4 @@
+import { User } from "@/app/types";
 import axios from "@/utils/axios";
 
 interface RegisterUserPayload {
@@ -14,11 +15,18 @@ interface RegisterUserPayload {
   organizationRoleId?: string;
   designation?: string;
 }
+
+interface ApiResponse {
+  data: User;
+  message: string;
+  error: string;
+}
+
 const RegisterAndAddNewMemberToOrg = async (
   payload: RegisterUserPayload
-) => {
+): Promise<ApiResponse> => {
   const response = await axios.post(`/organization/new/orgmember`, payload);
-  return response.data;
+  return response.data as ApiResponse;
 };
 
 export default RegisterAndAddNewMemberToOrg;

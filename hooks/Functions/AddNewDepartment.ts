@@ -1,3 +1,4 @@
+import { Department } from "@/app/types";
 import axios from "@/utils/axios";
 
 interface Payload {
@@ -5,9 +6,15 @@ interface Payload {
   name: string;
 }
 
-const AddNewDepartment = async (payload: Payload) => {
+interface ApiResponse {
+  data: Department;
+  message: string;
+  error: string;
+}
+
+const AddNewDepartment = async (payload: Payload): Promise<ApiResponse> => {
   const response = await axios.post(`/workspace/newdepartment`, payload);
-  return response.data;
+  return response.data as ApiResponse;
 };
 
 export default AddNewDepartment;
