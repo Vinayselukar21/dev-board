@@ -72,8 +72,8 @@ export function ManageProjectTeamDialog({
       toast.success(response.message);
       queryClient.invalidateQueries({ queryKey: ["workspace-by-id"] });
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 

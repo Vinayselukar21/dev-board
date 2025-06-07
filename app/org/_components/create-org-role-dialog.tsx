@@ -257,8 +257,8 @@ export function CreateOrgRoleDialog({
       setOpen(false);
       resetForm();
     },
-    onError:(error)=>{
-      toast.error(error.message)
+    onError:(error: {response: {data: {message: string}}})=>{
+      toast.error(error?.response?.data?.message )
     }
   });
 
@@ -272,8 +272,8 @@ export function CreateOrgRoleDialog({
       setOpen(false);
       resetForm();
     },
-    onError:(error)=>{
-      toast.error(error.message)
+    onError:(error: {response: {data: {message: string}}})=>{
+      toast.error(error?.response?.data?.message )
     }
   });
 

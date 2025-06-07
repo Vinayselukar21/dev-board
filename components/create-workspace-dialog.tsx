@@ -104,8 +104,8 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
       });
       nextStep();
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 
@@ -129,8 +129,8 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
       });
       setDepartmentName("");
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 

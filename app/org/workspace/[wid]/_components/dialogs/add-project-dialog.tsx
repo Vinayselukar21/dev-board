@@ -79,8 +79,8 @@ export function AddProjectDialog({ trigger, workspaceData }: AddProjectDialogPro
       // Invalidate projects
       queryClient.invalidateQueries({ queryKey: ["workspace-by-id", workspaceData.id] });
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 

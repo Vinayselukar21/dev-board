@@ -237,8 +237,8 @@ export default function EventPage() {
       // Navigate back to calendar
       router.push("/calendar");
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 
@@ -260,8 +260,8 @@ export default function EventPage() {
       // Navigate back to calendar
       router.push("/calendar");
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 
@@ -283,8 +283,8 @@ export default function EventPage() {
       // Navigate back to calendar
       router.push("/calendar");
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 
@@ -305,8 +305,8 @@ export default function EventPage() {
       // Navigate back to calendar
       router.push("/calendar");
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 
@@ -436,8 +436,8 @@ export default function EventPage() {
       // Navigate back to calendar
       router.push("/calendar");
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 

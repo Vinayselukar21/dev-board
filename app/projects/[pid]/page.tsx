@@ -78,8 +78,8 @@ export default function ProjectPage() {
       // Invalidate projects
       queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
   const DeleteTaskMutation = useMutation({
@@ -91,8 +91,8 @@ export default function ProjectPage() {
       // Invalidate projects
       queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 

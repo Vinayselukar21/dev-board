@@ -79,8 +79,8 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
       queryClient.invalidateQueries({ queryKey: ["my-org"] });
       setOpen(false);
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
   

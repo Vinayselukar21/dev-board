@@ -88,8 +88,8 @@ export function AddTaskDialog({
       // Invalidate projects
       queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 
@@ -108,8 +108,8 @@ export function AddTaskDialog({
       // Invalidate projects
       queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: {response: {data: {message: string}}}) => {
+      toast.error(error?.response?.data?.message );
     },
   });
 
