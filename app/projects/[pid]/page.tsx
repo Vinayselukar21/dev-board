@@ -3,7 +3,6 @@
 import type React from "react";
 
 import { TaskStage } from "@/app/types";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,43 +20,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import ChangeTaskStage from "@/hooks/Functions/ChangeTaskStage";
+import DeleteTask from "@/hooks/Functions/DeleteTask";
 import useGetProjectTasks from "@/hooks/useGetProjectTasks";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
   ArrowLeft,
   CalendarDays,
   MoreHorizontal,
   Plus,
-  Search,
-  Settings,
+  Search
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AddTaskDialog } from "./_components/add-task-dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import ChangeTaskStage from "@/hooks/Functions/ChangeTaskStage";
 import { toast } from "sonner";
-import DeleteTask from "@/hooks/Functions/DeleteTask";
-import { format } from "date-fns";
+import { AddTaskDialog } from "./_components/add-task-dialog";
 import LoadingTasks from "./_components/loading-tasks";
-import { type } from "os";
 
 // Define types for our Kanban board
 
 type Status = "todo" | "in-progress" | "done";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  priority: "low" | "medium" | "high";
-  assignee?: {
-    name: string;
-    avatar?: string;
-    initials: string;
-  };
-  dueDate?: string;
-}
 
 export default function ProjectPage() {
   const queryClient = useQueryClient();
@@ -65,7 +49,7 @@ export default function ProjectPage() {
   // Sample data for the Kanban board
   const [columns, setColumns] = useState<TaskStage[]>([]);
 
-  const { projectTaskData, tasksLoading, errorLoadingTasks } =
+  const { projectTaskData, tasksLoading } =
     useGetProjectTasks(params.pid as string);
 
   const taskStages = projectTaskData && projectTaskData?.taskStages?.map((stage) => ({
@@ -87,30 +71,28 @@ export default function ProjectPage() {
 
   const ChangeTaskStageMutation = useMutation({
     mutationFn: ChangeTaskStage,
-    onSuccess: () => {
+    onSuccess: (response) => {
       // Invalidate and refetch
-      toast.success("Task has been moved");
+      toast.success(response.message);
 
       // Invalidate projects
       queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
     },
     onError: (error) => {
-      toast.error("Failed to move project");
-      console.error("Error moving project:", error);
+      toast.error(error.message);
     },
   });
   const DeleteTaskMutation = useMutation({
     mutationFn: DeleteTask,
-    onSuccess: () => {
+    onSuccess: (response) => {
       // Invalidate and refetch
-      toast.success("Task has been deleted");
+      toast.success(response.message);
 
       // Invalidate projects
       queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
     },
     onError: (error) => {
-      toast.error("Failed to delete project");
-      console.error("Error deleting project:", error);
+      toast.error(error.message);
     },
   });
 

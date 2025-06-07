@@ -74,13 +74,13 @@ export default function RegisterUserDialog({ trigger }: InviteMemberDialogProps)
 
   const RegisterNewUser = useMutation({
     mutationFn: RegisterAndAddNewMemberToOrg,
-    onSuccess: () => {
-      toast.success( "User registered and added successfully.");
+    onSuccess: (response) => {
+      toast.success(response.message);
       queryClient.invalidateQueries({ queryKey: ["my-org"] });
       setOpen(false);
     },
-    onError: () => {
-      toast.error("Failed to register and add user.");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
   

@@ -238,16 +238,15 @@ export default function EventPage() {
       router.push("/calendar");
     },
     onError: (error) => {
-      toast.error("Error adding calendar event");
-      console.error("Error with calendar event:", error);
+      toast.error(error.message);
     },
   });
 
   // Add event series mutation 
   const AddNewCalendarEventSeriesMutation = useMutation({
     mutationFn: AddNewCalendarEventSeries,
-    onSuccess: () => {
-      toast.success("Calendar event series added successfully");
+    onSuccess: (response) => {
+      toast.success(response.message);
       queryClient.invalidateQueries({
         queryKey: ["calendar-events", activeWorkspace?.id],
       });
@@ -262,16 +261,15 @@ export default function EventPage() {
       router.push("/calendar");
     },
     onError: (error) => {
-      toast.error("Error adding calendar event series");
-      console.error("Error with calendar event series:", error);
+      toast.error(error.message);
     },
   });
 
   // Edit event mutation
   const EditCalendarEventMutation = useMutation({
     mutationFn: EditCalendarEvent,
-    onSuccess: () => {
-      toast.success("Event updated successfully");
+    onSuccess: (response) => {
+      toast.success(response.message);
       queryClient.invalidateQueries({
         queryKey: ["calendar-events", activeWorkspace?.id],
       });
@@ -286,15 +284,14 @@ export default function EventPage() {
       router.push("/calendar");
     },
     onError: (error) => {
-      toast.error("Error updating event");
-      console.error("Error with calendar event:", error);
+      toast.error(error.message);
     },
   });
 
   const DeleteCalendarEventMutation = useMutation({
     mutationFn: DeleteCalendarEvent,
-    onSuccess: () => {
-      toast.success("Event deleted successfully");
+    onSuccess: (response) => {
+      toast.success(response.message);
       queryClient.invalidateQueries({
         queryKey: ["calendar-events", activeWorkspace?.id],
       });
@@ -309,8 +306,7 @@ export default function EventPage() {
       router.push("/calendar");
     },
     onError: (error) => {
-      toast.error("Error deleting event");
-      console.error("Error with calendar event:", error);
+      toast.error(error.message);
     },
   });
 
@@ -418,7 +414,6 @@ export default function EventPage() {
       // In a real app, delete from your backend
       DeleteCalendarEventMutation.mutate(eventId!);
 
-      toast.success("Event deleted");
       // Navigate back to calendar
       router.push("/calendar");
     }
@@ -426,8 +421,8 @@ export default function EventPage() {
 
   const CancelCalendarEventMutation = useMutation({
     mutationFn: CancelCalendarEvent,
-    onSuccess: () => {
-      toast.success("Event cancelled");
+    onSuccess: (response) => {
+      toast.success(response.message);
       queryClient.invalidateQueries({
         queryKey: ["calendar-events", activeWorkspace?.id],
       });
@@ -442,8 +437,7 @@ export default function EventPage() {
       router.push("/calendar");
     },
     onError: (error) => {
-      toast.error("Error cancelling event");
-      console.error("Error with calendar event:", error);
+      toast.error(error.message);
     },
   });
 

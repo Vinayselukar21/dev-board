@@ -75,9 +75,9 @@ export function AddTaskDialog({
 
   const AddNewTaskMutation = useMutation({
     mutationFn: AddNewTask,
-    onSuccess: () => {
+    onSuccess: (response) => {
       // Invalidate and refetch
-      toast.success("Task has been created");
+      toast.success(response.message);
       // Handle task creation logic here
       setOpen(false);
       // Reset form
@@ -89,16 +89,15 @@ export function AddTaskDialog({
       queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
     },
     onError: (error) => {
-      toast.error("Failed to create project");
-      console.error("Error creating project:", error);
+      toast.error(error.message);
     },
   });
 
   const EditTaskMutation = useMutation({
     mutationFn: EditTask,
-    onSuccess: () => {
+    onSuccess: (response) => {
       // Invalidate and refetch
-      toast.success("Task has been updated");
+      toast.success(response.message);
       // Handle task creation logic here
       setOpen(false);
       // Reset form
@@ -110,8 +109,7 @@ export function AddTaskDialog({
       queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
     },
     onError: (error) => {
-      toast.error("Failed to update project");
-      console.error("Error updating project:", error);
+      toast.error(error.message);
     },
   });
 

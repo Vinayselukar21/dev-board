@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,16 +6,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Shield } from "lucide-react";
-import { Globe } from "lucide-react";
-import { Lock } from "lucide-react";
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
 import UpdatePassword from "@/hooks/Functions/UpdatePassword";
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function SecuritySettings() {
   const [password, setPassword] = useState({
@@ -27,16 +22,15 @@ export default function SecuritySettings() {
 
   const updatePasswordMutation = useMutation({
     mutationFn: UpdatePassword,
-    onSuccess: () => {
+    onSuccess: (response) => {
       setPassword({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       })
-      toast.success("Password updated successfully");
+      toast.success(response.message);
     },
     onError: (error: {response: {data: {message: string}}}) => {
-      console.log(error)
       toast.error(error?.response?.data?.message || "Failed to update password");
     },
   })

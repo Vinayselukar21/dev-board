@@ -13,15 +13,11 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AddNewProjectStage from "@/hooks/Functions/AddNewProjectStage";
-import workspaceStore from "@/store/workspaceStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useStore } from "zustand";
 
 interface ManageProjectKanbanBoardColumnsProps {
   projectId: string;
@@ -35,7 +31,6 @@ export function ManageProjectKanbanBoardColumns({
   trigger,
 }: ManageProjectKanbanBoardColumnsProps) {
   const queryClient = useQueryClient();
-  const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
   const [open, setOpen] = useState(false);
   // Find the current project from the workspace
   const currentProject = projectTaskData || null;
@@ -44,19 +39,17 @@ export function ManageProjectKanbanBoardColumns({
 
   const AddNewProjectStageMutation = useMutation({
     mutationFn: AddNewProjectStage,
-    onSuccess: () => {
+    onSuccess: (response) => {
       // Invalidate and refetch
-      toast.success("New stage has been created");
-      // Handle task creation logic here
-      // setOpen(false);
+      toast.success(response.message);
+      
       // Reset form
       setNewColumnName("");
       // Invalidate projects
       queryClient.invalidateQueries({ queryKey: ["projectTasks"] });
     },
     onError: (error) => {
-      toast.error("Failed to create project");
-      console.error("Error creating project:", error);
+      toast.error(error.message);
     },
   });
 

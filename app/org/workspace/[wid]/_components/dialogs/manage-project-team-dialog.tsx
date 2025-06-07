@@ -67,14 +67,13 @@ export function ManageProjectTeamDialog({
 
   const addMemberToProject = useMutation({
     mutationFn: AddMemberToProject,
-    onSuccess: () => {
+    onSuccess: (response) => {
       // Invalidate and refetch
-      toast.success("New member has been added to project");
+      toast.success(response.message);
       queryClient.invalidateQueries({ queryKey: ["workspace-by-id"] });
     },
     onError: (error) => {
-      toast.error("Failed to add member to project");
-      console.error("Error adding member to project:", error);
+      toast.error(error.message);
     },
   });
 
@@ -144,7 +143,7 @@ export function ManageProjectTeamDialog({
                     />
                     <Avatar>
                       <AvatarFallback>
-                        {getInitials(member.user?.name!)}
+                        {getInitials(member.user.name!)}
                       </AvatarFallback>
                     </Avatar>
                     <div>

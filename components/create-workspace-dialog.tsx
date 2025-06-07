@@ -4,7 +4,6 @@ import type React from "react";
 
 import { useAuth } from "@/app/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -24,16 +23,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import AddNewDepartment from "@/hooks/Functions/AddNewDepartment";
 import CreateNewWorkspace from "@/hooks/Functions/CreateNewWorkspace";
+import workspaceStore from "@/store/workspaceStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { icons } from "./workspace-switcher";
-import { Badge } from "./ui/badge";
-import AddNewDepartment from "@/hooks/Functions/AddNewDepartment";
 import { useStore } from "zustand";
-import workspaceStore from "@/store/workspaceStore";
+import { Badge } from "./ui/badge";
+import { icons } from "./workspace-switcher";
 
 interface CreateWorkspaceDialogProps {
   trigger?: React.ReactNode;
@@ -97,17 +96,16 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
 
   const CreateNewWorkspaceMutation = useMutation({
     mutationFn: CreateNewWorkspace,
-    onSuccess: (data:any) => {
-      setActiveWorkspace(data?.workspace);
-      toast.success("Workspace created successfully");
+    onSuccess: (response) => {
+      setActiveWorkspace(response?.data);
+      toast.success(response.message);
       queryClient.invalidateQueries({
         queryKey: ["my-org"],
       });
       nextStep();
     },
     onError: (error) => {
-      console.log(error);
-      toast.error("Error creating workspace");
+      toast.error(error.message);
     },
   });
 
@@ -123,23 +121,22 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
 
   const AddNewDepartmentMutation = useMutation({
     mutationFn: AddNewDepartment,
-    onSuccess: () => {
+    onSuccess: (response) => {
       // setOpen(false);
-      toast.success("Department added successfully");
+      toast.success(response.message);
       queryClient.invalidateQueries({
         queryKey: ["workspaces", session?.id],
       });
       setDepartmentName("");
     },
     onError: (error) => {
-      console.log(error);
-      toast.error("Error adding department");
+      toast.error(error.message);
     },
   });
 
   const handleAddDepartment = () => {
     AddNewDepartmentMutation.mutate({
-      workspaceId: activeWorkspace?.id!,
+      workspaceId: activeWorkspace.id!,
       name: departmentName,
     });
   }

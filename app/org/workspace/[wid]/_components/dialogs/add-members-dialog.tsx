@@ -89,8 +89,8 @@ export function AddMembersDialog({
 
   const addNewWorkspaceMember = useMutation({
     mutationFn: AddUserToWorkspace,
-    onSuccess: () => {
-      toast.success("New member has been added to workspace");
+    onSuccess: (response) => {
+      toast.success(response.error);
       queryClient.invalidateQueries({ queryKey: ["workspace-by-id", workspaceData?.id] });
     },
     onError: (error) => {

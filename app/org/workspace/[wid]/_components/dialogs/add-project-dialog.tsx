@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { useAuth } from "@/app/providers/AuthProvider";
+import { Workspace } from "@/app/types";
 import DatePicker from "@/components/date-picker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,12 +28,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import AddNewProject from "@/hooks/Functions/AddNewProject";
-import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Workspace } from "@/app/types";
 
 interface AddProjectDialogProps {
   trigger?: React.ReactNode;
@@ -69,9 +68,9 @@ export function AddProjectDialog({ trigger, workspaceData }: AddProjectDialogPro
 
   const AddNewProjectMutation = useMutation({
     mutationFn: AddNewProject,
-    onSuccess: () => {
+    onSuccess: (response) => {
       // Invalidate and refetch
-      toast.success("Project has been created");
+      toast.success(response.message);
       // Reset and close
       setSelectedMembers([]);
       setDueDate(undefined);
@@ -81,8 +80,7 @@ export function AddProjectDialog({ trigger, workspaceData }: AddProjectDialogPro
       queryClient.invalidateQueries({ queryKey: ["workspace-by-id", workspaceData.id] });
     },
     onError: (error) => {
-      toast.error("Failed to create project");
-      console.error("Error creating project:", error);
+      toast.error(error.message);
     },
   });
 

@@ -2,7 +2,6 @@
 
 import type React from "react"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -15,10 +14,10 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/app/providers/AuthProvider";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import AddNewDepartment from "@/hooks/Functions/AddNewDepartment";
+import AddNewDepartment from "@/hooks/Functions/AddNewDepartment"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
+import { toast } from "sonner"
 
 interface AddDepartmentDialogProps {
   trigger?: React.ReactNode
@@ -27,14 +26,13 @@ interface AddDepartmentDialogProps {
 
 export function AddDepartmentDialog({trigger, workspaceid }: AddDepartmentDialogProps) {
   const [departmentName, setDepartmentName] = useState("")
-  const { session } = useAuth();
   const queryClient = useQueryClient();
 
   const AddNewDepartmentMutation = useMutation({
     mutationFn: AddNewDepartment,
-    onSuccess: () => {
+    onSuccess: (response) => {
       // setOpen(false);
-      toast.success("Department added successfully");
+      toast.success(response.message);
       queryClient.invalidateQueries({
         queryKey: ["workspace-by-id", workspaceid],
       });
@@ -42,7 +40,7 @@ export function AddDepartmentDialog({trigger, workspaceid }: AddDepartmentDialog
     },
     onError: (error) => {
       console.log(error);
-      toast.error("Error adding department");
+      toast.error(error.message);
     },
   });
 

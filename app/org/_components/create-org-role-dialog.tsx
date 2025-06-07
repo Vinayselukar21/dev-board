@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import AddNewOrgRole from "@/hooks/Functions/AddNewOrgRole";
+import UpdateOrgRole from "@/hooks/Functions/UpdateOrgRole";
 import organizationStore from "@/store/organizationStore";
 import rolesStore from "@/store/rolesStore";
 import workspaceStore from "@/store/workspaceStore";
@@ -26,8 +27,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useStore } from "zustand";
-import { permission } from "process";
-import UpdateOrgRole from "@/hooks/Functions/UpdateOrgRole";
 
 enum OrgPermissionType {
   OWNER = "OWNER",
@@ -250,26 +249,32 @@ export function CreateOrgRoleDialog({
 
   const addNewRole = useMutation({
     mutationFn: AddNewOrgRole,
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({
         queryKey: ["roles", activeOrganization.id, activeWorkspace.id],
       });
-      toast.success("New role has been added");
+      toast.success(response.message);
       setOpen(false);
       resetForm();
     },
+    onError:(error)=>{
+      toast.error(error.message)
+    }
   });
 
   const updateRole = useMutation({
     mutationFn: UpdateOrgRole,
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({
         queryKey: ["roles", activeOrganization.id, activeWorkspace.id],
       });
-      toast.success("Role has been updated");
+      toast.success(response.message);
       setOpen(false);
       resetForm();
     },
+    onError:(error)=>{
+      toast.error(error.message)
+    }
   });
 
   // Handle form submission

@@ -19,14 +19,13 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import AddNewWorkspaceRole from "@/hooks/Functions/AddNewWorkspaceRole"
-import organizationStore from "@/store/organizationStore"
 import rolesStore from "@/store/rolesStore"
-import workspaceStore from "@/store/workspaceStore"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { useStore } from "zustand"
+import { error } from "console"
 
 enum PermissionType {
   VIEW_PROJECT = 'VIEW_PROJECT',
@@ -244,14 +243,17 @@ console.log(permissions, "permissions")
 
   const addNewRole = useMutation({
     mutationFn: AddNewWorkspaceRole,
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({
         queryKey: ["workspace-by-id", params.wid],
       });
-      toast.success("New role has been added");
+      toast.success(response.message);
       setOpen(false);
       resetForm();
     },
+    onError:(error)=>{
+      toast.error(error.message)
+    }
   });
 
  // Reset form
