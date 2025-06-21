@@ -1,4 +1,4 @@
-import { Workspace } from "@/app/types";
+import { Log, Workspace } from "@/app/types";
 import workspaceStore from "@/store/workspaceStore";
 import axios from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
@@ -11,8 +11,7 @@ interface QueryResponse {
 }
 
 const useGetDashboard = () => {
-  const {activeWorkspace} = workspaceStore.getState() // subscribes to changes
-  console.log(activeWorkspace.id , activeWorkspace.name)
+  const {activeWorkspace} = workspaceStore.getState()
   const {
     data,
     isLoading: dashboardLoading,
@@ -25,10 +24,8 @@ const useGetDashboard = () => {
       );
       return res.data;
     },
-    retry: 1,
     enabled: !!activeWorkspace.id,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnWindowFocus: true
   });
 
   const dashboardData = data?.data.dashboard;
@@ -65,18 +62,6 @@ type ProjectProgressCard = {
   progress: ProjectProgress;
 };
 
-type LogCard = {
-  id: string;
-  type: string;
-  action: string;
-  message: string;
-  workspaceId: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
-  organizationId: string | null;
-};
-
 // Root dashboard type
 type DashboardData = {
   projectCard: ProjectCard;
@@ -84,5 +69,5 @@ type DashboardData = {
   teamCard: TeamCard;
   projectProgressCard: ProjectProgressCard[];
   taskDistributionCard: null;
-  logsCard: LogCard[];
+  logsCard: Log[];
 };

@@ -2,15 +2,12 @@
 
 import {
   BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Settings,
-  Sparkles,
-  Users,
+  Users
 } from "lucide-react";
 
+import { useAuth } from "@/app/providers/AuthProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -27,14 +24,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/app/providers/AuthProvider";
-import { Badge } from "./ui/badge";
-import { useRouter } from "next/navigation";
+import appSettingStore from "@/store/appSettingStore";
+import organizationStore from "@/store/organizationStore";
+import rolesStore from "@/store/rolesStore";
 import sidebarStore from "@/store/sidebarStore";
 import workspaceStore from "@/store/workspaceStore";
-import organizationStore from "@/store/organizationStore";
-import appSettingStore from "@/store/appSettingStore";
-import rolesStore from "@/store/rolesStore";
+import { useRouter } from "next/navigation";
+import { Badge } from "./ui/badge";
 
 export function NavUser({
   user,
@@ -105,11 +101,11 @@ const handleLogout = () => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup >
-              {session.ownedOrganization ? <DropdownMenuItem className="flex flex-col gap-2 items-start">
+              {session?.ownedOrganization ? <DropdownMenuItem className="flex flex-col gap-2 items-start">
                <p>{session.organization.name}</p>
                <Badge variant="default">Owner</Badge>
               </DropdownMenuItem> : <DropdownMenuItem className="flex flex-col gap-2 items-start">
-               <p>{session.organization.name}</p>
+               <p>{session?.organization?.name}</p>
                <Badge variant="outline">Member</Badge>
               </DropdownMenuItem>}
             </DropdownMenuGroup>

@@ -1,5 +1,4 @@
 "use client";
-import ProtectedRoute from "./ProtectedRoute";
 import TanstackProvider from "./TanstackProvider";
 
 export default function ProviderMaster({
@@ -9,7 +8,7 @@ export default function ProviderMaster({
 }) {
   return (
     <TanstackProvider>
-      <ProtectedRoute>{children}</ProtectedRoute>
+      {children}
     </TanstackProvider>
   );
 }

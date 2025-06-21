@@ -1,6 +1,5 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,13 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useGetWorkspaceMembers from "@/hooks/useGetWorkspaceMembers";
 import workspaceStore from "@/store/workspaceStore";
-import { Mail, Phone, Plus, Search } from "lucide-react";
+import { Mail, Phone, Search } from "lucide-react";
 import { useStore } from "zustand";
 import LoadingTeams from "./_components/loading-teams";
 
 export default function TeamPage() {
   const activeWorkspace = useStore(workspaceStore, (state) => state.activeWorkspace);
-  const { memberData, membersLoading, errorLoadingMembers } =
+  const { memberData, membersLoading,  } =
     useGetWorkspaceMembers();
     if(membersLoading){
       return <LoadingTeams/>

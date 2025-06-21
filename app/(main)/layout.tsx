@@ -1,9 +1,10 @@
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import AuthProvider from "./providers/AuthProvider";
-import ProviderMaster from "./providers/ProviderMaster";
+import "../globals.css";
+import AuthProvider from "../providers/AuthProvider";
+import ProviderMaster from "../providers/ProviderMaster";
+import SidebarLayoutProvider from "../providers/DashboardLayoutProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <ProviderMaster>{children}</ProviderMaster>
+          <ProviderMaster>
+            <SidebarLayoutProvider>
+              {children}
+              </SidebarLayoutProvider>
+              </ProviderMaster>
           <Toaster />
         </AuthProvider>
       </body>
